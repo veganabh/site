@@ -79,52 +79,9 @@ export function CategoryCircles({ active = "all", basePath, className }: Categor
           />
         ))}
 
-        <TierDivider />
-
-        {/* Festa à vista — tier featured, rota /encomendas */}
-        <Link
-          href="/encomendas"
-          aria-label="Encomendas para festas e eventos"
-          className="group flex shrink-0 flex-col items-center gap-1.5"
-        >
-          <span className="flex h-14 w-14 items-center justify-center rounded-lg border-2 border-terra-500 bg-terra-500 text-paper-50 shadow-md md:h-16 md:w-16">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className="h-5 w-5 md:h-6 md:w-6"
-            >
-              <g className="[transform-box:fill-box] [transform-origin:center] group-hover:[animation:party-shake_0.6s_ease-in-out_infinite]">
-                <line x1="6" y1="1.2" x2="6" y2="3" />
-                <line x1="12" y1="0.5" x2="12" y2="2.5" />
-                <line x1="18" y1="1.2" x2="18" y2="3" />
-              </g>
-              <line x1="6" y1="3.5" x2="6" y2="7" />
-              <line x1="12" y1="3" x2="12" y2="7" />
-              <line x1="18" y1="3.5" x2="18" y2="7" />
-              <path d="M6 7H18" />
-              <path d="M6 7V11" />
-              <path d="M18 7V11" />
-              <path d="M6 11 Q8 12.4 10 11 T14 11 T18 11" />
-              <path d="M3 12H6" />
-              <path d="M18 12H21" />
-              <path d="M3 12V17" />
-              <path d="M21 12V17" />
-              <path d="M3 17 Q6 18.4 9 17 T15 17 T21 17" />
-              <path d="M2 18H22" />
-              <path d="M4.5 21H19.5" />
-              <path d="M2 18 L4.5 21" />
-              <path d="M22 18 L19.5 21" />
-            </svg>
-          </span>
-          <span className="text-[12px] font-semibold whitespace-nowrap text-terra-700">
-            Festa à vista?
-          </span>
-        </Link>
+        {/* TODO: rota /encomendas ainda não existe.
+            Reativar chip "Festa à vista?" (tier featured, terra-500) quando página for criada.
+            Histórico do markup: ver git blame deste bloco. */}
       </nav>
 
       {/* Fade edge: indica scroll horizontal escondido (só mobile) */}

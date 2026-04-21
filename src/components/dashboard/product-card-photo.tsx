@@ -81,7 +81,8 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
           </div>
         )}
 
-        {/* Quick-add — top-right with pop animation */}
+        {/* Quick-add — top-right with pop animation.
+            Hit area expandida via ::before (WCAG 2.5.5 — 44x44 mínimo) sem inflar visual. */}
         <button
           type="button"
           aria-label={`Adicionar ${product.name} ao carrinho`}
@@ -89,6 +90,7 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
           disabled={isSoldOut}
           className={cn(
             "absolute top-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-full text-paper-50 shadow-md transition-transform duration-200 active:scale-95",
+            "before:absolute before:-inset-2 before:content-['']",
             isSoldOut
               ? "cursor-not-allowed bg-olive-500/60"
               : "bg-leaf-500 hover:bg-terra-500",
