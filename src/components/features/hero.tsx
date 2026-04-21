@@ -14,7 +14,7 @@ export function Hero({ className }: HeroProps) {
       className={cn("mx-auto max-w-4xl px-4 py-10 text-center md:py-16 md:text-left", className)}
       aria-label="Apresentação"
     >
-      <h1 className="font-serif text-h1 text-olive-900 italic md:text-display">
+      <h1 className="text-h1 font-extrabold text-olive-900 md:text-display">
         Doce feito em casa.
         <br />
         Sem lactose.

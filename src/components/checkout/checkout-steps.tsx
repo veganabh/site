@@ -20,6 +20,12 @@ import {
   AlertTriangle,
   Sparkles,
   Gift,
+  ShoppingBag,
+  Mail,
+  Phone,
+  User,
+  Package,
+  MessageCircle,
 } from "lucide-react";
 import { ProductPhoto } from "@/components/features/product-photo";
 import { EmptyCartAnimation } from "@/components/features/empty-cart-animation";
@@ -27,10 +33,16 @@ import { cn } from "@/lib/utils";
 import { formatBRL, formatCEP } from "@/lib/format";
 import { AVAILABLE_COUPONS, isCouponApplicable } from "@/lib/coupons";
 import { getCrossSellSuggestions } from "@/lib/cross-sell";
+import { getPhrasesForSavings } from "@/lib/savings-phrases";
 import { mockProducts } from "@/lib/mock-products";
-import { useCartStore } from "@/stores/cart-store";
+import {
+  kitLinePrice,
+  kitLinePriceIfoodAnchor,
+  useCartStore,
+} from "@/stores/cart-store";
 import { useCheckoutStore } from "@/stores/checkout-store";
 import { useOrdersStore } from "@/stores/orders-store";
+import { useSession } from "@/lib/auth/use-session";
 import {
   useAddressStore,
   selectCurrentAddress,
@@ -38,12 +50,19 @@ import {
   type AddressType,
 } from "@/stores/address-store";
 import type { CartItem } from "@/stores/cart-store";
+import type { CheckoutStep } from "@/stores/checkout-store";
+import { findKitById } from "@/lib/mock-gift-kits";
+import { KitCoverPhoto } from "@/components/gift/kit-cover-photo";
+import { GIFT_PACKAGING_PRICE, type KitCartItem } from "@/types/gift-kit";
+
+const PHRASE_ROTATION_MS = 8000;
 
 export function CheckoutSteps() {
   const step = useCheckoutStore((s) => s.step);
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-6 py-6">
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-5 pt-4 pb-40 md:pb-10">
+      {step !== "confirmado" && <StepIndicator current={step} />}
       {step === "resumo" && <StepResumo />}
       {step === "endereco" && <StepEndereco />}
       {step === "pagamento" && <StepPagamento />}
@@ -52,14 +71,90 @@ export function CheckoutSteps() {
   );
 }
 
+const STEP_ORDER: Exclude<CheckoutStep, "confirmado">[] = [
+  "resumo",
+  "endereco",
+  "pagamento",
+];
+
+const STEP_LABELS: Record<Exclude<CheckoutStep, "confirmado">, string> = {
+  resumo: "Resumo",
+  endereco: "Endereço",
+  pagamento: "Pagamento",
+};
+
+function StepIndicator({
+  current,
+}: {
+  current: Exclude<CheckoutStep, "confirmado">;
+}) {
+  const setStep = useCheckoutStore((s) => s.setStep);
+  const currentIdx = STEP_ORDER.indexOf(current);
+
+  return (
+    <nav
+      aria-label="Etapas do checkout"
+      className="flex items-center gap-1.5 text-[12px]"
+    >
+      {STEP_ORDER.map((step, idx) => {
+        const isActive = idx === currentIdx;
+        const isDone = idx < currentIdx;
+        const isClickable = isDone;
+        return (
+          <div key={step} className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled={!isClickable}
+              onClick={() => isClickable && setStep(step)}
+              aria-current={isActive ? "step" : undefined}
+              aria-label={STEP_LABELS[step]}
+              className={cn(
+                "flex h-7 items-center gap-1.5 rounded-pill font-semibold transition-all",
+                isActive && "bg-olive-900 px-2.5 text-paper-50",
+                isDone && "cursor-pointer px-1 text-olive-900 hover:bg-paper-100",
+                !isActive && !isDone && "px-1 text-olive-700/50",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold",
+                  isActive && "bg-paper-50 text-olive-900",
+                  isDone && "bg-leaf-500 text-paper-50",
+                  !isActive && !isDone && "bg-paper-100 text-olive-700/60",
+                )}
+              >
+                {isDone ? (
+                  <Check className="h-2.5 w-2.5" strokeWidth={3} aria-hidden="true" />
+                ) : (
+                  idx + 1
+                )}
+              </span>
+              {isActive && <span>{STEP_LABELS[step]}</span>}
+            </button>
+            {idx < STEP_ORDER.length - 1 && (
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "h-px w-4 md:w-6",
+                  idx < currentIdx ? "bg-leaf-500" : "bg-divider",
+                )}
+              />
+            )}
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
 /** Taxa de entrega mock para o step de resumo (sem endereço selecionado ainda). */
 const MOCK_SHIPPING_FEE = 0;
 
 function StepResumo() {
   const items = useCartStore((s) => s.items);
+  const kits = useCartStore((s) => s.kits);
   const setStep = useCheckoutStore((s) => s.setStep);
 
-  // Cupom centralizado no store — sincronizado com o painel lateral
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
   const applyCoupon = useCartStore((s) => s.applyCoupon);
   const removeCoupon = useCartStore((s) => s.removeCoupon);
@@ -67,25 +162,45 @@ function StepResumo() {
 
   const [code, setCode] = useState("");
   const [inputError, setInputError] = useState(false);
+  const [couponOpen, setCouponOpen] = useState(false);
 
-  if (items.length === 0) return <EmptyCart />;
+  if (items.length === 0 && kits.length === 0) return <EmptyCart />;
 
-  const subtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
-  const savings = items.reduce(
-    (acc, i) => acc + (i.product.price_ifood - i.product.price_site) * i.quantity,
+  const itemsSubtotal = items.reduce(
+    (acc, i) => acc + i.product.price_site * i.quantity,
     0,
   );
+  const kitsSubtotal = kits.reduce((acc, k) => acc + kitLinePrice(k), 0);
+  const subtotal = itemsSubtotal + kitsSubtotal;
+
+  const itemsSavings = items.reduce(
+    (acc, i) =>
+      acc + (i.product.price_ifood - i.product.price_site) * i.quantity,
+    0,
+  );
+  const kitsSavings = kits.reduce(
+    (acc, k) => acc + (kitLinePriceIfoodAnchor(k) - kitLinePrice(k)),
+    0,
+  );
+  const savings = itemsSavings + kitsSavings;
 
   const cartCtx = { subtotal, shippingFee: MOCK_SHIPPING_FEE };
-  const couponDiscount = appliedCoupon ? appliedCoupon.discount(subtotal, cartCtx) : 0;
+  const couponDiscount = appliedCoupon
+    ? appliedCoupon.discount(subtotal, cartCtx)
+    : 0;
   const total = subtotal - couponDiscount;
 
-  // Filtra cupons que não dariam desconto real no contexto atual
-  const applicableCoupons = AVAILABLE_COUPONS.filter((c) => isCouponApplicable(c, cartCtx));
+  const applicableCoupons = AVAILABLE_COUPONS.filter((c) =>
+    isCouponApplicable(c, cartCtx),
+  );
+  const hasApplicableCoupons = applicableCoupons.length > 0;
 
-  const cartIds = useMemo(() => new Set(items.map((i) => i.product.id)), [items]);
+  const cartIds = useMemo(
+    () => new Set(items.map((i) => i.product.id)),
+    [items],
+  );
   const suggestions = useMemo(
-    () => getCrossSellSuggestions(savings, mockProducts, cartIds, 3),
+    () => getCrossSellSuggestions(savings, mockProducts, cartIds, 4),
     [savings, cartIds],
   );
 
@@ -99,203 +214,385 @@ function StepResumo() {
     }
   }
 
+  const showCouponPanel = couponOpen || hasApplicableCoupons || !!appliedCoupon;
+
   return (
     <>
-      <h1 className="font-serif text-h2 text-olive-900 italic">Resumo do pedido</h1>
+      <header className="flex items-center justify-between gap-3">
+        <h1 className="text-[20px] font-bold leading-snug text-olive-900 md:text-[24px]">
+          Seu pedido
+        </h1>
+        <a
+          href="/"
+          className="inline-flex items-center gap-1 text-[12px] font-semibold text-olive-700 transition-colors hover:text-olive-900"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+          cardápio
+        </a>
+      </header>
 
-      <ul className="flex flex-col gap-2" aria-label="Itens do pedido">
-        {items.map((item) => (
-          <CartItemCompact key={item.product.id} item={item} />
-        ))}
-      </ul>
+      {savings > 0 && <SavingsHero savings={savings} />}
 
-      {/* Continuar comprando — abaixo da lista, sem competir com CTA principal */}
-      <a
-        href="/loja"
-        className="inline-flex h-9 w-fit items-center gap-1.5 rounded-md border border-olive-900 px-4 text-[13px] font-semibold text-olive-900 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-        Continuar comprando
-      </a>
+      <section aria-label="Itens do pedido" className="flex flex-col gap-2">
+        <h2 className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
+          {items.length + kits.length}{" "}
+          {items.length + kits.length === 1 ? "item" : "itens"}
+        </h2>
+        <ul className="flex flex-col gap-2">
+          {kits.map((kit) => (
+            <KitCartItemCompact key={kit.cartId} kit={kit} />
+          ))}
+          {items.map((item) => (
+            <CartItemCompact key={item.product.id} item={item} />
+          ))}
+        </ul>
+      </section>
 
-      {/* Campo de cupom — estado vem do store */}
-      {appliedCoupon ? (
-        <div className="flex items-center justify-between rounded-md border border-terra-500/30 bg-terra-500/5 px-3 py-2">
-          <div className="flex items-center gap-1.5 text-[12px] font-semibold text-terra-700">
-            <Tag className="h-3.5 w-3.5" aria-hidden="true" />
-            {appliedCoupon.code} · {appliedCoupon.hint}
-          </div>
+      {suggestions.length > 0 && (
+        <CrossSellRail
+          suggestions={suggestions}
+          onAccept={acceptCrossSell}
+          savings={savings}
+        />
+      )}
+
+      {/* Cupom — fechado por padrão; abre automático se há aplicáveis ou já tem um aplicado */}
+      <section aria-labelledby="cupom-heading" className="flex flex-col gap-2">
+        {!showCouponPanel ? (
           <button
             type="button"
-            aria-label="Remover cupom"
-            onClick={removeCoupon}
-            className="text-olive-700 transition-colors hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
+            onClick={() => setCouponOpen(true)}
+            className="inline-flex h-10 w-fit items-center gap-2 rounded-pill border border-divider bg-paper-50 px-4 text-[13px] font-semibold text-olive-900 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
           >
-            <X className="h-3.5 w-3.5" />
+            <Tag className="h-3.5 w-3.5" aria-hidden="true" />
+            Tem cupom?
           </button>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-1.5">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={code}
-              onChange={(e) => {
-                setCode(e.target.value);
-                setInputError(false);
-              }}
-              onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
-              placeholder="Código de cupom"
-              aria-label="Código de cupom"
-              className={cn(
-                "flex-1 rounded-md border bg-paper-50 px-3 py-2 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus-visible:outline-2 focus-visible:outline-olive-500",
-                inputError ? "border-error" : "border-divider focus:border-terra-500/50",
-              )}
-            />
-            <button
-              type="button"
-              onClick={handleApplyCode}
-              className="rounded-md bg-paper-100 px-4 py-2 text-body-sm font-semibold text-olive-900 transition-colors hover:bg-paper-100/80 focus-visible:outline-2 focus-visible:outline-olive-500"
-            >
-              Aplicar
-            </button>
-          </div>
-          {inputError && (
-            <p className="text-[11px] text-error" role="alert">
-              Cupom inválido.
-            </p>
-          )}
-          {/* Chips apenas dos cupons que gerariam desconto real */}
-          {applicableCoupons.length > 0 && (
-            <div className="flex flex-col gap-1">
-              <p className="text-[10px] font-semibold tracking-wide text-olive-700 uppercase">
-                Cupons disponíveis
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {applicableCoupons.map((c) => (
-                  <button
-                    key={c.code}
-                    type="button"
-                    onClick={() => {
-                      applyCoupon(c.code);
-                      setInputError(false);
-                      setCode("");
-                    }}
-                    className="group inline-flex items-center gap-1 rounded-pill border border-terra-500/30 bg-terra-500/5 px-2 py-0.5 text-[10px] font-semibold text-terra-700 transition-colors hover:border-terra-500 hover:bg-terra-500 hover:text-paper-50"
-                  >
-                    <Tag className="h-2.5 w-2.5" aria-hidden="true" />
-                    {c.code}
-                    <span className="text-terra-700/70 group-hover:text-paper-50/80">
-                      · {c.hint}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Economia — cabeçalho celebrativo */}
-      {savings > 0 && (
-        <div className="flex flex-col gap-1 rounded-md border border-leaf-500/30 bg-leaf-500/5 p-3">
-          <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 text-body-sm font-semibold text-leaf-700">
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
-              Você está economizando
-            </span>
-            <span className="text-body font-bold text-leaf-700">{formatBRL(savings)}</span>
-          </div>
-          <p className="text-[12px] leading-snug text-olive-700">
-            comprando direto aqui em vez do iFood.
-          </p>
-        </div>
-      )}
-
-      {/* Cross-sell — 3 sugestões lado a lado, recomputadas ao vivo */}
-      {suggestions.length > 0 && (
-        <section
-          aria-labelledby="cross-sell-heading"
-          className="flex flex-col gap-2.5 rounded-md border border-leaf-500/30 bg-paper-50 p-3"
-        >
-          <header className="flex items-center justify-between gap-2">
+        ) : (
+          <>
             <h2
-              id="cross-sell-heading"
-              className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-leaf-700"
+              id="cupom-heading"
+              className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase"
             >
-              <Gift className="h-3.5 w-3.5" aria-hidden="true" />
-              Na sua economia dá pra levar
+              Cupom
             </h2>
-            <span className="text-[10px] text-olive-700">
-              até {formatBRL(savings)}
-            </span>
-          </header>
-          <ul className="grid grid-cols-3 gap-2">
-            {suggestions.map((product) => (
-              <li key={product.id}>
+            {appliedCoupon ? (
+              <div className="flex items-center justify-between rounded-xl border border-terra-500/30 bg-terra-500/5 px-3 py-2.5">
+                <div className="flex items-center gap-2 text-[13px] font-semibold text-terra-700">
+                  <Tag className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span>
+                    {appliedCoupon.code}{" "}
+                    <span className="font-normal text-olive-700">
+                      · {appliedCoupon.hint}
+                    </span>
+                  </span>
+                </div>
                 <button
                   type="button"
-                  onClick={() => acceptCrossSell(product)}
-                  aria-label={`Adicionar ${product.name} ao carrinho como brinde da economia`}
-                  className="group flex h-full w-full flex-col gap-1.5 rounded-md border border-leaf-500/30 bg-paper-50 p-2 text-left transition-all hover:border-leaf-500 hover:bg-leaf-500/10 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-leaf-500"
+                  aria-label="Remover cupom"
+                  onClick={removeCoupon}
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
                 >
-                  <div className="relative aspect-square overflow-hidden rounded-sm bg-paper-100">
-                    <ProductPhoto product={product} sizes="100px" />
-                    <span className="absolute top-1 right-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-leaf-500 text-paper-50 shadow-sm group-hover:bg-leaf-700">
-                      <Plus className="h-3 w-3" aria-hidden="true" />
-                    </span>
-                  </div>
-                  <p className="line-clamp-2 text-[11px] font-semibold leading-tight text-olive-900">
-                    {product.name}
-                  </p>
-                  <p className="text-[11px] font-bold text-leaf-700">
-                    {formatBRL(product.price_site)}
-                  </p>
+                  <X className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={code}
+                    onChange={(e) => {
+                      setCode(e.target.value);
+                      setInputError(false);
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
+                    placeholder="Código de cupom"
+                    aria-label="Código de cupom"
+                    className={cn(
+                      "flex-1 rounded-pill border bg-paper-50 px-4 py-2 text-[13px] text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus-visible:outline-2 focus-visible:outline-olive-500",
+                      inputError
+                        ? "border-error"
+                        : "border-divider focus:border-terra-500/50",
+                    )}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCode}
+                    className="rounded-pill bg-olive-900 px-5 text-[13px] font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500"
+                  >
+                    Aplicar
+                  </button>
+                </div>
+                {inputError && (
+                  <p className="text-[11px] text-error" role="alert">
+                    Cupom inválido.
+                  </p>
+                )}
+                {hasApplicableCoupons && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {applicableCoupons.map((c) => (
+                      <button
+                        key={c.code}
+                        type="button"
+                        onClick={() => {
+                          applyCoupon(c.code);
+                          setInputError(false);
+                          setCode("");
+                        }}
+                        className="group inline-flex items-center gap-1 rounded-pill border border-terra-500/30 bg-terra-500/5 px-2.5 py-1 text-[11px] font-semibold text-terra-700 transition-colors hover:border-terra-500 hover:bg-terra-500 hover:text-paper-50"
+                      >
+                        <Tag className="h-2.5 w-2.5" aria-hidden="true" />
+                        {c.code}
+                        <span className="text-terra-700/70 group-hover:text-paper-50/80">
+                          · {c.hint}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </section>
 
       {/* Resumo de valores */}
-      <div className="rounded-xl border border-divider bg-paper-100 p-4">
-        <dl className="flex flex-col gap-2 text-body-sm">
-          <div className="flex justify-between">
-            <dt className="text-olive-700">Subtotal</dt>
-            <dd className="font-semibold text-olive-900">{formatBRL(subtotal)}</dd>
-          </div>
-          {couponDiscount > 0 && (
+      <section aria-labelledby="valores-heading" className="flex flex-col gap-2">
+        <h2
+          id="valores-heading"
+          className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase"
+        >
+          Valores
+        </h2>
+        <div className="rounded-2xl border border-divider bg-paper-50 p-4">
+          <dl className="flex flex-col gap-2 text-body-sm">
             <div className="flex justify-between">
-              <dt className="text-olive-700">Cupom</dt>
-              <dd className="font-semibold text-terra-700">−{formatBRL(couponDiscount)}</dd>
+              <dt className="text-olive-700">Subtotal</dt>
+              <dd className="font-semibold text-olive-900 tabular-nums">
+                {formatBRL(subtotal)}
+              </dd>
             </div>
-          )}
-          <div className="flex justify-between">
-            <dt className="text-olive-700">Entrega</dt>
-            <dd className="font-semibold text-olive-900">Grátis</dd>
-          </div>
-          <div className="mt-1 flex justify-between border-t border-divider pt-2">
-            <dt className="font-semibold text-olive-900">Total</dt>
-            <dd className="text-body font-bold text-olive-900">{formatBRL(total)}</dd>
-          </div>
-        </dl>
-      </div>
+            {couponDiscount > 0 && (
+              <div className="flex justify-between">
+                <dt className="text-olive-700">Cupom</dt>
+                <dd className="font-semibold text-terra-700 tabular-nums">
+                  −{formatBRL(couponDiscount)}
+                </dd>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <dt className="text-olive-700">Entrega</dt>
+              <dd className="font-semibold text-success tabular-nums">
+                Grátis
+              </dd>
+            </div>
+            <div className="mt-1 flex items-baseline justify-between border-t border-divider pt-2.5">
+              <dt className="font-semibold text-olive-900">Total</dt>
+              <dd className="text-h3 font-bold text-olive-900 tabular-nums">
+                {formatBRL(total)}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
 
+      {/* CTA desktop inline — mobile usa sticky bar */}
       <button
         type="button"
         onClick={() => setStep("endereco")}
-        className="inline-flex h-11 items-center justify-center gap-2 rounded-pill bg-olive-900 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500"
+        className="hidden h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex"
       >
         Confirmar endereço
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
       </button>
+
+      <StickyCTA
+        total={total}
+        itemCount={items.reduce((acc, i) => acc + i.quantity, 0) + kits.length}
+        label="Confirmar endereço"
+        onClick={() => setStep("endereco")}
+      />
     </>
   );
 }
 
+function SavingsHero({ savings }: { savings: number }) {
+  const phrases = getPhrasesForSavings(savings);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (phrases.length <= 1) return;
+    const id = window.setInterval(() => {
+      setIndex((i) => (i + 1) % phrases.length);
+    }, PHRASE_ROTATION_MS);
+    return () => window.clearInterval(id);
+  }, [phrases.length]);
+
+  return (
+    <section
+      aria-labelledby="economia-titulo"
+      className="relative overflow-hidden rounded-2xl bg-olive-900 p-5 text-paper-50 shadow-lg md:p-6"
+    >
+      <Sparkles
+        className="pointer-events-none absolute -top-5 -right-5 h-28 w-28 text-terra-500/30"
+        aria-hidden="true"
+        strokeWidth={1}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-terra-500/15 blur-3xl"
+      />
+
+      <div className="relative flex flex-col gap-2">
+        <p
+          id="economia-titulo"
+          className="text-[11px] font-semibold tracking-wide text-terra-500 uppercase"
+        >
+          Você tá economizando
+        </p>
+        <p className="text-[40px] font-extrabold leading-none tracking-tight text-paper-50 md:text-[52px]">
+          {formatBRL(savings)}
+        </p>
+        <p className="text-[12px] text-paper-50/70">
+          comparado ao iFood — direto aqui sai mais em conta.
+        </p>
+        <p
+          key={index}
+          className="mt-1 text-body-sm text-paper-50/85"
+          style={{ animation: "fade-in-up 450ms ease-out" }}
+        >
+          Com essa grana, {phrases[index]}.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+type CrossSellRailProps = {
+  suggestions: typeof mockProducts;
+  onAccept: (product: (typeof mockProducts)[number]) => void;
+  savings: number;
+};
+
+function CrossSellRail({ suggestions, onAccept, savings }: CrossSellRailProps) {
+  return (
+    <section
+      aria-labelledby="cross-sell-heading"
+      className="flex flex-col gap-2"
+    >
+      <header className="flex items-baseline justify-between gap-2">
+        <h2
+          id="cross-sell-heading"
+          className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-olive-700 uppercase"
+        >
+          <Gift className="h-3 w-3 text-leaf-500" aria-hidden="true" />
+          Leve também
+        </h2>
+        <span className="text-[11px] text-olive-700">
+          dá pra pegar até {formatBRL(savings)}
+        </span>
+      </header>
+      <ul className="-mx-3 flex snap-x gap-2 overflow-x-auto scroll-smooth px-3 pb-1 md:mx-0 md:grid md:grid-cols-4 md:gap-2 md:overflow-visible md:px-0">
+        {suggestions.map((product) => (
+          <li
+            key={product.id}
+            className="w-32 shrink-0 snap-start md:w-auto"
+          >
+            <button
+              type="button"
+              onClick={() => onAccept(product)}
+              aria-label={`Adicionar ${product.name} ao carrinho como brinde da economia`}
+              className="group flex h-full w-full flex-col gap-1.5 rounded-xl border border-leaf-500/30 bg-paper-50 p-2 text-left transition-all hover:border-leaf-500 hover:bg-leaf-500/10 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-leaf-500"
+            >
+              <div className="relative aspect-square overflow-hidden rounded-md bg-paper-100">
+                <ProductPhoto product={product} sizes="128px" />
+                <span className="absolute top-1.5 right-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-leaf-500 text-paper-50 shadow-sm group-hover:bg-leaf-700">
+                  <Plus className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={2.5} />
+                </span>
+              </div>
+              <p className="line-clamp-2 text-[12px] font-semibold leading-tight text-olive-900">
+                {product.name}
+              </p>
+              <p className="text-[12px] font-bold text-leaf-700">
+                {formatBRL(product.price_site)}
+              </p>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+type StickyCTAProps = {
+  total: number;
+  itemCount: number;
+  label: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  hideSummary?: boolean;
+};
+
+function StickyCTA({
+  total,
+  itemCount,
+  label,
+  onClick,
+  disabled,
+  hideSummary,
+}: StickyCTAProps) {
+  return (
+    <div
+      className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] z-20 rounded-2xl border border-divider bg-paper-50/95 px-5 py-3 shadow-lg backdrop-blur md:hidden"
+      role="region"
+      aria-label="Ações do pedido"
+    >
+      <div className="mx-auto flex max-w-xl items-center justify-between gap-3">
+        {!hideSummary && (
+          <div className="flex min-w-0 flex-col leading-tight">
+            <span className="text-[10px] font-semibold tracking-wide text-olive-700 uppercase">
+              {itemCount} {itemCount === 1 ? "item" : "itens"}
+            </span>
+            <span className="text-[15px] font-bold text-olive-900 tabular-nums">
+              {formatBRL(total)}
+            </span>
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={onClick}
+          disabled={disabled}
+          className={cn(
+            "inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-pill px-4 text-[13px] font-semibold text-paper-50 transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
+            disabled
+              ? "cursor-not-allowed bg-sage-300"
+              : "bg-terra-500 hover:bg-terra-700",
+          )}
+        >
+          {label}
+          <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function isGuestIdentityValid(g: {
+  firstName: string;
+  email: string;
+  phone: string;
+} | null): boolean {
+  if (!g) return false;
+  const nameOk = g.firstName.trim().length >= 2;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(g.email.trim());
+  const phoneOk = g.phone.replace(/\D/g, "").length >= 10;
+  return nameOk && emailOk && phoneOk;
+}
+
 function StepEndereco() {
   const setStep = useCheckoutStore((s) => s.setStep);
+  const guest = useCheckoutStore((s) => s.guest);
+  const { isAuthed } = useSession();
   const addresses = useAddressStore((s) => s.addresses);
   const selectedId = useAddressStore((s) => s.selectedId);
   const selectAddress = useAddressStore((s) => s.selectAddress);
@@ -303,21 +600,33 @@ function StepEndereco() {
 
   const currentAddress = useAddressStore(selectCurrentAddress);
 
-  // Estado do formulário de add/edit
+  const items = useCartStore((s) => s.items);
+  const appliedCoupon = useCartStore((s) => s.appliedCoupon);
+  const subtotal = items.reduce(
+    (acc, i) => acc + i.product.price_site * i.quantity,
+    0,
+  );
+  const shippingFee = currentAddress?.shippingFee ?? 0;
+  const couponDiscount = appliedCoupon
+    ? appliedCoupon.discount(subtotal, { subtotal, shippingFee })
+    : 0;
+  const total = subtotal - couponDiscount + shippingFee;
+  const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
+
   const [formOpen, setFormOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
-  // Estado do diálogo de confirmação de remoção
   const [removeDialogId, setRemoveDialogId] = useState<string | null>(null);
 
-  // Taxa do endereço anterior — para aviso de mudança
   const prevFeeRef = useRef<number>(currentAddress?.shippingFee ?? 0);
   const [showFeeWarning, setShowFeeWarning] = useState(false);
 
   function handleSelect(id: string) {
     const prev = currentAddress?.shippingFee ?? 0;
     selectAddress(id);
-    const next = useAddressStore.getState().addresses.find((a) => a.id === id)?.shippingFee ?? 0;
+    const next =
+      useAddressStore.getState().addresses.find((a) => a.id === id)
+        ?.shippingFee ?? 0;
     setShowFeeWarning(prev !== next);
     prevFeeRef.current = next;
   }
@@ -337,13 +646,29 @@ function StepEndereco() {
     setFormOpen(true);
   }
 
+  const guestComplete = isAuthed || isGuestIdentityValid(guest);
+  const canAdvance = Boolean(selectedId) && guestComplete;
+
   return (
     <>
-      <h1 className="font-serif text-h2 text-olive-900 italic">Endereço de entrega</h1>
+      <header className="flex items-center justify-between gap-3">
+        <h1 className="text-h2 font-bold text-olive-900">
+          Pra onde vai?
+        </h1>
+        <button
+          type="button"
+          onClick={() => setStep("resumo")}
+          className="inline-flex items-center gap-1 text-[12px] font-semibold text-olive-700 transition-colors hover:text-olive-900"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+          voltar
+        </button>
+      </header>
 
-      {/* Indicador do endereço selecionado */}
+      {!isAuthed && <GuestIdentityCard />}
+
       {currentAddress && (
-        <p className="text-[12px] text-olive-700">
+        <p className="text-[13px] text-olive-700">
           Entrega em:{" "}
           <span className="font-semibold text-olive-900">
             {currentAddress.nickname || addressTypeLabel(currentAddress.type)} —{" "}
@@ -352,7 +677,6 @@ function StepEndereco() {
         </p>
       )}
 
-      {/* Lista de endereços selecionáveis */}
       <ul className="flex flex-col gap-2" aria-label="Endereços salvos">
         {addresses.map((address) => {
           const isSelected = address.id === selectedId;
@@ -360,35 +684,39 @@ function StepEndereco() {
             <li key={address.id}>
               <div
                 className={cn(
-                  "relative rounded-xl border p-4 transition-all",
+                  "relative rounded-2xl border p-4 transition-all",
                   isSelected
                     ? "border-olive-500 bg-paper-50 shadow-sm"
                     : "border-divider bg-paper-50 hover:border-olive-500/40",
                 )}
               >
-                {/* Botão de seleção cobre toda a área */}
                 <button
                   type="button"
                   aria-label={`Selecionar endereço: ${address.nickname || addressTypeLabel(address.type)}`}
                   onClick={() => handleSelect(address.id)}
-                  className="absolute inset-0 rounded-xl focus-visible:outline-2 focus-visible:outline-olive-500"
+                  className="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-olive-500"
                 />
 
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <AddressTypeChip type={address.type} />
-                      {address.nickname && address.nickname !== addressTypeLabel(address.type) && (
-                        <p className="text-[13px] font-semibold text-olive-900 leading-snug">
-                          {address.nickname}
-                        </p>
-                      )}
+                      {address.nickname &&
+                        address.nickname !== addressTypeLabel(address.type) && (
+                          <p className="text-[13px] font-semibold leading-snug text-olive-900">
+                            {address.nickname}
+                          </p>
+                        )}
                       {isSelected && (
                         <span
                           aria-label="Selecionado"
                           className="flex h-4 w-4 items-center justify-center rounded-full bg-olive-500"
                         >
-                          <Check className="h-2.5 w-2.5 text-paper-50" strokeWidth={3} aria-hidden="true" />
+                          <Check
+                            className="h-2.5 w-2.5 text-paper-50"
+                            strokeWidth={3}
+                            aria-hidden="true"
+                          />
                         </span>
                       )}
                     </div>
@@ -397,7 +725,8 @@ function StepEndereco() {
                       {address.complement ? ` — ${address.complement}` : ""}
                     </p>
                     <p className="text-[12px] leading-relaxed text-olive-700">
-                      {address.neighborhood} · {address.city}/{address.state} · {address.cep}
+                      {address.neighborhood} · {address.city}/{address.state} ·{" "}
+                      {address.cep}
                     </p>
                     {address.shippingFee > 0 && (
                       <p className="mt-1 text-[11px] font-semibold text-terra-700">
@@ -411,21 +740,20 @@ function StepEndereco() {
                     )}
                   </div>
 
-                  {/* Ações: editar e remover — z acima do botão de seleção */}
                   <div className="relative z-10 flex shrink-0 items-center gap-1">
                     <button
                       type="button"
                       aria-label={`Editar ${address.nickname || addressTypeLabel(address.type)}`}
                       onClick={() => handleEdit(address)}
-                      className="flex h-7 w-7 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
+                      className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
                     >
-                      <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      <ChevronRight className="h-4 w-4" aria-hidden="true" />
                     </button>
                     <button
                       type="button"
                       aria-label={`Remover ${address.nickname || addressTypeLabel(address.type)}`}
                       onClick={() => setRemoveDialogId(address.id)}
-                      className="flex h-7 w-7 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
+                      className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
                     >
                       <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     </button>
@@ -437,24 +765,25 @@ function StepEndereco() {
         })}
       </ul>
 
-      {/* Botão adicionar endereço */}
       <button
         type="button"
         onClick={handleAddNew}
-        className="inline-flex h-9 w-fit items-center gap-1.5 rounded-md border border-dashed border-olive-500/50 px-4 text-[13px] font-semibold text-olive-700 transition-colors hover:border-olive-500 hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
+        className="inline-flex h-10 w-fit items-center gap-1.5 rounded-pill border border-dashed border-olive-500/50 px-4 text-[13px] font-semibold text-olive-700 transition-colors hover:border-olive-500 hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
       >
         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
         Adicionar endereço
       </button>
 
-      {/* Aviso de mudança de taxa */}
       {showFeeWarning && currentAddress && (
         <div
           role="status"
           aria-live="polite"
-          className="flex items-start gap-2 rounded-md border border-warning/40 bg-warning/8 px-3 py-2.5"
+          className="flex items-start gap-2 rounded-xl border border-warning/40 bg-warning/8 px-3 py-2.5"
         >
-          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" aria-hidden="true" />
+          <AlertTriangle
+            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning"
+            aria-hidden="true"
+          />
           <p className="text-[12px] text-olive-900">
             {currentAddress.shippingFee > 0
               ? `Taxa de entrega para este endereço: ${formatBRL(currentAddress.shippingFee)}.`
@@ -463,28 +792,25 @@ function StepEndereco() {
         </div>
       )}
 
-      <div className="flex flex-col gap-3">
-        <button
-          type="button"
-          disabled={!selectedId}
-          onClick={() => setStep("pagamento")}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-pill bg-olive-900 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-500 disabled:cursor-not-allowed disabled:bg-sage-300 focus-visible:outline-2 focus-visible:outline-olive-500"
-        >
-          Ir para pagamento
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </button>
+      {/* CTA desktop inline */}
+      <button
+        type="button"
+        disabled={!canAdvance}
+        onClick={() => setStep("pagamento")}
+        className="hidden h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 disabled:cursor-not-allowed disabled:bg-sage-300 focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex"
+      >
+        Ir para pagamento
+        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+      </button>
 
-        <button
-          type="button"
-          onClick={() => setStep("resumo")}
-          className="inline-flex h-9 items-center justify-center gap-1.5 text-[13px] font-semibold text-olive-700 transition-colors hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-          Voltar
-        </button>
-      </div>
+      <StickyCTA
+        total={total}
+        itemCount={itemCount}
+        label="Ir para pagamento"
+        onClick={() => setStep("pagamento")}
+        disabled={!canAdvance}
+      />
 
-      {/* Modal de formulário de endereço */}
       {formOpen && (
         <AddressFormModal
           initialData={editingAddress}
@@ -492,7 +818,6 @@ function StepEndereco() {
         />
       )}
 
-      {/* AlertDialog de confirmação de remoção */}
       {removeDialogId && (
         <RemoveAddressDialog
           address={addresses.find((a) => a.id === removeDialogId)!}
@@ -508,13 +833,13 @@ function StepEndereco() {
 // Helpers e subcomponentes do StepEndereco
 // ---------------------------------------------------------------------------
 
-function addressTypeLabel(type: AddressType): string {
+export function addressTypeLabel(type: AddressType): string {
   if (type === "casa") return "Casa";
   if (type === "trabalho") return "Trabalho";
   return "Outro";
 }
 
-function AddressTypeChip({ type }: { type: AddressType }) {
+export function AddressTypeChip({ type }: { type: AddressType }) {
   const Icon = type === "casa" ? Home : type === "trabalho" ? Briefcase : MapPin;
   const label = addressTypeLabel(type);
   return (
@@ -537,7 +862,7 @@ type AddressFormModalProps = {
   onClose: () => void;
 };
 
-function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
+export function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
   const addAddress = useAddressStore((s) => s.addAddress);
   const updateAddress = useAddressStore((s) => s.updateAddress);
 
@@ -547,13 +872,14 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
   const [street, setStreet] = useState(initialData?.street ?? "");
   const [number, setNumber] = useState(initialData?.number ?? "");
   const [complement, setComplement] = useState(initialData?.complement ?? "");
-  const [neighborhood, setNeighborhood] = useState(initialData?.neighborhood ?? "");
+  const [neighborhood, setNeighborhood] = useState(
+    initialData?.neighborhood ?? "",
+  );
   const [city, setCity] = useState(initialData?.city ?? "");
   const [state, setState] = useState(initialData?.state ?? "MG");
 
   const isEditing = !!initialData;
 
-  // Fecha com Escape
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -574,7 +900,7 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
       neighborhood,
       city,
       state,
-      shippingFee: 0, // mock — cálculo real virá do backend
+      shippingFee: 0,
     };
     if (isEditing) {
       updateAddress(initialData.id, payload);
@@ -585,7 +911,6 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
   }
 
   return (
-    /* Overlay */
     <div
       role="dialog"
       aria-modal="true"
@@ -595,9 +920,9 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-md rounded-t-lg bg-paper-50 p-6 shadow-lg sm:rounded-lg">
+      <div className="w-full max-w-md rounded-t-2xl bg-paper-50 p-6 shadow-lg sm:rounded-2xl">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-serif text-h3 text-olive-900 italic">
+          <h2 className="text-h3 font-bold text-olive-900">
             {isEditing ? "Editar endereço" : "Novo endereço"}
           </h2>
           <button
@@ -611,12 +936,14 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          {/* Tipo */}
           <fieldset>
-            <legend className="mb-1.5 text-[12px] font-semibold text-olive-900">Tipo</legend>
+            <legend className="mb-1.5 text-[12px] font-semibold text-olive-900">
+              Tipo
+            </legend>
             <div className="flex gap-2">
               {(["casa", "trabalho", "outro"] as AddressType[]).map((t) => {
-                const Icon = t === "casa" ? Home : t === "trabalho" ? Briefcase : MapPin;
+                const Icon =
+                  t === "casa" ? Home : t === "trabalho" ? Briefcase : MapPin;
                 return (
                   <button
                     key={t}
@@ -638,7 +965,6 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
             </div>
           </fieldset>
 
-          {/* Apelido */}
           <FormField
             label="Apelido (opcional)"
             id="addr-nickname"
@@ -647,7 +973,6 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
             placeholder="Ex: Casa da mãe"
           />
 
-          {/* CEP */}
           <FormField
             label="CEP"
             id="addr-cep"
@@ -658,7 +983,6 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
             required
           />
 
-          {/* Logradouro + número */}
           <div className="flex gap-3">
             <div className="flex-1">
               <FormField
@@ -682,7 +1006,6 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
             </div>
           </div>
 
-          {/* Complemento */}
           <FormField
             label="Complemento"
             id="addr-complement"
@@ -691,7 +1014,6 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
             placeholder="Apto, sala, bloco..."
           />
 
-          {/* Bairro */}
           <FormField
             label="Bairro"
             id="addr-neighborhood"
@@ -701,7 +1023,6 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
             required
           />
 
-          {/* Cidade + UF */}
           <div className="flex gap-3">
             <div className="flex-1">
               <FormField
@@ -729,7 +1050,7 @@ function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
           <div className="mt-2 flex gap-3">
             <button
               type="submit"
-              className="inline-flex flex-1 h-10 items-center justify-center rounded-pill bg-olive-900 px-4 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500"
+              className="inline-flex h-10 flex-1 items-center justify-center rounded-pill bg-olive-900 px-4 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500"
             >
               {isEditing ? "Salvar" : "Adicionar"}
             </button>
@@ -757,8 +1078,11 @@ type RemoveAddressDialogProps = {
   onCancel: () => void;
 };
 
-function RemoveAddressDialog({ address, onConfirm, onCancel }: RemoveAddressDialogProps) {
-  // Fecha com Escape
+function RemoveAddressDialog({
+  address,
+  onConfirm,
+  onCancel,
+}: RemoveAddressDialogProps) {
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onCancel();
@@ -773,18 +1097,18 @@ function RemoveAddressDialog({ address, onConfirm, onCancel }: RemoveAddressDial
       aria-modal="true"
       aria-labelledby="remove-addr-title"
       aria-describedby="remove-addr-desc"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-olive-900/40 backdrop-blur-sm px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-olive-900/40 px-4 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget) onCancel();
       }}
     >
-      <div className="w-full max-w-sm rounded-lg bg-paper-50 p-6 shadow-lg">
-        <h2 id="remove-addr-title" className="font-semibold text-body text-olive-900">
+      <div className="w-full max-w-sm rounded-2xl bg-paper-50 p-6 shadow-lg">
+        <h2 id="remove-addr-title" className="text-body font-semibold text-olive-900">
           Remover endereço?
         </h2>
         <p id="remove-addr-desc" className="mt-2 text-[13px] text-olive-700">
-          {address.nickname || addressTypeLabel(address.type)} —{" "}
-          {address.street}, {address.number} será removido permanentemente.
+          {address.nickname || addressTypeLabel(address.type)} — {address.street},{" "}
+          {address.number} será removido permanentemente.
         </p>
         <div className="mt-5 flex justify-end gap-3">
           <button
@@ -836,7 +1160,11 @@ function FormField({
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="text-[12px] font-semibold text-olive-900">
         {label}
-        {required && <span className="ml-0.5 text-error" aria-hidden="true">*</span>}
+        {required && (
+          <span className="ml-0.5 text-error" aria-hidden="true">
+            *
+          </span>
+        )}
       </label>
       <input
         id={id}
@@ -863,15 +1191,23 @@ function StepPagamento() {
   const [cardCvv, setCardCvv] = useState("");
 
   const items = useCartStore((s) => s.items);
+  const kits = useCartStore((s) => s.kits);
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
   const clearCart = useCartStore((s) => s.clearCart);
   const setStep = useCheckoutStore((s) => s.setStep);
   const setOrderId = useCheckoutStore((s) => s.setOrderId);
   const placeOrder = useOrdersStore((s) => s.placeOrder);
+  const placeGifts = useOrdersStore((s) => s.placeGifts);
 
-  const subtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
-  const couponDiscount = appliedCoupon ? appliedCoupon.discount(subtotal) : 0;
+  const itemsSubtotal = items.reduce(
+    (acc, i) => acc + i.product.price_site * i.quantity,
+    0,
+  );
+  const kitsSubtotal = kits.reduce((acc, k) => acc + kitLinePrice(k), 0);
+  const subtotal = itemsSubtotal + kitsSubtotal;
+  const couponDiscount = appliedCoupon ? appliedCoupon.discount(itemsSubtotal) : 0;
   const total = subtotal - couponDiscount;
+  const itemCount = items.reduce((acc, i) => acc + i.quantity, 0) + kits.length;
 
   function formatCardNumber(value: string): string {
     const digits = value.replace(/\D/g, "").slice(0, 16);
@@ -887,16 +1223,26 @@ function StepPagamento() {
   function handleConfirm() {
     const id = `VG-${Date.now().toString(36).toUpperCase()}`;
     placeOrder(items, id);
-    clearCart(); // reseta cupom e crossSellAccepted também
+    placeGifts(kits, id);
+    clearCart();
     setOrderId(id);
     setStep("confirmado");
   }
 
   return (
     <>
-      <h1 className="font-serif text-h2 text-olive-900 italic">Pagamento</h1>
+      <header className="flex items-center justify-between gap-3">
+        <h1 className="text-h2 font-bold text-olive-900">Pagamento</h1>
+        <button
+          type="button"
+          onClick={() => setStep("endereco")}
+          className="inline-flex items-center gap-1 text-[12px] font-semibold text-olive-700 transition-colors hover:text-olive-900"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+          voltar
+        </button>
+      </header>
 
-      {/* Tabs */}
       <div
         role="tablist"
         aria-label="Forma de pagamento"
@@ -921,11 +1267,13 @@ function StepPagamento() {
         ))}
       </div>
 
-      {/* Tab panels */}
       {tab === "cartao" ? (
         <section aria-label="Dados do cartão" className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="card-number" className="text-[12px] font-semibold text-olive-900">
+            <label
+              htmlFor="card-number"
+              className="text-[12px] font-semibold text-olive-900"
+            >
               Número do cartão
             </label>
             <input
@@ -941,7 +1289,10 @@ function StepPagamento() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="card-name" className="text-[12px] font-semibold text-olive-900">
+            <label
+              htmlFor="card-name"
+              className="text-[12px] font-semibold text-olive-900"
+            >
               Nome no cartão
             </label>
             <input
@@ -957,7 +1308,10 @@ function StepPagamento() {
 
           <div className="flex gap-3">
             <div className="flex flex-1 flex-col gap-1.5">
-              <label htmlFor="card-expiry" className="text-[12px] font-semibold text-olive-900">
+              <label
+                htmlFor="card-expiry"
+                className="text-[12px] font-semibold text-olive-900"
+              >
                 Validade
               </label>
               <input
@@ -973,7 +1327,10 @@ function StepPagamento() {
             </div>
 
             <div className="flex w-28 flex-col gap-1.5">
-              <label htmlFor="card-cvv" className="text-[12px] font-semibold text-olive-900">
+              <label
+                htmlFor="card-cvv"
+                className="text-[12px] font-semibold text-olive-900"
+              >
                 CVV
               </label>
               <input
@@ -982,7 +1339,9 @@ function StepPagamento() {
                 inputMode="numeric"
                 autoComplete="cc-csc"
                 value={cardCvv}
-                onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                onChange={(e) =>
+                  setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))
+                }
                 placeholder="123"
                 className="rounded-md border border-divider bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-terra-500/50 focus-visible:outline-2 focus-visible:outline-olive-500"
               />
@@ -990,56 +1349,63 @@ function StepPagamento() {
           </div>
         </section>
       ) : (
-        <section aria-label="Pagamento via PIX" className="flex flex-col items-center gap-4 py-4">
+        <section
+          aria-label="Pagamento via PIX"
+          className="flex flex-col items-center gap-4 py-4"
+        >
           <div
             aria-hidden="true"
-            className="flex h-40 w-40 items-center justify-center rounded-xl border-2 border-dashed border-divider bg-paper-100"
+            className="flex h-40 w-40 items-center justify-center rounded-2xl border-2 border-dashed border-divider bg-paper-100"
           >
             <QrCode className="h-10 w-10 text-olive-500/40" />
           </div>
-          <p className="text-center text-[13px] text-olive-700">QR Code gerado ao confirmar</p>
+          <p className="text-center text-[13px] text-olive-700">
+            QR Code gerado ao confirmar
+          </p>
         </section>
       )}
 
-      {/* Resumo compacto com desconto de cupom quando aplicável */}
-      <div className="flex flex-col gap-1.5 rounded-md border border-divider bg-paper-100 px-4 py-3">
+      <div className="flex flex-col gap-1.5 rounded-2xl border border-divider bg-paper-50 px-4 py-3">
         {couponDiscount > 0 && (
           <div className="flex items-center justify-between text-[12px]">
             <span className="text-olive-700">Subtotal</span>
-            <span className="font-semibold text-olive-900">{formatBRL(subtotal)}</span>
+            <span className="font-semibold text-olive-900 tabular-nums">
+              {formatBRL(subtotal)}
+            </span>
           </div>
         )}
         {couponDiscount > 0 && (
           <div className="flex items-center justify-between text-[12px]">
             <span className="text-olive-700">Cupom</span>
-            <span className="font-semibold text-terra-700">−{formatBRL(couponDiscount)}</span>
+            <span className="font-semibold text-terra-700 tabular-nums">
+              −{formatBRL(couponDiscount)}
+            </span>
           </div>
         )}
-        <div className="flex items-center justify-between">
+        <div className="flex items-baseline justify-between">
           <span className="text-body-sm font-semibold text-olive-900">Total</span>
-          <span className="text-body font-bold text-olive-900">{formatBRL(total)}</span>
+          <span className="text-h3 font-bold text-olive-900 tabular-nums">
+            {formatBRL(total)}
+          </span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
-        <button
-          type="button"
-          onClick={handleConfirm}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-pill bg-olive-900 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500"
-        >
-          <CreditCard className="h-4 w-4" aria-hidden="true" />
-          Efetuar pagamento
-        </button>
+      {/* CTA desktop inline */}
+      <button
+        type="button"
+        onClick={handleConfirm}
+        className="hidden h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex"
+      >
+        <CreditCard className="h-4 w-4" aria-hidden="true" />
+        Efetuar pagamento
+      </button>
 
-        <button
-          type="button"
-          onClick={() => setStep("endereco")}
-          className="inline-flex h-9 items-center justify-center gap-1.5 text-[13px] font-semibold text-olive-700 transition-colors hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-          Voltar
-        </button>
-      </div>
+      <StickyCTA
+        total={total}
+        itemCount={itemCount}
+        label="Efetuar pagamento"
+        onClick={handleConfirm}
+      />
     </>
   );
 }
@@ -1069,7 +1435,11 @@ function StepConfirmado() {
   return (
     <div className="flex flex-col items-center gap-6 py-8 text-center">
       <div className="relative flex h-24 w-24 items-center justify-center">
-        <svg className="absolute inset-0 -rotate-90" viewBox="0 0 96 96" aria-hidden="true">
+        <svg
+          className="absolute inset-0 -rotate-90"
+          viewBox="0 0 96 96"
+          aria-hidden="true"
+        >
           <circle
             cx="48"
             cy="48"
@@ -1089,19 +1459,27 @@ function StepConfirmado() {
           />
         </svg>
         <span className="flex h-20 w-20 items-center justify-center rounded-full bg-olive-900/10">
-          <Check className="h-10 w-10 text-olive-900" aria-hidden="true" strokeWidth={2.5} />
+          <Check
+            className="h-10 w-10 text-olive-900"
+            aria-hidden="true"
+            strokeWidth={2.5}
+          />
         </span>
       </div>
 
       <div className="flex flex-col gap-2">
-        <h1 className="font-serif text-h1 text-olive-900 italic">Pedido confirmado!</h1>
+        <h1 className="text-h1 font-extrabold text-olive-900">
+          Pedido confirmado!
+        </h1>
         {orderId && (
           <p className="text-body-sm text-olive-700">
-            Número do pedido: <span className="font-semibold text-olive-900">{orderId}</span>
+            Número do pedido:{" "}
+            <span className="font-semibold text-olive-900">{orderId}</span>
           </p>
         )}
         <p className="text-body-sm text-olive-700">
-          Previsão de entrega: <span className="font-semibold text-olive-900">~60 min</span>
+          Previsão de entrega:{" "}
+          <span className="font-semibold text-olive-900">~60 min</span>
         </p>
       </div>
 
@@ -1109,7 +1487,7 @@ function StepConfirmado() {
         <button
           type="button"
           onClick={() => goTo("/?tab=a-caminho")}
-          className="inline-flex h-11 w-full items-center justify-center rounded-pill bg-olive-900 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500"
+          className="inline-flex h-11 w-full items-center justify-center rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500"
         >
           Acompanhar pedido
         </button>
@@ -1132,16 +1510,19 @@ function EmptyCart() {
     <div className="flex flex-col items-center gap-4 py-12 text-center">
       <EmptyCartAnimation className="h-48 w-48" />
       <div className="flex flex-col gap-1.5">
-        <h1 className="font-serif text-h2 text-olive-900 italic">Carrinho vazio</h1>
+        <h1 className="text-h2 font-bold text-olive-900">
+          Seu cantinho doce tá esperando
+        </h1>
         <p className="text-body-sm text-olive-700">
-          Escolha um item do cardápio para começar seu pedido.
+          Escolha um bolo, um brigadeiro — e o resto a gente cuida.
         </p>
       </div>
       <button
         type="button"
         onClick={() => router.push("/")}
-        className="inline-flex h-11 items-center justify-center rounded-pill bg-olive-900 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500"
+        className="inline-flex h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500"
       >
+        <ShoppingBag className="h-4 w-4" aria-hidden="true" />
         Ver cardápio
       </button>
     </div>
@@ -1165,78 +1546,332 @@ function CartItemCompact({ item }: { item: CartItem }) {
   }
 
   const isGift = item.fromCrossSell;
+  const unitSite = item.product.price_site;
+  const unitIfood = item.product.price_ifood;
+  const lineTotal = unitSite * item.quantity;
+  const lineSavings = Math.max(0, (unitIfood - unitSite) * item.quantity);
+
   return (
     <li
       className={cn(
-        "flex items-center gap-3 rounded-md border p-3",
+        "flex items-start gap-3 rounded-xl border p-3",
         isGift ? "border-leaf-500/40 bg-leaf-500/5" : "border-divider bg-paper-50",
       )}
     >
-      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-paper-100">
-        <ProductPhoto product={item.product} sizes="48px" />
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-paper-100">
+        <ProductPhoto product={item.product} sizes="64px" />
         {isGift && (
           <span
             aria-hidden="true"
-            className="absolute -top-1 -left-1 flex h-4 w-4 items-center justify-center rounded-full bg-leaf-500 text-paper-50 shadow-sm"
+            className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-leaf-500 text-paper-50 shadow-sm"
           >
-            <Gift className="h-2.5 w-2.5" />
+            <Gift className="h-3 w-3" />
           </span>
         )}
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col leading-snug">
+      <div className="flex min-w-0 flex-1 flex-col gap-1 leading-snug">
         <p className="text-[13px] font-semibold text-olive-900">
           {item.product.name}
         </p>
-        {isGift && (
-          <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-leaf-700">
+        {isGift ? (
+          <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-leaf-700">
             <Gift className="h-2.5 w-2.5" aria-hidden="true" />
             Brinde da economia
           </p>
+        ) : (
+          <div className="flex items-baseline gap-1.5 text-[11px]">
+            <span className="font-semibold text-olive-900 tabular-nums">
+              {formatBRL(unitSite)}
+            </span>
+            {unitIfood > unitSite && (
+              <span className="text-olive-700/60 line-through tabular-nums">
+                {formatBRL(unitIfood)}
+              </span>
+            )}
+            <span className="text-olive-700">· un</span>
+          </div>
         )}
+
+        <div className="mt-1 flex items-center gap-2">
+          <div
+            className="flex items-center gap-1 rounded-pill border border-divider bg-paper-50"
+            role="group"
+            aria-label={`Quantidade de ${item.product.name}`}
+          >
+            <button
+              type="button"
+              aria-label="Diminuir quantidade"
+              onClick={handleDecrement}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
+            >
+              {item.quantity <= 1 ? (
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+              ) : (
+                <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+              )}
+            </button>
+            <span
+              className="w-5 text-center text-[13px] font-semibold tabular-nums text-olive-900"
+              aria-live="polite"
+              aria-label={`${item.quantity} unidades`}
+            >
+              {item.quantity}
+            </span>
+            <button
+              type="button"
+              aria-label="Aumentar quantidade"
+              onClick={handleIncrement}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
+            >
+              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          </div>
+
+          {!isGift && lineSavings > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-pill bg-leaf-500/10 px-2 py-0.5 text-[10px] font-semibold text-leaf-700">
+              −{formatBRL(lineSavings)}
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Stepper inline */}
-      <div className="flex shrink-0 items-center gap-1" role="group" aria-label={`Quantidade de ${item.product.name}`}>
-        <button
-          type="button"
-          aria-label="Diminuir quantidade"
-          onClick={handleDecrement}
-          className="flex h-6 w-6 items-center justify-center rounded-md border border-divider bg-paper-100 text-olive-700 transition-colors hover:border-olive-500 hover:bg-paper-50 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
-        >
-          <Minus className="h-3 w-3" aria-hidden="true" />
-        </button>
-        <span
-          className="w-5 text-center text-[13px] font-semibold tabular-nums text-olive-900"
-          aria-live="polite"
-          aria-label={`${item.quantity} unidades`}
-        >
-          {item.quantity}
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <span className="text-[14px] font-bold text-olive-900 tabular-nums">
+          {formatBRL(lineTotal)}
         </span>
-        <button
-          type="button"
-          aria-label="Aumentar quantidade"
-          onClick={handleIncrement}
-          className="flex h-6 w-6 items-center justify-center rounded-md border border-divider bg-paper-100 text-olive-700 transition-colors hover:border-olive-500 hover:bg-paper-50 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
-        >
-          <Plus className="h-3 w-3" aria-hidden="true" />
-        </button>
       </div>
-
-      {/* Preço atualizado */}
-      <span className="shrink-0 w-16 text-right text-[13px] font-semibold text-olive-900">
-        {formatBRL(item.product.price_site * item.quantity)}
-      </span>
-
-      {/* Botão remover */}
-      <button
-        type="button"
-        aria-label={`Remover ${item.product.name} do pedido`}
-        onClick={() => removeItem(item.product.id)}
-        className="flex shrink-0 h-7 w-7 items-center justify-center rounded-md text-olive-700/60 transition-colors hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
-      >
-        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-      </button>
     </li>
   );
 }
+
+function KitCartItemCompact({ kit }: { kit: KitCartItem }) {
+  const removeKit = useCartStore((s) => s.removeKit);
+  const template = findKitById(kit.templateId);
+  if (!template) return null;
+
+  const linePrice = kitLinePrice(kit);
+  const lineAnchor = kitLinePriceIfoodAnchor(kit);
+  const lineSavings = Math.max(0, lineAnchor - linePrice);
+
+  const picksByLabel = template.slots.map((slot) => {
+    const pick = kit.picks.find((p) => p.slotId === slot.id);
+    const names = (pick?.productIds ?? [])
+      .map((id) => mockProducts.find((p) => p.id === id)?.name)
+      .filter((n): n is string => Boolean(n));
+    return {
+      slotId: slot.id,
+      label: slot.label,
+      names,
+    };
+  });
+
+  return (
+    <li className="flex flex-col gap-3 rounded-xl border-2 border-terra-500/40 bg-terra-500/5 p-3">
+      <div className="flex items-start gap-3">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-paper-100">
+          <KitCoverPhoto photo={template.coverPhoto} sizes="64px" />
+          <span
+            aria-hidden="true"
+            className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-terra-500 text-paper-50 shadow-sm"
+          >
+            <Gift className="h-3 w-3" />
+          </span>
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-snug">
+          <p className="text-[13px] font-bold text-olive-900">{template.name}</p>
+          <p className="text-[11px] text-olive-700">Kit de presente montado</p>
+        </div>
+
+        <div className="flex shrink-0 flex-col items-end gap-0.5">
+          <span className="text-[14px] font-bold text-olive-900 tabular-nums">
+            {formatBRL(linePrice)}
+          </span>
+          {lineSavings > 0 && (
+            <span className="text-[10px] text-olive-700/60 line-through tabular-nums">
+              iFood {formatBRL(lineAnchor)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <ul className="flex flex-col gap-1 rounded-md bg-paper-50 p-3">
+        {picksByLabel.map((row) => (
+          <li key={row.slotId} className="text-[11px] text-olive-900">
+            <span className="font-semibold text-olive-700">{row.label}:</span>{" "}
+            {row.names.join(", ")}
+          </li>
+        ))}
+        {kit.packaging && (
+          <li className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-terra-700">
+            <Package className="h-3 w-3" aria-hidden="true" />
+            Embalagem de presente (+{formatBRL(GIFT_PACKAGING_PRICE)})
+          </li>
+        )}
+        {kit.cardMessage && (
+          <li className="mt-0.5 inline-flex items-start gap-1 text-[11px] text-olive-900">
+            <MessageCircle
+              className="mt-0.5 h-3 w-3 shrink-0 text-terra-500"
+              aria-hidden="true"
+            />
+            <span className="italic">"{kit.cardMessage}"</span>
+          </li>
+        )}
+        {kit.recipient && (
+          <li className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-olive-700">
+            <MapPin className="h-3 w-3 text-terra-500" aria-hidden="true" />
+            entrega pra {kit.recipient.name}
+          </li>
+        )}
+      </ul>
+
+      <div className="flex items-center gap-2">
+        <a
+          href={`/presentear/${template.slug}/montar`}
+          className="inline-flex h-8 items-center gap-1 rounded-pill border border-divider bg-paper-50 px-3 text-[11px] font-semibold text-olive-900 transition-colors hover:bg-paper-100"
+        >
+          Editar escolhas
+        </a>
+        <button
+          type="button"
+          onClick={() => removeKit(kit.cartId)}
+          aria-label={`Remover ${template.name}`}
+          className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-error/10 hover:text-error"
+        >
+          <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
+      </div>
+    </li>
+  );
+}
+
+function GuestIdentityCard() {
+  const guest = useCheckoutStore((s) => s.guest);
+  const setGuest = useCheckoutStore((s) => s.setGuest);
+
+  const [firstName, setFirstName] = useState(guest?.firstName ?? "");
+  const [email, setEmail] = useState(guest?.email ?? "");
+  const [phone, setPhone] = useState(guest?.phone ?? "");
+
+  const valid = isGuestIdentityValid({ firstName, email, phone });
+
+  useEffect(() => {
+    if (valid) {
+      setGuest({ firstName: firstName.trim(), email: email.trim(), phone });
+    } else {
+      setGuest(null);
+    }
+  }, [firstName, email, phone, valid, setGuest]);
+
+  function formatPhone(raw: string): string {
+    const digits = raw.replace(/\D/g, "").slice(0, 11);
+    if (digits.length === 0) return "";
+    if (digits.length <= 2) return `(${digits}`;
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10)
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+
+  return (
+    <section
+      aria-labelledby="guest-identity-title"
+      className="flex flex-col gap-3 rounded-2xl border border-divider bg-paper-50 p-4"
+    >
+      <div className="flex items-start gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-terra-500/10 text-terra-700">
+          <User className="h-4 w-4" aria-hidden="true" />
+        </span>
+        <div className="flex flex-col gap-0.5">
+          <p
+            id="guest-identity-title"
+            className="text-body-sm font-bold text-olive-900"
+          >
+            Pra gente te reconhecer
+          </p>
+          <p className="text-[12px] leading-snug text-olive-700">
+            Nome, e-mail e WhatsApp. Sem cadastro — é só pra gente confirmar a
+            entrega.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-2">
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
+            Primeiro nome
+          </span>
+          <div className="relative">
+            <User
+              className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700/60"
+              aria-hidden="true"
+            />
+            <input
+              type="text"
+              autoComplete="given-name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Ana"
+              className="h-10 w-full rounded-md border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+            />
+          </div>
+        </label>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
+            E-mail
+          </span>
+          <div className="relative">
+            <Mail
+              className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700/60"
+              aria-hidden="true"
+            />
+            <input
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="ana@exemplo.com"
+              className="h-10 w-full rounded-md border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+            />
+          </div>
+        </label>
+
+        <label className="flex flex-col gap-1 sm:col-span-2">
+          <span className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
+            WhatsApp
+          </span>
+          <div className="relative">
+            <Phone
+              className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700/60"
+              aria-hidden="true"
+            />
+            <input
+              type="tel"
+              autoComplete="tel"
+              inputMode="numeric"
+              value={phone}
+              onChange={(e) => setPhone(formatPhone(e.target.value))}
+              placeholder="(31) 99999-9999"
+              className="h-10 w-full rounded-md border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+            />
+          </div>
+        </label>
+      </div>
+
+      {valid && (
+        <p
+          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-leaf-700"
+          role="status"
+          aria-live="polite"
+        >
+          <Check className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={3} />
+          Tudo certo — pode seguir pro endereço.
+        </p>
+      )}
+    </section>
+  );
+}
+
+

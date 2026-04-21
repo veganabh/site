@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Star, Users, Clock, AlertCircle, Truck } from "lucide-react";
+import { Plus, Star, Truck } from "lucide-react";
 import { ProductPhoto } from "@/components/features/product-photo";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
@@ -31,12 +31,11 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
 
   const isSoldOut = product.stock === 0;
   const isLowStock = !isSoldOut && product.stock <= product.lowStockThreshold;
-  const hasCastanha = product.contains?.includes("castanha-de-caju") ?? false;
 
   return (
     <article
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-md border border-divider bg-paper-50 transition-shadow hover:shadow-md",
+        "group relative flex flex-col overflow-hidden rounded-md border border-divider bg-paper-50 transition-shadow md:hover:shadow-md",
         className,
       )}
     >
@@ -44,7 +43,7 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
         <ProductPhoto
           product={product}
           withHoverSecondary
-          className="transition-transform duration-500 group-hover:scale-[1.03]"
+          className="transition-transform duration-500 md:group-hover:scale-[1.03]"
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
@@ -108,20 +107,8 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
         </h3>
         <p className="text-[11px] text-olive-700">
           {CATEGORY_LABEL[product.category]} · {product.gramatura_g}g
+          {product.serves !== undefined && ` · serve ${product.serves}`}
         </p>
-
-        {/* Ícones semióticos — serve/dura/castanha */}
-        <div className="mt-1 flex flex-wrap items-center gap-1">
-          {product.serves !== undefined && (
-            <SemioticChip icon={Users} label={`Serve ${product.serves}`} tone="neutral" />
-          )}
-          {product.daysShelfLife !== undefined && (
-            <SemioticChip icon={Clock} label={`${product.daysShelfLife} dias`} tone="neutral" />
-          )}
-          {hasCastanha && (
-            <SemioticChip icon={AlertCircle} label="castanha" tone="warn" />
-          )}
-        </div>
 
         {/* ETA quando CEP consultado e área coberta */}
         {deliveryQuote?.covered && !isSoldOut && (
@@ -148,23 +135,3 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
   );
 }
 
-type SemioticChipProps = {
-  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
-  label: string;
-  tone: "neutral" | "warn";
-};
-
-function SemioticChip({ icon: Icon, label, tone }: SemioticChipProps) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-pill px-1.5 py-0.5 text-[9px] font-medium",
-        tone === "neutral" && "bg-paper-100 text-olive-700",
-        tone === "warn" && "bg-terra-500/15 text-terra-700",
-      )}
-    >
-      <Icon className="h-2.5 w-2.5" aria-hidden />
-      {label}
-    </span>
-  );
-}

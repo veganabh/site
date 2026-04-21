@@ -122,7 +122,7 @@ export default function GestaoPage() {
       {/* Header da área */}
       <div className="flex flex-col gap-1">
         <h1 className="text-h2 font-bold text-olive-900">Gestão</h1>
-        <p className="font-serif italic text-body-lg text-olive-700">
+        <p className="text-body-lg italic text-olive-700">
           Painel interno da Vegana BH.
         </p>
       </div>

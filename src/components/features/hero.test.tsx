@@ -16,10 +16,9 @@ describe("Hero", () => {
     expect(screen.getByText(/Belo Horizonte/i)).toBeInTheDocument();
   });
 
-  it("aplica classes tipográficas do DS (serif italic)", () => {
+  it("aplica classes tipográficas do DS (sans extrabold)", () => {
     render(<Hero />);
     const heading = screen.getByRole("heading", { level: 1 });
-    expect(heading.className).toContain("font-serif");
-    expect(heading.className).toContain("italic");
+    expect(heading.className).toContain("font-extrabold");
   });
 });

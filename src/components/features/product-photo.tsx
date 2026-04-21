@@ -39,7 +39,7 @@ export function ProductPhoto({
           sizes={sizes ?? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"}
           className={cn(
             "object-cover transition-opacity duration-500",
-            showSecondary && "group-hover:opacity-0",
+            showSecondary && "md:group-hover:opacity-0",
             className,
           )}
           priority={priority}
@@ -51,7 +51,7 @@ export function ProductPhoto({
             fill
             sizes={sizes ?? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"}
             className={cn(
-              "object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100",
+              "object-cover opacity-0 transition-opacity duration-500 md:group-hover:opacity-100",
               className,
             )}
           />

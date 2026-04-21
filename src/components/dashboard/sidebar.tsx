@@ -2,9 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, ShoppingBag, ChartLine, Truck, Settings, LayoutDashboard } from "lucide-react";
+import {
+  House,
+  ShoppingBag,
+  ChartLine,
+  Truck,
+  Settings,
+  LayoutDashboard,
+  UserCheck,
+  UserX,
+  LogIn,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart-store";
+import { useDevSessionStore } from "@/stores/dev-session-store";
+import { useSession } from "@/lib/auth/use-session";
+
+const IS_DEV = process.env.NODE_ENV !== "production";
 
 type NavItem = {
   href: string;
@@ -15,7 +29,7 @@ type NavItem = {
   showCartBadge?: boolean;
 };
 
-const NAV_ITEMS: NavItem[] = [
+const BASE_NAV: NavItem[] = [
   { href: "/", label: "Início", icon: House, matcher: (p: string) => p === "/" },
   {
     href: "/carrinho",
@@ -24,19 +38,28 @@ const NAV_ITEMS: NavItem[] = [
     matcher: (p: string) => p.startsWith("/carrinho"),
     showCartBadge: true,
   },
-  {
-    href: "/conta",
-    label: "Conta",
-    icon: ChartLine,
-    matcher: (p: string) => p.startsWith("/conta"),
-  },
-  {
-    href: "/sobre",
-    label: "Entrega",
-    icon: Truck,
-    matcher: (p: string) => p.startsWith("/sobre"),
-  },
 ];
+
+const CONTA_ITEM_AUTHED: NavItem = {
+  href: "/conta",
+  label: "Conta",
+  icon: ChartLine,
+  matcher: (p: string) => p.startsWith("/conta"),
+};
+
+const CONTA_ITEM_ANON: NavItem = {
+  href: "/conta",
+  label: "Entrar",
+  icon: LogIn,
+  matcher: (p: string) => p.startsWith("/conta"),
+};
+
+const SOBRE_ITEM: NavItem = {
+  href: "/sobre",
+  label: "Entrega",
+  icon: Truck,
+  matcher: (p: string) => p.startsWith("/sobre"),
+};
 
 /**
  * Rail lateral do dashboard — ícones verticais com ativo em oliva-escuro.
@@ -48,6 +71,14 @@ export function Sidebar() {
   const cartCount = useCartStore((s) =>
     s.items.reduce((acc, i) => acc + i.quantity, 0),
   );
+  const { isAuthed } = useSession();
+  const toggleAuth = useDevSessionStore((s) => s.toggle);
+
+  const navItems: NavItem[] = [
+    ...BASE_NAV,
+    isAuthed ? CONTA_ITEM_AUTHED : CONTA_ITEM_ANON,
+    SOBRE_ITEM,
+  ];
 
   return (
     <aside
@@ -63,7 +94,7 @@ export function Sidebar() {
       </Link>
 
       <nav className="flex flex-1 flex-col items-center gap-2 pt-8">
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const active = item.matcher(pathname);
           const Icon = item.icon;
           const badgeCount = item.showCartBadge ? cartCount : 0;
@@ -132,6 +163,42 @@ export function Sidebar() {
             strokeWidth={pathname.startsWith("/gestao") ? 2.25 : 1.75}
           />
         </Link>
+
+        {IS_DEV && (
+          <button
+            type="button"
+            onClick={toggleAuth}
+            aria-label={
+              isAuthed
+                ? "Dev: sessão autenticada (clicar pra simular anônimo)"
+                : "Dev: sessão anônima (clicar pra simular logado)"
+            }
+            title={
+              isAuthed
+                ? "Dev · logado (Ana)"
+                : "Dev · anônimo (visitante)"
+            }
+            className={cn(
+              "relative flex h-10 w-10 items-center justify-center rounded-full border transition-colors",
+              isAuthed
+                ? "border-leaf-500/40 bg-leaf-500/10 text-leaf-700 hover:bg-leaf-500/20"
+                : "border-divider bg-paper-100 text-olive-700 hover:bg-paper-50",
+            )}
+          >
+            {isAuthed ? (
+              <UserCheck className="h-[18px] w-[18px]" aria-hidden="true" />
+            ) : (
+              <UserX className="h-[18px] w-[18px]" aria-hidden="true" />
+            )}
+            <span
+              aria-hidden="true"
+              className={cn(
+                "absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-paper-50",
+                isAuthed ? "bg-leaf-500" : "bg-olive-700",
+              )}
+            />
+          </button>
+        )}
 
         <button
           type="button"

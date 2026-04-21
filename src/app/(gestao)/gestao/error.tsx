@@ -15,7 +15,7 @@ export default function GestaoError({ error, reset }: ErrorProps) {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-16 text-center">
-      <h1 className="font-serif italic text-h2 text-olive-900">
+      <h1 className="text-h2 font-bold text-olive-900">
         Algo não carregou direito.
       </h1>
       <p className="mt-4 text-body text-olive-700">

@@ -2,7 +2,6 @@
 
 import {
   ShoppingBag,
-  MoreHorizontal,
   RotateCcw,
   Trash2,
   Minus,
@@ -74,18 +73,11 @@ export function OrderDetailPanel({ className }: OrderDetailPanelProps) {
       )}
     >
       <div className="relative flex flex-1 flex-col gap-3 overflow-hidden px-4 pt-3 pb-4 md:pt-4 xl:sticky xl:top-[72px] xl:h-[calc(100vh-72px)] xl:flex-none">
-        <header className="flex shrink-0 items-center justify-between">
+        <header className="flex shrink-0 items-center">
           <h2 className="inline-flex items-center gap-2 text-body-sm font-semibold text-olive-900">
             <ShoppingBag className="h-4 w-4" aria-hidden="true" />
             Meu pedido
           </h2>
-          <button
-            type="button"
-            aria-label="Opções do pedido"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-full text-olive-700 transition-colors hover:bg-paper-100"
-          >
-            <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
-          </button>
         </header>
 
         <div className="flex shrink-0 gap-0.5 rounded-pill bg-paper-100 p-0.5">

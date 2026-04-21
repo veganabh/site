@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function Sobre() {
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 py-8">
-      <h1 className="font-serif text-h1 text-olive-900 italic">Uma cozinha em Belo Horizonte.</h1>
+      <h1 className="text-h1 font-bold text-olive-900">Uma cozinha em Belo Horizonte.</h1>
       <p className="text-body-lg text-olive-700">
         A história da Veg.ana fica pronta em breve. Enquanto isso, o cardápio te espera.
       </p>

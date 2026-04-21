@@ -2,6 +2,7 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { TopBar } from "@/components/dashboard/top-bar";
 import { OrderDetailPanel } from "@/components/dashboard/order-detail-panel";
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { MiniCartBar } from "@/components/layout/mini-cart-bar";
 import { cn } from "@/lib/utils";
 
 type DashboardShellProps = {
@@ -26,7 +27,7 @@ export function DashboardShell({
   return (
     <div className={cn("flex min-h-screen bg-paper-100/50", className)}>
       <Sidebar />
-      <div className="mx-auto flex w-full flex-1 flex-col pb-20 md:pb-0">
+      <div className="mx-auto flex w-full flex-1 flex-col pb-44 md:pb-0">
         <div className="mx-auto flex w-full flex-1 flex-col px-2 py-2 md:px-3 md:py-3">
           <div className="mx-auto flex w-full flex-1 flex-col rounded-lg border border-divider bg-paper-50 shadow-sm">
             <TopBar />
@@ -37,6 +38,7 @@ export function DashboardShell({
           </div>
         </div>
       </div>
+      <MiniCartBar />
       <BottomNav />
     </div>
   );

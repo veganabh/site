@@ -34,17 +34,29 @@ export default async function Home({ searchParams }: HomeProps) {
     <div className="flex flex-col gap-4">
       <HeroPromo />
 
-      <DeliveryGate />
-
       <section aria-labelledby="categorias" className="flex flex-col gap-2">
         <h2 id="categorias" className="text-h3 font-bold text-olive-900">
           Categorias
         </h2>
-        <CategoryCircles active={active} basePath="/" />
+        <div className="flex items-stretch gap-3">
+          <CategoryCircles
+            active={active}
+            basePath="/"
+            className="min-w-0 flex-1"
+          />
+          <DeliveryGate
+            variant="card"
+            className="hidden w-[300px] shrink-0 md:flex"
+          />
+        </div>
       </section>
 
+      <div className="md:hidden">
+        <DeliveryGate />
+      </div>
+
       <section aria-labelledby="cardapio" className="flex flex-col gap-2.5">
-        <div className="flex items-end justify-between gap-3">
+        <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between md:gap-3">
           <div>
             <h2 id="cardapio" className="text-h3 font-bold text-olive-900">
               {headerLabel}

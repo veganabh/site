@@ -15,17 +15,32 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Foco acessível global */
+/* Foco acessível global — aplicado a elementos interativos não-input.
+   Outline fino (1.5px) no olive-500 com offset pra "respirar" da borda.
+   Sem border-radius aqui: navegadores modernos já arredondam o outline
+   seguindo o border-radius do próprio elemento. */
 *:focus-visible {
-  outline: 2px solid var(--color-olive-500);
+  outline: 1.5px solid color-mix(in oklch, var(--color-olive-500) 55%, transparent);
   outline-offset: 2px;
-  border-radius: var(--radius-xs);
 }
 
-/* Inputs com estilo próprio — foco delegado ao border, sem outline global */
+/* Campos de formulário: anel suave em vez de outline duro.
+   Borda assume a cor olive-500 e ring com 15% de opacidade pra manter A11y
+   sem a agressividade do outline preto/escuro. */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--color-olive-500);
+  box-shadow: 0 0 0 3px
+    color-mix(in oklch, var(--color-olive-500) 18%, transparent);
+}
+
+/* Inputs que já gerenciam próprio foco — sem interferência. */
 [aria-label="Buscar no cardápio"]:focus-visible,
 [aria-label="Código de cupom"]:focus-visible {
   outline: none;
+  box-shadow: none;
 }
 
 /* Anel de contagem regressiva (ex: confirmação de pedido) */

@@ -62,8 +62,6 @@ export type Product = {
   // ── Ícones semióticos ─────────────────────────────────────────────────
   /** Quantas pessoas o item serve. Exibido como "Serve X". */
   serves?: number;
-  /** Validade em dias na geladeira. Exibido como "Dura X dias". */
-  daysShelfLife?: number;
   /** Ingredientes/alérgenos PRESENTES (intolerante a castanha etc.) */
   contains?: readonly ProductContains[];
   /** Se aceita freezer. */
