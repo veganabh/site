@@ -1,0 +1,33 @@
+{
+  "$schema": "https://claude.ai/schemas/settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(npx tsc*)",
+      "Bash(npx prettier*)",
+      "Bash(npx eslint*)",
+      "Bash(npx next *)",
+      "Bash(npx supabase*)",
+      "Bash(npx playwright*)",
+      "Bash(npx vitest*)",
+      "Bash(supabase *)",
+      "Bash(pnpm *)"
+    ],
+    "deny": ["Bash(rm -rf *)", "Bash(git push *)", "Bash(git push --force*)", "Bash(npm publish*)"]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-on-save.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

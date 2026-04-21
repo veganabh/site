@@ -1,0 +1,85 @@
+/* =========================================================================
+ * Design System v1.1 — tokens
+ * Fonte de verdade: ../../Marca/Design System v1.md
+ * Não edite hex aqui sem atualizar o DS no repo raiz.
+ * ========================================================================= */
+
+@theme {
+  /* === PALETA — v1.1 === */
+
+  /* Primárias */
+  --color-olive-900: #2b3210;
+  --color-olive-500: #505631;
+  --color-terra-500: #de6e27;
+
+  /* Secundárias */
+  --color-paper-50: #fbf8ef;
+  --color-paper-100: #e5e2d9;
+  --color-sage-300: #b8c0a8;
+  --color-olive-700: #3c4221;
+  --color-terra-700: #b4551d;
+
+  /* Leaf — verde claro vivo (acento) */
+  --color-leaf-500: #6b9f41;
+  --color-leaf-700: #4e7a2e;
+
+  /* Neutras estruturais */
+  --color-divider: #d6d2c4;
+
+  /* Estados funcionais */
+  --color-success: #5d7a37;
+  --color-warning: #d89527;
+  --color-error: #a63d27;
+  --color-info: #3d5063;
+
+  /* === TIPOGRAFIA === */
+  /* Famílias — variáveis setadas pelo next/font em layout.tsx */
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+  --font-script: var(--font-caveat);
+
+  /* Scale */
+  --text-display: 3rem;
+  --text-display--line-height: 1.1;
+  --text-h1: 2.25rem;
+  --text-h1--line-height: 1.15;
+  --text-h2: 1.75rem;
+  --text-h2--line-height: 1.2;
+  --text-h3: 1.375rem;
+  --text-h3--line-height: 1.25;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.5;
+  --text-body: 1rem;
+  --text-body--line-height: 1.55;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.5;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+  --text-cta: 1rem;
+  --text-cta--line-height: 1;
+  --text-price: 1.25rem;
+  --text-price--line-height: 1;
+  --text-price-big: 2rem;
+  --text-price-big--line-height: 1;
+
+  /* === RADIUS === */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-pill: 9999px;
+
+  /* === SHADOWS === */
+  --shadow-sm: 0 1px 2px rgba(43, 50, 16, 0.06);
+  --shadow-md: 0 4px 12px rgba(43, 50, 16, 0.08);
+  --shadow-lg: 0 12px 32px rgba(43, 50, 16, 0.12);
+}
+
+/* Aliases semânticos — não expostos como classes Tailwind, só como var() */
+:root {
+  --color-text-primary: var(--color-olive-900);
+  --color-text-secondary: var(--color-olive-700);
+  --color-text-inverse: var(--color-paper-50);
+  --color-surface-page: var(--color-paper-50);
+  --color-surface-soft: var(--color-paper-100);
+}
