@@ -32,8 +32,7 @@ textarea:focus-visible,
 select:focus-visible {
   outline: none;
   border-color: var(--color-olive-500);
-  box-shadow: 0 0 0 3px
-    color-mix(in oklch, var(--color-olive-500) 18%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-olive-500) 18%, transparent);
 }
 
 /* Inputs que já gerenciam próprio foco — sem interferência. */
@@ -67,11 +66,22 @@ select:focus-visible {
 
 /* Partículas do PartyPopper — shake leve (CTA "Festa à vista?") */
 @keyframes party-shake {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  20% { transform: translate(-0.4px, -0.8px) rotate(-6deg); }
-  40% { transform: translate(0.6px, -1.2px) rotate(5deg); }
-  60% { transform: translate(-0.5px, -0.6px) rotate(-4deg); }
-  80% { transform: translate(0.3px, -0.4px) rotate(4deg); }
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20% {
+    transform: translate(-0.4px, -0.8px) rotate(-6deg);
+  }
+  40% {
+    transform: translate(0.6px, -1.2px) rotate(5deg);
+  }
+  60% {
+    transform: translate(-0.5px, -0.6px) rotate(-4deg);
+  }
+  80% {
+    transform: translate(0.3px, -0.4px) rotate(4deg);
+  }
 }
 
 /* Respeita preferência de redução de movimento */

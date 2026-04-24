@@ -14,21 +14,27 @@ export const metadata: Metadata = {
 };
 
 type HomeProps = {
-  searchParams: Promise<{ cat?: string; col?: string }>;
+  searchParams: Promise<{ cat?: string; col?: string; q?: string }>;
 };
 
 export default async function Home({ searchParams }: HomeProps) {
-  const { cat, col } = await searchParams;
+  const { cat, col, q } = await searchParams;
   const category = isProductCategory(cat) ? cat : undefined;
   const collection = col ? findCollectionBySlug(col) : undefined;
+  const query = q?.trim() || undefined;
 
   const products = await listProducts({
     category,
     collection: collection?.slug,
+    query,
   });
 
   const active = collection ? collection.slug : (category ?? "all");
-  const headerLabel = collection ? collection.name : "Cardápio";
+  const headerLabel = query
+    ? `Resultados para "${query}"`
+    : collection
+      ? collection.name
+      : "Cardápio";
 
   return (
     <div className="flex flex-col gap-4">
@@ -39,15 +45,8 @@ export default async function Home({ searchParams }: HomeProps) {
           Categorias
         </h2>
         <div className="flex items-stretch gap-3">
-          <CategoryCircles
-            active={active}
-            basePath="/"
-            className="min-w-0 flex-1"
-          />
-          <DeliveryGate
-            variant="card"
-            className="hidden w-[300px] shrink-0 md:flex"
-          />
+          <CategoryCircles active={active} basePath="/" className="min-w-0 flex-1" />
+          <DeliveryGate variant="card" className="hidden w-[300px] shrink-0 md:flex" />
         </div>
       </section>
 

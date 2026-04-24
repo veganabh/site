@@ -28,9 +28,9 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
   const [input, setInput] = useState("");
   const [editing, setEditing] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = setCep(input);
+    const result = await setCep(input);
     if (result) {
       setEditing(false);
       setInput("");
@@ -123,9 +123,7 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
               <X className="h-3 w-3" aria-hidden="true" />
               Fora da área
             </span>
-            <span className="truncate text-[11px] text-olive-700">
-              CEP {quote.cep}
-            </span>
+            <span className="truncate text-[11px] text-olive-700">CEP {quote.cep}</span>
             <button
               type="button"
               onClick={() => {
@@ -153,13 +151,11 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
       <MapPin className="h-3.5 w-3.5 shrink-0 text-olive-700" aria-hidden="true" />
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="flex flex-1 items-center gap-2 min-w-0">
+        <form onSubmit={handleSubmit} className="flex min-w-0 flex-1 items-center gap-2">
           <label htmlFor="delivery-cep" className="sr-only">
             CEP de entrega
           </label>
-          <span className="shrink-0 text-[12px] font-medium text-olive-900">
-            Entregamos aí?
-          </span>
+          <span className="shrink-0 text-[12px] font-medium text-olive-900">Entregamos aí?</span>
           <input
             id="delivery-cep"
             type="text"
@@ -168,7 +164,7 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             maxLength={9}
-            className="min-w-0 flex-1 max-w-[140px] rounded-sm border border-olive-900/20 bg-paper-50 px-2 py-0.5 text-[12px] text-olive-900 placeholder:text-olive-500 focus:border-olive-500/50 focus:outline-none"
+            className="max-w-[140px] min-w-0 flex-1 rounded-sm border border-olive-900/20 bg-paper-50 px-2 py-0.5 text-[12px] text-olive-900 placeholder:text-olive-500 focus:border-olive-500/50 focus:outline-none"
           />
           <button
             type="submit"
@@ -193,14 +189,13 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
       )}
 
       {!showForm && quote && quote.covered && (
-        <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-leaf-700">
             <Check className="h-3 w-3" aria-hidden="true" />
             {quote.neighborhood}
           </span>
           <span className="inline-flex items-center gap-1 text-[12px] text-olive-900">
-            <Clock className="h-3 w-3 text-olive-700" aria-hidden="true" />
-            ~{quote.eta}
+            <Clock className="h-3 w-3 text-olive-700" aria-hidden="true" />~{quote.eta}
           </span>
           <span className="text-[12px] text-olive-700">
             ·{" "}
@@ -221,7 +216,7 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
       )}
 
       {!showForm && quote && !quote.covered && (
-        <div className="flex flex-1 flex-wrap items-center gap-2 min-w-0">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-terra-700">
             <X className="h-3 w-3" aria-hidden="true" />
             Fora da área ainda

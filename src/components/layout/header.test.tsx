@@ -8,10 +8,9 @@ describe("Header", () => {
     expect(screen.getByAltText("Veg.ana")).toBeInTheDocument();
   });
 
-  it("renderiza os 3 links do nav desktop", () => {
+  it("renderiza os 2 links do nav desktop", () => {
     render(<Header />);
     expect(screen.getByRole("link", { name: /cardápio/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /sobre/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /conta/i })).toBeInTheDocument();
   });
 

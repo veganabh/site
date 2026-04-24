@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import type { LottieRefCurrentProps } from "lottie-react";
 
 type LottieModule = typeof import("lottie-react");
-type LottieRef = React.ComponentRef<LottieModule["default"]>;
 
 type EmptyCartAnimationProps = {
   className?: string;
@@ -14,7 +14,7 @@ type EmptyCartAnimationProps = {
 export function EmptyCartAnimation({ className, style }: EmptyCartAnimationProps) {
   const [Lottie, setLottie] = useState<LottieModule["default"] | null>(null);
   const [animationData, setAnimationData] = useState<unknown | null>(null);
-  const ref = useRef<LottieRef>(null);
+  const ref = useRef<LottieRefCurrentProps>(null);
 
   useEffect(() => {
     let cancelled = false;

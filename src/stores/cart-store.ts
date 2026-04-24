@@ -1,10 +1,7 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { Product } from "@/types/product";
-import type {
-  GiftKitPick,
-  GiftKitRecipient,
-  KitCartItem,
-} from "@/types/gift-kit";
+import type { GiftKitPick, GiftKitRecipient, KitCartItem } from "@/types/gift-kit";
 import { GIFT_PACKAGING_PRICE } from "@/types/gift-kit";
 import { findKitById } from "@/lib/mock-gift-kits";
 import { validateCoupon } from "@/lib/coupons";
@@ -79,88 +76,109 @@ function makeCartId(): string {
   return `kit-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export const useCartStore = create<CartStore>((set) => ({
-  items: [],
-  kits: [],
-  appliedCoupon: null,
-  crossSellAccepted: false,
+export const useCartStore = create<CartStore>()(
+  persist(
+    (set) => ({
+      items: [],
+      kits: [],
+      appliedCoupon: null,
+      crossSellAccepted: false,
 
-  addItem: (product) =>
-    set((state) => {
-      const existing = state.items.find((i) => i.product.id === product.id);
-      if (existing) {
-        return {
+      addItem: (product) =>
+        set((state) => {
+          const existing = state.items.find((i) => i.product.id === product.id);
+          if (existing) {
+            return {
+              items: state.items.map((i) =>
+                i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i,
+              ),
+            };
+          }
+          return { items: [...state.items, { product, quantity: 1 }] };
+        }),
+
+      removeItem: (productId) =>
+        set((state) => ({ items: state.items.filter((i) => i.product.id !== productId) })),
+
+      updateQty: (productId, qty) =>
+        set((state) => ({
           items: state.items.map((i) =>
-            i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i,
+            i.product.id === productId ? { ...i, quantity: qty } : i,
           ),
+        })),
+
+      clearCart: () =>
+        set({ items: [], kits: [], appliedCoupon: null, crossSellAccepted: false }),
+
+      addKit: (input) => {
+        const cartId = makeCartId();
+        set((state) => ({
+          kits: [
+            ...state.kits,
+            {
+              cartId,
+              templateId: input.templateId,
+              picks: input.picks,
+              packaging: input.packaging ?? false,
+              cardMessage: input.cardMessage,
+              recipient: input.recipient,
+            },
+          ],
+        }));
+        return cartId;
+      },
+
+      removeKit: (cartId) =>
+        set((state) => ({ kits: state.kits.filter((k) => k.cartId !== cartId) })),
+
+      updateKit: (cartId, patch) =>
+        set((state) => ({
+          kits: state.kits.map((k) => (k.cartId === cartId ? { ...k, ...patch } : k)),
+        })),
+
+      applyCoupon: (code) => {
+        const coupon = validateCoupon(code);
+        if (!coupon) return false;
+        set({ appliedCoupon: coupon });
+        return true;
+      },
+
+      removeCoupon: () => set({ appliedCoupon: null }),
+
+      acceptCrossSell: (product) =>
+        set((state) => {
+          const existing = state.items.find((i) => i.product.id === product.id);
+          const updatedItems = existing
+            ? state.items.map((i) =>
+                i.product.id === product.id
+                  ? { ...i, quantity: i.quantity + 1, fromCrossSell: true }
+                  : i,
+              )
+            : [...state.items, { product, quantity: 1, fromCrossSell: true }];
+          return { items: updatedItems };
+        }),
+    }),
+    {
+      name: "vegana-cart-v1",
+      storage: createJSONStorage(() => localStorage),
+      version: 1,
+      // Persiste só carrinho real. `crossSellAccepted` é flag deprecada (live recompute).
+      partialize: (state) => ({
+        items: state.items,
+        kits: state.kits,
+        appliedCoupon: state.appliedCoupon,
+      }),
+      migrate() {
+        // Shape mudou → reset seguro (evita blob corrupto quebrar /carrinho).
+        return {
+          items: [],
+          kits: [],
+          appliedCoupon: null,
         };
-      }
-      return { items: [...state.items, { product, quantity: 1 }] };
-    }),
-
-  removeItem: (productId) =>
-    set((state) => ({ items: state.items.filter((i) => i.product.id !== productId) })),
-
-  updateQty: (productId, qty) =>
-    set((state) => ({
-      items: state.items.map((i) =>
-        i.product.id === productId ? { ...i, quantity: qty } : i,
-      ),
-    })),
-
-  clearCart: () =>
-    set({ items: [], kits: [], appliedCoupon: null, crossSellAccepted: false }),
-
-  addKit: (input) => {
-    const cartId = makeCartId();
-    set((state) => ({
-      kits: [
-        ...state.kits,
-        {
-          cartId,
-          templateId: input.templateId,
-          picks: input.picks,
-          packaging: input.packaging ?? false,
-          cardMessage: input.cardMessage,
-          recipient: input.recipient,
-        },
-      ],
-    }));
-    return cartId;
-  },
-
-  removeKit: (cartId) =>
-    set((state) => ({ kits: state.kits.filter((k) => k.cartId !== cartId) })),
-
-  updateKit: (cartId, patch) =>
-    set((state) => ({
-      kits: state.kits.map((k) =>
-        k.cartId === cartId ? { ...k, ...patch } : k,
-      ),
-    })),
-
-  applyCoupon: (code) => {
-    const coupon = validateCoupon(code);
-    if (!coupon) return false;
-    set({ appliedCoupon: coupon });
-    return true;
-  },
-
-  removeCoupon: () => set({ appliedCoupon: null }),
-
-  acceptCrossSell: (product) =>
-    set((state) => {
-      const existing = state.items.find((i) => i.product.id === product.id);
-      const updatedItems = existing
-        ? state.items.map((i) =>
-            i.product.id === product.id
-              ? { ...i, quantity: i.quantity + 1, fromCrossSell: true }
-              : i,
-          )
-        : [...state.items, { product, quantity: 1, fromCrossSell: true }];
-      return { items: updatedItems };
-    }),
-}));
+      },
+    },
+  ),
+);
 
 // ── Selectors ────────────────────────────────────────────────────────────
 // Helpers para consumidores agregarem itens avulsos + kits no total.
@@ -183,22 +201,13 @@ export function cartUnitCount(state: Pick<CartStore, "items" | "kits">): number 
 }
 
 export function cartSubtotal(state: Pick<CartStore, "items" | "kits">): number {
-  const itemsSubtotal = state.items.reduce(
-    (acc, i) => acc + i.product.price_site * i.quantity,
-    0,
-  );
+  const itemsSubtotal = state.items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
   const kitsSubtotal = state.kits.reduce((acc, k) => acc + kitLinePrice(k), 0);
   return itemsSubtotal + kitsSubtotal;
 }
 
 export function cartIfoodAnchor(state: Pick<CartStore, "items" | "kits">): number {
-  const itemsAnchor = state.items.reduce(
-    (acc, i) => acc + i.product.price_ifood * i.quantity,
-    0,
-  );
-  const kitsAnchor = state.kits.reduce(
-    (acc, k) => acc + kitLinePriceIfoodAnchor(k),
-    0,
-  );
+  const itemsAnchor = state.items.reduce((acc, i) => acc + i.product.price_ifood * i.quantity, 0);
+  const kitsAnchor = state.kits.reduce((acc, k) => acc + kitLinePriceIfoodAnchor(k), 0);
   return itemsAnchor + kitsAnchor;
 }

@@ -41,10 +41,7 @@ export function AddressManager() {
     >
       <header className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h2
-            id="perfil-enderecos-titulo"
-            className="text-h3 font-bold text-olive-900"
-          >
+          <h2 id="perfil-enderecos-titulo" className="text-h3 font-bold text-olive-900">
             Endereços salvos
           </h2>
           <p className="text-[12px] leading-snug text-olive-700">
@@ -65,9 +62,7 @@ export function AddressManager() {
       {addresses.length === 0 ? (
         <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-divider bg-paper-50 p-6 text-center">
           <MapPin className="h-6 w-6 text-olive-700" aria-hidden="true" />
-          <p className="text-body-sm text-olive-700">
-            Nenhum endereço salvo ainda.
-          </p>
+          <p className="text-body-sm text-olive-700">Nenhum endereço salvo ainda.</p>
         </div>
       ) : (
         <ul className="flex flex-col gap-2" aria-label="Endereços salvos">
@@ -79,38 +74,32 @@ export function AddressManager() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <AddressTypeChip type={address.type} />
-                  {address.nickname &&
-                    address.nickname !== addressTypeLabel(address.type) && (
-                      <p className="text-[13px] font-semibold leading-snug text-olive-900">
-                        {address.nickname}
-                      </p>
-                    )}
+                  {address.nickname && address.nickname !== addressTypeLabel(address.type) && (
+                    <p className="text-[13px] leading-snug font-semibold text-olive-900">
+                      {address.nickname}
+                    </p>
+                  )}
                 </div>
                 <p className="mt-1.5 text-[12px] leading-relaxed text-olive-700">
                   {address.street}, {address.number}
                   {address.complement ? ` — ${address.complement}` : ""}
                 </p>
                 <p className="text-[12px] leading-relaxed text-olive-700">
-                  {address.neighborhood} · {address.city}/{address.state} ·{" "}
-                  {address.cep}
+                  {address.neighborhood} · {address.city}/{address.state} · {address.cep}
                 </p>
                 {address.shippingFee > 0 ? (
                   <p className="mt-1 text-[11px] font-semibold text-terra-700">
                     Taxa de entrega: {formatBRL(address.shippingFee)}
                   </p>
                 ) : (
-                  <p className="mt-1 text-[11px] font-semibold text-success">
-                    Entrega grátis
-                  </p>
+                  <p className="mt-1 text-[11px] font-semibold text-success">Entrega grátis</p>
                 )}
               </div>
 
               <div className="flex shrink-0 items-center gap-1">
                 <button
                   type="button"
-                  aria-label={`Editar ${
-                    address.nickname || addressTypeLabel(address.type)
-                  }`}
+                  aria-label={`Editar ${address.nickname || addressTypeLabel(address.type)}`}
                   onClick={() => handleEdit(address)}
                   className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
                 >
@@ -118,9 +107,7 @@ export function AddressManager() {
                 </button>
                 <button
                   type="button"
-                  aria-label={`Remover ${
-                    address.nickname || addressTypeLabel(address.type)
-                  }`}
+                  aria-label={`Remover ${address.nickname || addressTypeLabel(address.type)}`}
                   onClick={() => setToRemoveId(address.id)}
                   className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-error/10 hover:text-error"
                 >
@@ -132,12 +119,7 @@ export function AddressManager() {
         </ul>
       )}
 
-      {formOpen && (
-        <AddressFormModal
-          initialData={editing}
-          onClose={() => setFormOpen(false)}
-        />
-      )}
+      {formOpen && <AddressFormModal initialData={editing} onClose={() => setFormOpen(false)} />}
 
       {toRemoveId && (
         <div
@@ -150,9 +132,7 @@ export function AddressManager() {
           }}
         >
           <div className="w-full max-w-sm rounded-2xl bg-paper-50 p-6 shadow-lg">
-            <h3 className="text-h3 font-bold text-olive-900">
-              Remover esse endereço?
-            </h3>
+            <h3 className="text-h3 font-bold text-olive-900">Remover esse endereço?</h3>
             <p className="mt-2 text-body-sm text-olive-700">
               A gente não apaga em outros lugares — só daqui da sua lista.
             </p>

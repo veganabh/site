@@ -14,10 +14,16 @@ import { cn } from "@/lib/utils";
 // Campos numéricos ficam como string no formulário (HTML input retorna string).
 // A conversão para number acontece no onSubmit para manter tipagem correta.
 const positiveNum = (msg: string, min = 0) =>
-  z.string().refine((v) => { const n = Number(v); return !isNaN(n) && n > min; }, msg);
+  z.string().refine((v) => {
+    const n = Number(v);
+    return !isNaN(n) && n > min;
+  }, msg);
 
 const nonNegativeNum = (msg: string) =>
-  z.string().refine((v) => { const n = Number(v); return !isNaN(n) && n >= 0; }, msg);
+  z.string().refine((v) => {
+    const n = Number(v);
+    return !isNaN(n) && n >= 0;
+  }, msg);
 
 const produtoSchema = z.object({
   name: z.string().min(2, "Nome precisa ter pelo menos 2 caracteres."),
@@ -35,9 +41,7 @@ const produtoSchema = z.object({
 
 type ProdutoFormValues = z.infer<typeof produtoSchema>;
 
-type ProdutoFormProps =
-  | { mode: "novo" }
-  | { mode: "editar"; product: Product };
+type ProdutoFormProps = { mode: "novo" } | { mode: "editar"; product: Product };
 
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -49,7 +53,6 @@ function toSlug(name: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 }
-
 
 export function ProdutoForm(props: ProdutoFormProps) {
   const router = useRouter();
@@ -309,7 +312,6 @@ export function ProdutoForm(props: ProdutoFormProps) {
     </form>
   );
 }
-
 
 function Field({
   label,

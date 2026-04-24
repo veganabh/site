@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { findKitBySlug } from "@/lib/mock-gift-kits";
@@ -22,5 +23,9 @@ export default async function KitBuilderPage({ params }: PageProps) {
   const kit = findKitBySlug(slug);
   if (!kit) notFound();
 
-  return <KitBuilder slug={slug} />;
+  return (
+    <Suspense fallback={null}>
+      <KitBuilder slug={slug} />
+    </Suspense>
+  );
 }

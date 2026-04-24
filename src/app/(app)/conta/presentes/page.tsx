@@ -21,7 +21,7 @@ export default function PresentesPage() {
           Voltar pra conta
         </Link>
         <div>
-          <h1 className="text-[20px] font-bold leading-snug text-olive-900 md:text-[24px]">
+          <h1 className="text-[20px] leading-snug font-bold text-olive-900 md:text-[24px]">
             Presentes enviados
           </h1>
           <p className="mt-1 text-body-sm text-olive-700">

@@ -10,15 +10,32 @@ export type MockSessionUser = {
   email: string;
   phone: string;
   city: string;
+  /** Papel do usuário — gate da área de gestão. Padrão: "customer". */
+  role: "admin" | "customer";
 };
 
-const INITIAL_USER: MockSessionUser = {
+export const INITIAL_USER: MockSessionUser = {
   id: "mock-ana",
   firstName: "Ana",
   lastName: "Ribeiro",
   email: "ana@exemplo.com",
   phone: "(31) 99999-9999",
   city: "Belo Horizonte",
+  role: "customer",
+};
+
+/**
+ * Seed de usuário admin para testar a área de gestão em dev.
+ * Usar via DevToolbar: trocar de INITIAL_USER para ADMIN_USER e vice-versa.
+ */
+export const ADMIN_MOCK_USER: MockSessionUser = {
+  id: "mock-admin",
+  firstName: "Maria",
+  lastName: "Gestora",
+  email: "admin@vegana.bh",
+  phone: "(31) 99000-0001",
+  city: "Belo Horizonte",
+  role: "admin",
 };
 
 type DevSessionStore = {
@@ -44,8 +61,7 @@ export const useDevSessionStore = create<DevSessionStore>()(
       user: INITIAL_USER,
       setAuthed: (v) => set({ isAuthed: v }),
       toggle: () => set((s) => ({ isAuthed: !s.isAuthed })),
-      updateUser: (patch) =>
-        set((s) => ({ user: { ...s.user, ...patch } })),
+      updateUser: (patch) => set((s) => ({ user: { ...s.user, ...patch } })),
       resetUser: () => set({ user: INITIAL_USER }),
     }),
     { name: "vegana.dev-session" },

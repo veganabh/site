@@ -75,9 +75,7 @@ export function BottomNav() {
                   strokeWidth={active ? 2.25 : 1.75}
                 />
                 {active && (
-                  <span className="text-[13px] font-semibold whitespace-nowrap">
-                    {item.label}
-                  </span>
+                  <span className="text-[13px] font-semibold whitespace-nowrap">{item.label}</span>
                 )}
               </Link>
             </li>

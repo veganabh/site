@@ -106,16 +106,10 @@ function OrderSummaryMini() {
 
   if (items.length === 0) return null;
 
-  const subtotal = items.reduce(
-    (acc, i) => acc + i.product.price_site * i.quantity,
-    0,
-  );
-  const shippingFee =
-    step === "pagamento" ? (currentAddress?.shippingFee ?? 0) : 0;
+  const subtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
+  const shippingFee = step === "pagamento" ? (currentAddress?.shippingFee ?? 0) : 0;
   const cartCtx = { subtotal, shippingFee };
-  const couponDiscount = appliedCoupon
-    ? appliedCoupon.discount(subtotal, cartCtx)
-    : 0;
+  const couponDiscount = appliedCoupon ? appliedCoupon.discount(subtotal, cartCtx) : 0;
   const total = subtotal - couponDiscount + shippingFee;
 
   return (
@@ -153,9 +147,7 @@ function OrderSummaryMini() {
             <p className="min-w-0 flex-1 truncate text-[11px] font-medium text-olive-900">
               {item.product.name}
             </p>
-            <span className="shrink-0 text-[10px] text-olive-700">
-              {item.quantity}×
-            </span>
+            <span className="shrink-0 text-[10px] text-olive-700">{item.quantity}×</span>
             <span className="w-14 shrink-0 text-right text-[11px] font-semibold text-olive-900 tabular-nums">
               {formatBRL(item.product.price_site * item.quantity)}
             </span>
@@ -166,9 +158,7 @@ function OrderSummaryMini() {
       <dl className="flex shrink-0 flex-col gap-1 rounded-sm bg-paper-100 px-2.5 py-2 text-[11px]">
         <div className="flex justify-between">
           <dt className="text-olive-700">Subtotal</dt>
-          <dd className="font-semibold text-olive-900 tabular-nums">
-            {formatBRL(subtotal)}
-          </dd>
+          <dd className="font-semibold text-olive-900 tabular-nums">{formatBRL(subtotal)}</dd>
         </div>
         {appliedCoupon && couponDiscount > 0 && (
           <div className="flex justify-between">
@@ -189,9 +179,7 @@ function OrderSummaryMini() {
         </div>
         <div className="mt-0.5 flex justify-between border-t border-divider pt-1.5">
           <dt className="font-semibold text-olive-900">Total</dt>
-          <dd className="text-[13px] font-bold text-olive-900 tabular-nums">
-            {formatBRL(total)}
-          </dd>
+          <dd className="text-[13px] font-bold text-olive-900 tabular-nums">{formatBRL(total)}</dd>
         </div>
       </dl>
     </section>

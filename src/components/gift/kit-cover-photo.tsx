@@ -13,12 +13,7 @@ type KitCoverPhotoProps = {
  * Foto do kit de presente — reusa o mesmo contrato visual de ProductPhoto
  * mas sem conceito de categoria/placeholder SVG. Fallback: bg-paper-100.
  */
-export function KitCoverPhoto({
-  photo,
-  className,
-  sizes,
-  priority,
-}: KitCoverPhotoProps) {
+export function KitCoverPhoto({ photo, className, sizes, priority }: KitCoverPhotoProps) {
   if (!photo.url.trim()) {
     return <div className="h-full w-full bg-paper-100" aria-label={photo.alt} />;
   }

@@ -7,6 +7,7 @@ export async function listProducts(opts?: {
   tag?: ProductTag;
   collection?: string;
   onlyActive?: boolean;
+  query?: string;
 }): Promise<Product[]> {
   let data: readonly Product[] = mockProducts;
   if (opts?.onlyActive ?? true) data = data.filter((p) => p.active);
@@ -16,13 +17,28 @@ export async function listProducts(opts?: {
     const col = findCollectionBySlug(opts.collection);
     if (!col) return [];
     const byId = new Map(data.map((p) => [p.id, p]));
-    return col.productIds
-      .map((id) => byId.get(id))
-      .filter((p): p is Product => !!p);
+    data = col.productIds.map((id) => byId.get(id)).filter((p): p is Product => !!p);
+  } else {
+    if (opts?.category) data = data.filter((p) => p.category === opts.category);
+    if (opts?.tag) data = data.filter((p) => p.tags.includes(opts.tag!));
   }
 
-  if (opts?.category) data = data.filter((p) => p.category === opts.category);
-  if (opts?.tag) data = data.filter((p) => p.tags.includes(opts.tag!));
+  const q = opts?.query?.trim().toLowerCase();
+  if (q) {
+    data = data.filter((p) => {
+      const haystack = [
+        p.name,
+        p.description,
+        p.category,
+        ...p.tags,
+        ...p.attributes,
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }
+
   return [...data];
 }
 

@@ -4,6 +4,8 @@ import type { KitCartItem, GiftKitRecipient } from "@/types/gift-kit";
 import { findKitById } from "@/lib/mock-gift-kits";
 import { mockProducts } from "@/lib/mock-products";
 import { kitLinePrice } from "./cart-store";
+import { ORDER_CHANNEL_NAME } from "@/stores/admin-orders-store";
+import type { OrderChannelMessage } from "@/stores/admin-orders-store";
 
 export type PlacedItem = {
   productId: string;
@@ -121,8 +123,35 @@ export const useOrdersStore = create<OrdersStore>((set) => ({
 
   markGiftDelivered: (giftId) =>
     set((state) => ({
-      gifts: state.gifts.map((g) =>
-        g.giftId === giftId ? { ...g, status: "entregue" } : g,
-      ),
+      gifts: state.gifts.map((g) => (g.giftId === giftId ? { ...g, status: "entregue" } : g)),
     })),
 }));
+
+// ── BroadcastChannel subscriber (consumidor-only) ──────────────────────────
+// Escuta mudanças de status publicadas pelo useAdminOrdersStore para manter
+// as listas do cliente (PlacedDelivery) sincronizadas na mesma aba/origem.
+// NUNCA publica no canal — só escuta.
+
+if (typeof window !== "undefined") {
+  const ch = new BroadcastChannel(ORDER_CHANNEL_NAME);
+  ch.onmessage = (event: MessageEvent<OrderChannelMessage>) => {
+    const msg = event.data;
+    if (msg.type !== "order:status-change") return;
+
+    const { orderId, nextStatus } = msg;
+
+    // Mapeia status admin (OrderStatus) para status do cliente (PlacedDelivery)
+    if (nextStatus === "A_CAMINHO") {
+      useOrdersStore.getState().markDelivered(orderId);
+      // "a-caminho" no shape legado — re-abrir com status correto via workaround:
+      useOrdersStore.setState((s) => ({
+        deliveries: s.deliveries.map((d) =>
+          d.deliveryId === orderId ? { ...d, status: "a-caminho" } : d,
+        ),
+      }));
+    } else if (nextStatus === "ENTREGUE") {
+      useOrdersStore.getState().markDelivered(orderId);
+    }
+  };
+  // Não fechar — subscriber de longa duração para toda a vida da aba.
+}

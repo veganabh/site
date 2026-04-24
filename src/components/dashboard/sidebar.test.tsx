@@ -20,9 +20,7 @@ describe("Sidebar", () => {
 
   it("lista o item Gestão no sidebar", () => {
     render(<Sidebar />);
-    expect(
-      screen.getByRole("link", { name: /gestão/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /gestão/i })).toBeInTheDocument();
   });
 
   it("marca Gestão como ativo quando pathname começa com /gestao", () => {

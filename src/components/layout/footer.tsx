@@ -25,7 +25,6 @@ function InstagramGlyph(props: React.SVGProps<SVGSVGElement>) {
 }
 
 const INSTITUTIONAL_LINKS = [
-  { href: "/sobre", label: "Sobre" },
   { href: "/contato", label: "Contato" },
   { href: "/termos", label: "Termos" },
   { href: "/privacidade", label: "Privacidade" },

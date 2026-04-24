@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, LogIn, UserCheck, UserX } from "lucide-react";
@@ -24,9 +24,13 @@ export function TopBar({ className }: TopBarProps) {
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    setNow(new Date());
-    const id = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(id);
+    const tick = () => setNow(new Date());
+    const initial = setTimeout(tick, 0);
+    const id = setInterval(tick, 60_000);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(id);
+    };
   }, []);
 
   const hour = now?.getHours() ?? -1;
@@ -47,7 +51,9 @@ export function TopBar({ className }: TopBarProps) {
       </Link>
 
       <div className="ml-2 hidden max-w-lg flex-1 md:block">
-        <SearchBar />
+        <Suspense fallback={null}>
+          <SearchBar />
+        </Suspense>
       </div>
 
       <div className="ml-auto flex items-center gap-2">
@@ -67,9 +73,7 @@ export function TopBar({ className }: TopBarProps) {
               )}
               aria-hidden="true"
             />
-            {isOpen
-              ? `Forno ligado · até ${CLOSE_HOUR}h`
-              : `Forno em pausa · volta ${OPEN_HOUR}h`}
+            {isOpen ? `Forno ligado · até ${CLOSE_HOUR}h` : `Forno em pausa · volta ${OPEN_HOUR}h`}
           </div>
         )}
 
@@ -111,9 +115,7 @@ export function TopBar({ className }: TopBarProps) {
         {isAuthed ? (
           <Link
             href="/conta/perfil"
-            aria-current={
-              pathname.startsWith("/conta/perfil") ? "page" : undefined
-            }
+            aria-current={pathname.startsWith("/conta/perfil") ? "page" : undefined}
             aria-label={`Abrir perfil de ${user?.firstName ?? "usuário"}`}
             className="ml-0.5 flex items-center gap-2.5 rounded-pill border border-divider bg-paper-50 py-1 pr-3 pl-1 transition-colors hover:bg-paper-100"
           >
@@ -121,9 +123,7 @@ export function TopBar({ className }: TopBarProps) {
               {initial}
             </span>
             <div className="hidden leading-tight md:block">
-              <p className="text-[13px] font-semibold text-olive-900">
-                {user?.firstName}
-              </p>
+              <p className="text-[13px] font-semibold text-olive-900">{user?.firstName}</p>
               <p className="text-[11px] text-olive-900/60">{user?.city}</p>
             </div>
           </Link>

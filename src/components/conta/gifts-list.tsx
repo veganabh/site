@@ -44,12 +44,9 @@ function EmptyState() {
         <Gift className="h-5 w-5" aria-hidden="true" />
       </span>
       <div className="flex max-w-sm flex-col gap-1">
-        <p className="text-body font-bold text-olive-900">
-          Nenhum presente enviado ainda.
-        </p>
+        <p className="text-body font-bold text-olive-900">Nenhum presente enviado ainda.</p>
         <p className="text-body-sm text-olive-700">
-          Quando mandar um kit pra alguém, ele aparece aqui com cartão, data e
-          endereço de entrega.
+          Quando mandar um kit pra alguém, ele aparece aqui com cartão, data e endereço de entrega.
         </p>
       </div>
       <Link
@@ -80,9 +77,7 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-snug">
-          <p className="text-[13px] font-bold text-olive-900">
-            {gift.templateName}
-          </p>
+          <p className="text-[13px] font-bold text-olive-900">{gift.templateName}</p>
           <p className="text-[11px] text-olive-700">
             enviado em {formatShortDate(gift.placedAt)} · pedido {gift.orderId}
           </p>
@@ -130,28 +125,22 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
             aria-hidden="true"
           />
           <p className="text-[11px] leading-relaxed text-olive-900 italic">
-            "{gift.cardMessage}"
+            &ldquo;{gift.cardMessage}&rdquo;
           </p>
         </div>
       )}
 
       {gift.recipient && (
         <div className="flex items-start gap-2 rounded-md border border-divider p-3">
-          <MapPin
-            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-terra-500"
-            aria-hidden="true"
-          />
+          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-terra-500" aria-hidden="true" />
           <div className="flex min-w-0 flex-col gap-0.5 text-[11px] leading-snug">
-            <span className="font-semibold text-olive-900">
-              pra {gift.recipient.name}
-            </span>
+            <span className="font-semibold text-olive-900">pra {gift.recipient.name}</span>
             <span className="text-olive-700">
               {gift.recipient.street}, {gift.recipient.number}
               {gift.recipient.complement ? ` — ${gift.recipient.complement}` : ""}
             </span>
             <span className="text-olive-700">
-              {gift.recipient.neighborhood} · {gift.recipient.city}/
-              {gift.recipient.state}
+              {gift.recipient.neighborhood} · {gift.recipient.city}/{gift.recipient.state}
             </span>
           </div>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,21 +11,18 @@ import {
   MapPin,
   Plus,
   Minus,
+  Clock,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
 import { mockProducts } from "@/lib/mock-products";
 import { ProductPhoto } from "@/components/features/product-photo";
 import { useCartStore } from "@/stores/cart-store";
+import { useDeliveryStore } from "@/stores/delivery-store";
 import { findKitBySlug } from "@/lib/mock-gift-kits";
-import {
-  GIFT_CARD_MESSAGE_MAX,
-  GIFT_PACKAGING_PRICE,
-} from "@/types/gift-kit";
-import type {
-  GiftKitRecipient,
-  GiftKitSlot,
-} from "@/types/gift-kit";
+import { GIFT_CARD_MESSAGE_MAX, GIFT_PACKAGING_PRICE } from "@/types/gift-kit";
+import type { GiftKitRecipient, GiftKitSlot } from "@/types/gift-kit";
 import type { Product } from "@/types/product";
 
 type Picks = Record<string, string[]>;
@@ -77,8 +74,20 @@ type KitBuilderProps = {
 
 export function KitBuilder({ slug }: KitBuilderProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const addKit = useCartStore((s) => s.addKit);
+  const ownQuote = useDeliveryStore((s) => s.quote);
   const kit = findKitBySlug(slug);
+
+  const queryIntent = searchParams.get("to");
+  const queryCep = searchParams.get("cep") ?? "";
+  const queryBairro = searchParams.get("bairro") ?? "";
+  const queryCidade = searchParams.get("cidade") ?? "";
+  const queryFeeRaw = searchParams.get("fee");
+  const queryEta = searchParams.get("eta") ?? "";
+
+  const gateFee = queryFeeRaw !== null ? Number(queryFeeRaw) : null;
+  const gateValidated = queryIntent === "self" || queryIntent === "gift";
 
   const [stepIdx, setStepIdx] = useState(0);
   const [picks, setPicks] = useState<Picks>(() =>
@@ -86,8 +95,66 @@ export function KitBuilder({ slug }: KitBuilderProps) {
   );
   const [packaging, setPackaging] = useState(false);
   const [cardMessage, setCardMessage] = useState("");
-  const [sendToRecipient, setSendToRecipient] = useState(false);
-  const [recipient, setRecipient] = useState<GiftKitRecipient>(EMPTY_RECIPIENT);
+  const [sendToRecipient, setSendToRecipient] = useState(queryIntent === "gift");
+  const [recipient, setRecipient] = useState<GiftKitRecipient>(() =>
+    queryIntent === "gift"
+      ? {
+          ...EMPTY_RECIPIENT,
+          cep: queryCep,
+          neighborhood: queryBairro,
+          city: queryCidade || "Belo Horizonte",
+          state: "MG",
+        }
+      : EMPTY_RECIPIENT,
+  );
+  const [recipientCepError, setRecipientCepError] = useState<string | null>(null);
+  const [recipientCepValidating, setRecipientCepValidating] = useState(false);
+  const [recipientCepCovered, setRecipientCepCovered] = useState<boolean | null>(
+    queryIntent === "gift" && gateFee !== null ? true : null,
+  );
+
+  const deliveryChip = useMemo(() => {
+    if (sendToRecipient) {
+      if (recipientCepCovered === true && gateFee !== null) {
+        return {
+          tone: "ok" as const,
+          label: `entrega em ${queryBairro || recipient.neighborhood || "destino"}`,
+          fee: gateFee,
+          eta: queryEta,
+        };
+      }
+      if (recipientCepCovered === false) {
+        return { tone: "error" as const, label: "CEP do destinatário fora da área" };
+      }
+      return { tone: "pending" as const, label: "informe o CEP de quem recebe" };
+    }
+    if (queryIntent === "self" && gateFee !== null) {
+      return {
+        tone: "ok" as const,
+        label: `entrega em ${queryBairro || ownQuote?.neighborhood || "seu endereço"}`,
+        fee: gateFee,
+        eta: queryEta,
+      };
+    }
+    if (ownQuote?.covered) {
+      return {
+        tone: "ok" as const,
+        label: `entrega em ${ownQuote.neighborhood}`,
+        fee: ownQuote.shippingFee,
+        eta: ownQuote.eta,
+      };
+    }
+    return { tone: "pending" as const, label: "sem CEP confirmado" };
+  }, [
+    sendToRecipient,
+    recipientCepCovered,
+    gateFee,
+    queryBairro,
+    queryEta,
+    queryIntent,
+    ownQuote,
+    recipient.neighborhood,
+  ]);
 
   if (!kit) return null;
 
@@ -95,11 +162,12 @@ export function KitBuilder({ slug }: KitBuilderProps) {
   const isLastStep = stepIdx === totalSteps - 1;
   const currentSlot = stepIdx < kit.slots.length ? kit.slots[stepIdx] : null;
 
-  const slotPicks = currentSlot ? picks[currentSlot.id] ?? [] : [];
+  const slotPicks = currentSlot ? (picks[currentSlot.id] ?? []) : [];
   const slotFilled = currentSlot ? slotPicks.length === currentSlot.qty : true;
 
+  const recipientCepOk = !sendToRecipient || recipientCepCovered === true;
   const personalizationValid =
-    !sendToRecipient || isRecipientValid(recipient);
+    (!sendToRecipient || isRecipientValid(recipient)) && recipientCepOk;
 
   const canAdvance = currentSlot ? slotFilled : personalizationValid;
 
@@ -124,6 +192,38 @@ export function KitBuilder({ slug }: KitBuilderProps) {
       next.splice(idx, 1);
       return { ...prev, [slotId]: next };
     });
+  }
+
+  async function handleValidateRecipientCep(cep: string) {
+    const digits = cep.replace(/\D/g, "");
+    if (digits.length !== 8) {
+      setRecipientCepCovered(null);
+      setRecipientCepError(null);
+      return;
+    }
+    setRecipientCepValidating(true);
+    setRecipientCepError(null);
+    try {
+      const result = await useDeliveryStore.getState().lookupCep(cep);
+      if (!result) {
+        setRecipientCepError("Não consegui validar esse CEP.");
+        setRecipientCepCovered(null);
+        return;
+      }
+      setRecipientCepCovered(result.covered);
+      if (result.covered) {
+        setRecipient((r) => ({
+          ...r,
+          neighborhood: r.neighborhood || result.neighborhood,
+          city: r.city || result.city || "Belo Horizonte",
+          state: r.state || "MG",
+        }));
+      } else {
+        setRecipientCepError("Ainda não entregamos nesse CEP.");
+      }
+    } finally {
+      setRecipientCepValidating(false);
+    }
   }
 
   function handleNext() {
@@ -168,7 +268,7 @@ export function KitBuilder({ slug }: KitBuilderProps) {
 
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between gap-3">
-            <h1 className="text-[18px] font-bold leading-tight text-olive-900 md:text-[22px]">
+            <h1 className="text-[18px] leading-tight font-bold text-olive-900 md:text-[22px]">
               {currentSlot ? currentSlot.label : "Finalização"}
             </h1>
             <span className="shrink-0 text-[11px] font-semibold text-olive-700">
@@ -181,6 +281,13 @@ export function KitBuilder({ slug }: KitBuilderProps) {
           {currentSlot?.helper && (
             <p className="text-[12px] text-olive-700">{currentSlot.helper}</p>
           )}
+
+          <DeliveryChip
+            tone={deliveryChip.tone}
+            label={deliveryChip.label}
+            fee={"fee" in deliveryChip ? deliveryChip.fee : undefined}
+            eta={"eta" in deliveryChip ? deliveryChip.eta : undefined}
+          />
         </div>
       </header>
 
@@ -188,12 +295,8 @@ export function KitBuilder({ slug }: KitBuilderProps) {
         <SlotStep
           slot={currentSlot}
           picks={slotPicks}
-          onPick={(productId, isSoldOut) =>
-            handleSlotClick(currentSlot, productId, isSoldOut)
-          }
-          onDecrement={(productId) =>
-            handleSlotDecrement(currentSlot.id, productId)
-          }
+          onPick={(productId, isSoldOut) => handleSlotClick(currentSlot, productId, isSoldOut)}
+          onDecrement={(productId) => handleSlotDecrement(currentSlot.id, productId)}
         />
       ) : (
         <PersonalizationStep
@@ -205,17 +308,18 @@ export function KitBuilder({ slug }: KitBuilderProps) {
           onToggleRecipient={() => setSendToRecipient((v) => !v)}
           recipient={recipient}
           onRecipientChange={setRecipient}
+          onValidateCep={handleValidateRecipientCep}
+          cepValidating={recipientCepValidating}
+          cepCovered={recipientCepCovered}
+          cepError={recipientCepError}
+          gatePreValidated={gateValidated && queryIntent === "gift"}
         />
       )}
 
       <StickyCta
         canAdvance={canAdvance}
         isLastStep={isLastStep}
-        slotCounter={
-          currentSlot
-            ? { current: slotPicks.length, total: currentSlot.qty }
-            : null
-        }
+        slotCounter={currentSlot ? { current: slotPicks.length, total: currentSlot.qty } : null}
         finalPrice={finalPrice}
         onNext={handleNext}
       />
@@ -303,9 +407,7 @@ function SlotStep({ slot, picks, onPick, onDecrement }: SlotStepProps) {
               </button>
 
               <div className="flex flex-1 flex-col gap-1 p-3">
-                <h3 className="text-[13px] font-semibold leading-snug text-olive-900">
-                  {p.name}
-                </h3>
+                <h3 className="text-[13px] leading-snug font-semibold text-olive-900">{p.name}</h3>
                 {p.contains && p.contains.length > 0 && (
                   <p className="text-[10px] text-olive-700">
                     contém {p.contains.slice(0, 2).join(", ")}
@@ -358,6 +460,11 @@ type PersonalizationStepProps = {
   onToggleRecipient: () => void;
   recipient: GiftKitRecipient;
   onRecipientChange: (r: GiftKitRecipient) => void;
+  onValidateCep: (cep: string) => void;
+  cepValidating: boolean;
+  cepCovered: boolean | null;
+  cepError: string | null;
+  gatePreValidated: boolean;
 };
 
 function PersonalizationStep({
@@ -369,6 +476,11 @@ function PersonalizationStep({
   onToggleRecipient,
   recipient,
   onRecipientChange,
+  onValidateCep,
+  cepValidating,
+  cepCovered,
+  cepError,
+  gatePreValidated,
 }: PersonalizationStepProps) {
   return (
     <div className="flex flex-col gap-3">
@@ -399,9 +511,7 @@ function PersonalizationStep({
         </div>
         <textarea
           value={cardMessage}
-          onChange={(e) =>
-            onCardMessageChange(e.target.value.slice(0, GIFT_CARD_MESSAGE_MAX))
-          }
+          onChange={(e) => onCardMessageChange(e.target.value.slice(0, GIFT_CARD_MESSAGE_MAX))}
           rows={3}
           maxLength={GIFT_CARD_MESSAGE_MAX}
           placeholder="Ex: Pra você, que cuidou de mim sem cobrar nada. Aproveita cada pedaço."
@@ -424,7 +534,15 @@ function PersonalizationStep({
       />
 
       {sendToRecipient && (
-        <RecipientForm value={recipient} onChange={onRecipientChange} />
+        <RecipientForm
+          value={recipient}
+          onChange={onRecipientChange}
+          onValidateCep={onValidateCep}
+          cepValidating={cepValidating}
+          cepCovered={cepCovered}
+          cepError={cepError}
+          gatePreValidated={gatePreValidated}
+        />
       )}
 
       <p className="mt-1 text-center text-[11px] text-olive-700">
@@ -443,13 +561,7 @@ type ToggleCardProps = {
   subtitle: string;
 };
 
-function ToggleCard({
-  active,
-  onToggle,
-  icon: Icon,
-  title,
-  subtitle,
-}: ToggleCardProps) {
+function ToggleCard({ active, onToggle, icon: Icon, title, subtitle }: ToggleCardProps) {
   return (
     <button
       type="button"
@@ -491,15 +603,40 @@ function ToggleCard({
 }
 
 // ── Recipient form ───────────────────────────────────────────────────────
+type RecipientFormProps = {
+  value: GiftKitRecipient;
+  onChange: (r: GiftKitRecipient) => void;
+  onValidateCep: (cep: string) => void;
+  cepValidating: boolean;
+  cepCovered: boolean | null;
+  cepError: string | null;
+  gatePreValidated: boolean;
+};
+
 function RecipientForm({
   value,
   onChange,
-}: {
-  value: GiftKitRecipient;
-  onChange: (r: GiftKitRecipient) => void;
-}) {
+  onValidateCep,
+  cepValidating,
+  cepCovered,
+  cepError,
+  gatePreValidated,
+}: RecipientFormProps) {
   const set = <K extends keyof GiftKitRecipient>(k: K, v: GiftKitRecipient[K]) =>
     onChange({ ...value, [k]: v });
+
+  const cepHint = cepError
+    ? { tone: "error" as const, text: cepError }
+    : cepCovered === true
+      ? {
+          tone: "ok" as const,
+          text: gatePreValidated
+            ? "CEP validado — só completar o endereço."
+            : "CEP coberto, frete e ETA confirmados.",
+        }
+      : cepValidating
+        ? { tone: "loading" as const, text: "validando CEP..." }
+        : null;
 
   return (
     <section
@@ -551,13 +688,36 @@ function RecipientForm({
           onChange={(v) => set("neighborhood", v)}
           placeholder="Centro"
         />
-        <TextField
-          label="CEP"
-          value={value.cep}
-          onChange={(v) => set("cep", formatCep(v))}
-          placeholder="30000-000"
-          inputMode="numeric"
-        />
+        <div className="flex flex-col gap-1">
+          <TextField
+            label="CEP"
+            value={value.cep}
+            onChange={(v) => set("cep", formatCep(v))}
+            onBlur={() => onValidateCep(value.cep)}
+            placeholder="30000-000"
+            inputMode="numeric"
+            statusTone={
+              cepError ? "error" : cepCovered === true ? "ok" : cepValidating ? "loading" : null
+            }
+          />
+          {cepHint && (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 text-[11px] font-medium",
+                cepHint.tone === "error" && "text-terra-700",
+                cepHint.tone === "ok" && "text-leaf-700",
+                cepHint.tone === "loading" && "text-olive-700",
+              )}
+            >
+              {cepHint.tone === "error" && <span aria-hidden="true">⚠</span>}
+              {cepHint.tone === "ok" && <Check className="h-3 w-3" aria-hidden="true" />}
+              {cepHint.tone === "loading" && (
+                <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+              )}
+              {cepHint.text}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-[3fr_1fr]">
@@ -582,14 +742,18 @@ function TextField({
   label,
   value,
   onChange,
+  onBlur,
   placeholder,
   inputMode,
+  statusTone = null,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  onBlur?: () => void;
   placeholder?: string;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  statusTone?: "ok" | "error" | "loading" | null;
 }) {
   return (
     <label className="flex flex-col gap-1">
@@ -600,11 +764,57 @@ function TextField({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         placeholder={placeholder}
         inputMode={inputMode}
-        className="h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50"
+        className={cn(
+          "h-10 w-full rounded-md border bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50",
+          statusTone === "ok" && "border-leaf-500",
+          statusTone === "error" && "border-terra-500",
+          statusTone === "loading" && "border-divider",
+          statusTone === null && "border-divider",
+        )}
       />
     </label>
+  );
+}
+
+// ── Delivery chip ────────────────────────────────────────────────────────
+type DeliveryChipProps = {
+  tone: "ok" | "pending" | "error";
+  label: string;
+  fee?: number;
+  eta?: string;
+};
+
+function DeliveryChip({ tone, label, fee, eta }: DeliveryChipProps) {
+  return (
+    <div
+      className={cn(
+        "inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 self-start rounded-pill border px-3 py-1 text-[11.5px]",
+        tone === "ok" && "border-leaf-500/40 bg-leaf-500/10 text-leaf-700",
+        tone === "pending" && "border-divider bg-paper-100 text-olive-700",
+        tone === "error" && "border-terra-500/40 bg-terra-500/10 text-terra-700",
+      )}
+    >
+      <MapPin className="h-3 w-3" aria-hidden="true" />
+      <span className="font-semibold">{label}</span>
+      {eta && (
+        <span className="inline-flex items-center gap-0.5 opacity-80">
+          <Clock className="h-3 w-3" aria-hidden="true" />~{eta}
+        </span>
+      )}
+      {typeof fee === "number" && (
+        <span className="opacity-80">
+          ·{" "}
+          {fee === 0 ? (
+            <span className="font-semibold">frete grátis</span>
+          ) : (
+            <>frete {formatBRL(fee)}</>
+          )}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -617,13 +827,7 @@ type StickyCtaProps = {
   onNext: () => void;
 };
 
-function StickyCta({
-  canAdvance,
-  isLastStep,
-  slotCounter,
-  finalPrice,
-  onNext,
-}: StickyCtaProps) {
+function StickyCta({ canAdvance, isLastStep, slotCounter, finalPrice, onNext }: StickyCtaProps) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-10 border-t border-divider bg-paper-50/95 px-4 py-3 shadow-[0_-8px_24px_-12px_rgba(43,50,16,0.25)] backdrop-blur">
       <div className="mx-auto flex max-w-4xl items-center gap-3">
@@ -654,4 +858,3 @@ function StickyCta({
     </div>
   );
 }
-

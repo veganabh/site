@@ -50,23 +50,18 @@ export default async function KitDetailPage({ params }: PageProps) {
           </div>
         </section>
 
-        <section
-          aria-labelledby="kit-info-titulo"
-          className="flex flex-col gap-4"
-        >
+        <section aria-labelledby="kit-info-titulo" className="flex flex-col gap-4">
           <header className="flex flex-col gap-1.5">
             <h1
               id="kit-info-titulo"
-              className="text-[22px] font-extrabold leading-tight text-olive-900 md:text-[28px]"
+              className="text-[22px] leading-tight font-extrabold text-olive-900 md:text-[28px]"
             >
               {kit.name}
             </h1>
             <p className="text-body-sm text-olive-700">{kit.tagline}</p>
           </header>
 
-          <p className="text-[13px] leading-relaxed text-olive-900">
-            {kit.description}
-          </p>
+          <p className="text-[13px] leading-relaxed text-olive-900">{kit.description}</p>
 
           <div
             aria-label="Preço do kit"
@@ -96,27 +91,19 @@ export default async function KitDetailPage({ params }: PageProps) {
             aria-labelledby="kit-slots-titulo"
             className="flex flex-col gap-2 rounded-xl border border-divider bg-paper-50 p-4"
           >
-            <h2
-              id="kit-slots-titulo"
-              className="text-[13px] font-bold text-olive-900"
-            >
+            <h2 id="kit-slots-titulo" className="text-[13px] font-bold text-olive-900">
               O que vem no kit
             </h2>
             <ul className="flex flex-col gap-1.5">
               {kit.slots.map((s) => (
-                <li
-                  key={s.id}
-                  className="flex items-start gap-2 text-[12px] text-olive-900"
-                >
+                <li key={s.id} className="flex items-start gap-2 text-[12px] text-olive-900">
                   <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sage-300/40 text-[11px] font-bold text-olive-900">
                     {s.qty}
                   </span>
                   <span className="leading-snug">
                     {s.label.replace(/^Escolha (\d+ )?/i, "").replace(/^/, (c) => c.toUpperCase())}
                     {s.helper && (
-                      <span className="block text-[11px] text-olive-700">
-                        {s.helper}
-                      </span>
+                      <span className="block text-[11px] text-olive-700">{s.helper}</span>
                     )}
                   </span>
                 </li>

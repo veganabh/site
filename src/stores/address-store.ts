@@ -84,8 +84,7 @@ export const useAddressStore = create<AddressStore>((set, get) => ({
   removeAddress: (id) =>
     set((state) => {
       const remaining = state.addresses.filter((a) => a.id !== id);
-      const selectedId =
-        state.selectedId === id ? (remaining[0]?.id ?? null) : state.selectedId;
+      const selectedId = state.selectedId === id ? (remaining[0]?.id ?? null) : state.selectedId;
       return { addresses: remaining, selectedId };
     }),
 }));

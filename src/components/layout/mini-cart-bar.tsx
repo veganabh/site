@@ -16,15 +16,11 @@ export function MiniCartBar() {
   const items = useCartStore((s) => s.items);
   const pathname = usePathname() ?? "/";
 
-  const hideRoute =
-    pathname.startsWith("/carrinho") || pathname.startsWith("/gestao");
+  const hideRoute = pathname.startsWith("/carrinho") || pathname.startsWith("/gestao");
   if (hideRoute || items.length === 0) return null;
 
   const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
-  const subtotal = items.reduce(
-    (acc, i) => acc + i.product.price_site * i.quantity,
-    0,
-  );
+  const subtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
 
   return (
     <Link
@@ -42,9 +38,7 @@ export function MiniCartBar() {
         <span className="text-[13px] font-semibold">Ver carrinho</span>
       </span>
       <span className="flex items-center gap-2">
-        <span className="text-[14px] font-bold tabular-nums">
-          {formatBRL(subtotal)}
-        </span>
+        <span className="text-[14px] font-bold tabular-nums">{formatBRL(subtotal)}</span>
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
       </span>
     </Link>

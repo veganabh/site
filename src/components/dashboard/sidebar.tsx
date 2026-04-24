@@ -5,18 +5,21 @@ import { usePathname } from "next/navigation";
 import {
   House,
   ShoppingBag,
-  ChartLine,
-  Truck,
+  CircleUser,
   Settings,
   LayoutDashboard,
   UserCheck,
   UserX,
   LogIn,
+  ChevronsLeft,
+  ChevronsRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LeafLoaderAnimation } from "@/components/features/leaf-loader-animation";
 import { useCartStore } from "@/stores/cart-store";
 import { useDevSessionStore } from "@/stores/dev-session-store";
 import { useSession } from "@/lib/auth/use-session";
+import { useSidebarStore } from "@/stores/sidebar-store";
 
 const IS_DEV = process.env.NODE_ENV !== "production";
 
@@ -43,7 +46,7 @@ const BASE_NAV: NavItem[] = [
 const CONTA_ITEM_AUTHED: NavItem = {
   href: "/conta",
   label: "Conta",
-  icon: ChartLine,
+  icon: CircleUser,
   matcher: (p: string) => p.startsWith("/conta"),
 };
 
@@ -54,46 +57,73 @@ const CONTA_ITEM_ANON: NavItem = {
   matcher: (p: string) => p.startsWith("/conta"),
 };
 
-const SOBRE_ITEM: NavItem = {
-  href: "/sobre",
-  label: "Entrega",
-  icon: Truck,
-  matcher: (p: string) => p.startsWith("/sobre"),
-};
-
 /**
- * Rail lateral do dashboard — ícones verticais com ativo em oliva-escuro.
- * O item "Pedido" exibe badge com quantidade de itens no carrinho quando > 0.
+ * Rail lateral do dashboard — colapsável.
+ *
+ * Collapsed (default): w-16, só ícones.
+ * Expanded: w-56, ícones + labels.
+ *
+ * Estado persiste em `useSidebarStore.publicExpanded`.
  * Só aparece em md+. No mobile, o BottomNav substitui.
  */
 export function Sidebar() {
   const pathname = usePathname() ?? "/";
-  const cartCount = useCartStore((s) =>
-    s.items.reduce((acc, i) => acc + i.quantity, 0),
-  );
+  const cartCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
   const { isAuthed } = useSession();
   const toggleAuth = useDevSessionStore((s) => s.toggle);
+  const expanded = useSidebarStore((s) => s.publicExpanded);
+  const toggleExpanded = useSidebarStore((s) => s.togglePublic);
 
   const navItems: NavItem[] = [
     ...BASE_NAV,
     isAuthed ? CONTA_ITEM_AUTHED : CONTA_ITEM_ANON,
-    SOBRE_ITEM,
   ];
 
   return (
     <aside
       aria-label="Navegação lateral"
-      className="sticky top-0 hidden h-screen w-16 shrink-0 flex-col items-center justify-between border-r border-divider bg-paper-50 py-4 md:flex"
+      className={cn(
+        "sticky top-0 hidden h-screen shrink-0 flex-col justify-between border-r border-divider bg-paper-50 py-4 transition-[width] duration-200 ease-out md:flex",
+        expanded ? "w-56" : "w-16",
+      )}
     >
-      <Link
-        href="/"
-        aria-label="Veg.ana — início"
-        className="flex h-10 w-10 items-center justify-center rounded-lg bg-olive-900 text-paper-50 shadow-sm"
+      {/* Topo: logo + toggle */}
+      <div
+        className={cn(
+          "flex items-center",
+          expanded ? "justify-between px-3" : "justify-center",
+        )}
       >
-        <LeafMark className="h-5 w-5" />
-      </Link>
+        <Link
+          href="/"
+          aria-label="Veg.ana — início"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-olive-900 shadow-sm"
+        >
+          <LeafLoaderAnimation
+            className="h-8 w-8"
+            style={{ filter: "hue-rotate(-55deg) saturate(0.8) brightness(1.05)" }}
+          />
+        </Link>
+        {expanded && (
+          <button
+            type="button"
+            onClick={toggleExpanded}
+            aria-label="Recolher menu"
+            title="Recolher menu"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+          >
+            <ChevronsLeft className="h-4 w-4" aria-hidden="true" />
+          </button>
+        )}
+      </div>
 
-      <nav className="flex flex-1 flex-col items-center gap-2 pt-8">
+      {/* Nav principal */}
+      <nav
+        className={cn(
+          "flex flex-1 flex-col justify-center gap-2",
+          expanded ? "items-stretch px-2" : "items-center",
+        )}
+      >
         {navItems.map((item) => {
           const active = item.matcher(pathname);
           const Icon = item.icon;
@@ -109,59 +139,74 @@ export function Sidebar() {
                   ? `${item.label} — ${badgeCount} ${badgeCount === 1 ? "item" : "itens"} no carrinho`
                   : item.label
               }
-              title={item.label}
+              title={expanded ? undefined : item.label}
               className={cn(
-                "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                "relative flex items-center transition-colors",
+                expanded
+                  ? "h-10 gap-3 rounded-md px-3"
+                  : "h-10 w-10 justify-center self-center rounded-full",
                 active
                   ? "bg-olive-900 text-paper-50 shadow-sm"
                   : "text-olive-700 hover:bg-paper-100 hover:text-olive-900",
               )}
             >
-              <Icon
-                className="h-[18px] w-[18px]"
-                aria-hidden="true"
-                strokeWidth={active ? 2.25 : 1.75}
-              />
-              {badgeCount > 0 && (
-                <span
+              <span className="relative flex shrink-0 items-center justify-center">
+                <Icon
+                  className="h-[18px] w-[18px]"
                   aria-hidden="true"
-                  className={cn(
-                    "absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold leading-none",
-                    active ? "bg-terra-500 text-paper-50" : "bg-terra-500 text-paper-50",
-                  )}
-                >
-                  {badgeCount > 9 ? "9+" : badgeCount}
-                </span>
+                  strokeWidth={active ? 2.25 : 1.75}
+                />
+                {badgeCount > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-terra-500 text-[9px] leading-none font-bold text-paper-50"
+                  >
+                    {badgeCount > 9 ? "9+" : badgeCount}
+                  </span>
+                )}
+              </span>
+              {expanded && (
+                <span className="truncate text-[13px] font-semibold">{item.label}</span>
               )}
             </Link>
           );
         })}
       </nav>
 
-      {/* Separador — área interna */}
-      <div className="flex flex-col items-center gap-2">
+      {/* Rodapé: divider + gestão + dev + settings + toggle (quando collapsed) */}
+      <div
+        className={cn(
+          "flex flex-col gap-2",
+          expanded ? "items-stretch px-2" : "items-center",
+        )}
+      >
         <div
-          className="w-6 border-t border-divider"
+          className={cn("border-t border-divider", expanded ? "w-full" : "w-6 self-center")}
           role="separator"
           aria-label="Área interna"
         />
+
         <Link
           href="/gestao"
           aria-current={pathname.startsWith("/gestao") ? "page" : undefined}
           aria-label="Gestão — painel interno"
-          title="Gestão"
+          title={expanded ? undefined : "Gestão"}
           className={cn(
-            "relative flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+            "relative flex items-center transition-colors",
+            expanded
+              ? "h-10 gap-3 rounded-md px-3"
+              : "h-10 w-10 justify-center self-center rounded-full",
             pathname.startsWith("/gestao")
               ? "bg-olive-900 text-paper-50 shadow-sm"
               : "text-olive-700 hover:bg-paper-100 hover:text-olive-900",
           )}
         >
           <LayoutDashboard
-            className="h-[18px] w-[18px]"
+            className="h-[18px] w-[18px] shrink-0"
             aria-hidden="true"
             strokeWidth={pathname.startsWith("/gestao") ? 2.25 : 1.75}
           />
+          {expanded && <span className="truncate text-[13px] font-semibold">Gestão</span>}
         </Link>
 
         {IS_DEV && (
@@ -173,55 +218,68 @@ export function Sidebar() {
                 ? "Dev: sessão autenticada (clicar pra simular anônimo)"
                 : "Dev: sessão anônima (clicar pra simular logado)"
             }
-            title={
-              isAuthed
-                ? "Dev · logado (Ana)"
-                : "Dev · anônimo (visitante)"
-            }
+            title={isAuthed ? "Dev · logado (Ana)" : "Dev · anônimo (visitante)"}
             className={cn(
-              "relative flex h-10 w-10 items-center justify-center rounded-full border transition-colors",
+              "relative flex items-center border transition-colors",
+              expanded
+                ? "h-10 gap-3 rounded-md px-3"
+                : "h-10 w-10 justify-center self-center rounded-full",
               isAuthed
                 ? "border-leaf-500/40 bg-leaf-500/10 text-leaf-700 hover:bg-leaf-500/20"
                 : "border-divider bg-paper-100 text-olive-700 hover:bg-paper-50",
             )}
           >
-            {isAuthed ? (
-              <UserCheck className="h-[18px] w-[18px]" aria-hidden="true" />
-            ) : (
-              <UserX className="h-[18px] w-[18px]" aria-hidden="true" />
-            )}
-            <span
-              aria-hidden="true"
-              className={cn(
-                "absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-paper-50",
-                isAuthed ? "bg-leaf-500" : "bg-olive-700",
+            <span className="relative flex shrink-0 items-center justify-center">
+              {isAuthed ? (
+                <UserCheck className="h-[18px] w-[18px]" aria-hidden="true" />
+              ) : (
+                <UserX className="h-[18px] w-[18px]" aria-hidden="true" />
               )}
-            />
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "absolute -top-1.5 -right-1.5 h-2.5 w-2.5 rounded-full border-2 border-paper-50",
+                  isAuthed ? "bg-leaf-500" : "bg-olive-700",
+                )}
+              />
+            </span>
+            {expanded && (
+              <span className="truncate text-[12px] font-medium">
+                {isAuthed ? "Dev · logado" : "Dev · anônimo"}
+              </span>
+            )}
           </button>
         )}
 
         <button
           type="button"
           aria-label="Configurações"
-          className="flex h-10 w-10 items-center justify-center rounded-full text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+          title={expanded ? undefined : "Configurações"}
+          className={cn(
+            "flex items-center text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900",
+            expanded
+              ? "h-10 gap-3 rounded-md px-3"
+              : "h-10 w-10 justify-center self-center rounded-full",
+          )}
         >
-          <Settings className="h-[18px] w-[18px]" aria-hidden="true" />
+          <Settings className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
+          {expanded && <span className="truncate text-[13px] font-semibold">Configurações</span>}
         </button>
+
+        {/* Toggle fica no rodapé quando collapsed */}
+        {!expanded && (
+          <button
+            type="button"
+            onClick={toggleExpanded}
+            aria-label="Expandir menu"
+            title="Expandir menu"
+            className="flex h-8 w-8 items-center justify-center self-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+          >
+            <ChevronsRight className="h-4 w-4" aria-hidden="true" />
+          </button>
+        )}
       </div>
     </aside>
   );
 }
 
-function LeafMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <path
-        d="M4 20c0-8 6-14 16-16-1 9-6 15-14 16-.8.1-1.3-.6-1.1-1.3l2-5.2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}

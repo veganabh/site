@@ -6,8 +6,7 @@ import { AddressManager } from "@/components/conta/address-manager";
 
 export const metadata: Metadata = {
   title: "Meus dados — Veg.ana",
-  description:
-    "Edite seus dados de cadastro e gerencie endereços de entrega.",
+  description: "Edite seus dados de cadastro e gerencie endereços de entrega.",
 };
 
 export default function PerfilPage() {
@@ -22,7 +21,7 @@ export default function PerfilPage() {
           Voltar pra conta
         </Link>
         <div>
-          <h1 className="text-[20px] font-bold leading-snug text-olive-900 md:text-[24px]">
+          <h1 className="text-[20px] leading-snug font-bold text-olive-900 md:text-[24px]">
             Meus dados
           </h1>
           <p className="mt-1 text-body-sm text-olive-700">

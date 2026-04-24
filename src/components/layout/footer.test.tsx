@@ -3,9 +3,8 @@ import { render, screen } from "@testing-library/react";
 import { Footer } from "./footer";
 
 describe("Footer", () => {
-  it("renderiza os 4 links institucionais", () => {
+  it("renderiza os 3 links institucionais", () => {
     render(<Footer />);
-    expect(screen.getByRole("link", { name: /sobre/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /contato/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /termos/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /privacidade/i })).toBeInTheDocument();

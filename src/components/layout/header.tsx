@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/", label: "Cardápio" },
-  { href: "/sobre", label: "Sobre" },
   { href: "/conta", label: "Conta" },
 ] as const;
 

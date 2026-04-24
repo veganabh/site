@@ -13,12 +13,12 @@ import {
   ChevronUp,
   Gift,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ProductPhoto } from "@/components/features/product-photo";
 import { EmptyCartAnimation } from "@/components/features/empty-cart-animation";
 import { cn } from "@/lib/utils";
-import { formatBRL, computeSavings } from "@/lib/format";
+import { formatBRL } from "@/lib/format";
 import { AVAILABLE_COUPONS } from "@/lib/coupons";
 import { getCrossSellSuggestions } from "@/lib/cross-sell";
 import { listDeliveryGroups } from "@/lib/mock-orders";
@@ -42,14 +42,11 @@ type OrderDetailPanelProps = { className?: string };
 const TAB_IDS: Tab[] = ["em-preparo", "a-caminho", "entregue"];
 
 export function OrderDetailPanel({ className }: OrderDetailPanelProps) {
-  const [activeTab, setActiveTab] = useState<Tab>("em-preparo");
-
-  useEffect(() => {
-    const raw = new URLSearchParams(window.location.search).get("tab");
-    if (raw && TAB_IDS.includes(raw as Tab)) {
-      setActiveTab(raw as Tab);
-    }
-  }, []);
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    const raw = searchParams?.get("tab");
+    return raw && TAB_IDS.includes(raw as Tab) ? (raw as Tab) : "em-preparo";
+  });
 
   const cartItems = useCartStore((s) => s.items);
   const removeItem = useCartStore((s) => s.removeItem);
@@ -103,24 +100,17 @@ export function OrderDetailPanel({ className }: OrderDetailPanelProps) {
           cartItems.length === 0 ? (
             <EmptyState tab="em-preparo" />
           ) : (
-            <CartView
-              items={cartItems}
-              onRemove={removeItem}
-              onUpdateQty={updateQty}
-            />
+            <CartView items={cartItems} onRemove={removeItem} onUpdateQty={updateQty} />
           )
         ) : activeTab === "entregue" ? (
           deliveredGroups.length === 0 ? (
             <EmptyState tab="entregue" />
           ) : (
-            <>
-              <ul className="flex flex-col gap-2 overflow-y-auto">
-                {deliveredGroups.map((group) => (
-                  <DeliveryCard key={group.deliveryId} group={group} />
-                ))}
-              </ul>
-              <DeliveredSummary groups={deliveredGroups} />
-            </>
+            <ul className="flex flex-col gap-2 overflow-y-auto">
+              {deliveredGroups.map((group) => (
+                <DeliveryCard key={group.deliveryId} group={group} />
+              ))}
+            </ul>
           )
         ) : placedDeliveries.length === 0 ? (
           <EmptyState tab="a-caminho" />
@@ -154,10 +144,7 @@ function CartView({
   const [couponOpen, setCouponOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  const subtotal = items.reduce(
-    (acc, i) => acc + i.product.price_site * i.quantity,
-    0,
-  );
+  const subtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
   const savings = items.reduce(
     (acc, i) => acc + (i.product.price_ifood - i.product.price_site) * i.quantity,
     0,
@@ -255,9 +242,7 @@ function CartView({
             {couponDiscount > 0 && (
               <div className="flex justify-between">
                 <dt className="text-olive-700">Cupom</dt>
-                <dd className="font-semibold text-terra-700">
-                  −{formatBRL(couponDiscount)}
-                </dd>
+                <dd className="font-semibold text-terra-700">−{formatBRL(couponDiscount)}</dd>
               </div>
             )}
             <div className="flex justify-between">
@@ -346,9 +331,7 @@ function CouponSheet({ onClose }: { onClose: () => void }) {
             aria-label="Código de cupom"
             className={cn(
               "flex-1 rounded-md border bg-paper-50 px-3 py-1.5 text-[12px] text-olive-900 outline-none placeholder:text-olive-700",
-              inputError
-                ? "border-red-400"
-                : "border-divider focus:border-terra-500/50",
+              inputError ? "border-red-400" : "border-divider focus:border-terra-500/50",
             )}
           />
           <button
@@ -375,9 +358,7 @@ function CouponSheet({ onClose }: { onClose: () => void }) {
               >
                 <Tag className="h-2.5 w-2.5" aria-hidden="true" />
                 {c.code}
-                <span className="text-terra-700/70 group-hover:text-paper-50/80">
-                  · {c.hint}
-                </span>
+                <span className="text-terra-700/70 group-hover:text-paper-50/80">· {c.hint}</span>
               </button>
             ))}
           </div>
@@ -404,9 +385,7 @@ function CartItemRow({
     <li
       className={cn(
         "flex items-center gap-2.5 rounded-md border p-2 transition-shadow hover:shadow-sm",
-        isGift
-          ? "border-leaf-500/40 bg-leaf-500/5"
-          : "border-divider bg-paper-50",
+        isGift ? "border-leaf-500/40 bg-leaf-500/5" : "border-divider bg-paper-50",
       )}
     >
       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-sm bg-paper-100">
@@ -422,18 +401,14 @@ function CartItemRow({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col leading-tight">
-        <p className="truncate text-[12px] font-semibold text-olive-900">
-          {item.product.name}
-        </p>
+        <p className="truncate text-[12px] font-semibold text-olive-900">{item.product.name}</p>
         {isGift ? (
           <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-leaf-700">
             <Gift className="h-2.5 w-2.5" aria-hidden="true" />
             Brinde da economia
           </p>
         ) : (
-          <p className="text-[10px] text-olive-700">
-            {formatBRL(item.product.price_site)} un
-          </p>
+          <p className="text-[10px] text-olive-700">{formatBRL(item.product.price_site)} un</p>
         )}
       </div>
 
@@ -444,9 +419,7 @@ function CartItemRow({
         <div className="flex items-center gap-0.5 rounded-pill bg-paper-100 p-0.5">
           <button
             type="button"
-            aria-label={
-              isLast ? `Remover ${item.product.name}` : "Diminuir quantidade"
-            }
+            aria-label={isLast ? `Remover ${item.product.name}` : "Diminuir quantidade"}
             onClick={() => (isLast ? onRemove() : onChangeQty(-1))}
             className={cn(
               "inline-flex h-5 w-5 items-center justify-center rounded-full transition-colors",
@@ -489,8 +462,7 @@ function PlacedDeliveryCard({ delivery }: { delivery: PlacedDelivery }) {
     <li className="flex flex-col gap-2 rounded-md border border-terra-500/30 bg-terra-500/5 p-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-[11px] font-semibold text-terra-700">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-terra-500" />
-          A caminho · {time}
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-terra-500" />A caminho · {time}
         </div>
         <span className="text-[13px] font-bold text-olive-900">{formatBRL(delivery.total)}</span>
       </div>
@@ -558,39 +530,6 @@ function DeliveryCard({ group }: { group: DeliveryGroup }) {
         Pedir de novo
       </button>
     </li>
-  );
-}
-
-function DeliveredSummary({ groups }: { groups: DeliveryGroup[] }) {
-  const allOrders = groups.flatMap((g) => g.items);
-  const totalSpent = allOrders.reduce((acc, o) => acc + o.priceSite * o.quantity, 0);
-  const totalSaved = computeSavings(
-    allOrders.map((o) => ({
-      priceSite: o.priceSite,
-      priceIfood: o.priceIfood,
-      quantity: o.quantity,
-    })),
-  );
-
-  return (
-    <div className="rounded-md bg-paper-100 p-3">
-      <dl className="flex flex-col gap-1.5 text-[12px]">
-        <div className="flex justify-between">
-          <dt className="text-olive-700">Total gasto (site)</dt>
-          <dd className="font-semibold text-olive-900">{formatBRL(totalSpent)}</dd>
-        </div>
-        {totalSaved > 0 && (
-          <div className="flex justify-between">
-            <dt className="text-olive-700">Economizado vs iFood</dt>
-            <dd className="font-semibold text-terra-700">−{formatBRL(totalSaved)}</dd>
-          </div>
-        )}
-        <div className="flex justify-between">
-          <dt className="text-olive-700">Entregas realizadas</dt>
-          <dd className="font-semibold text-olive-900">{groups.length}</dd>
-        </div>
-      </dl>
-    </div>
   );
 }
 

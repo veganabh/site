@@ -57,15 +57,10 @@ export function CategoryCircles({ active = "all", basePath, className }: Categor
     <div className={cn("relative", className)}>
       <nav
         aria-label="Categorias do cardápio"
-        className="flex items-end gap-2 overflow-x-auto pr-6 scroll-smooth [scrollbar-width:none] md:gap-3 md:pr-0 [&::-webkit-scrollbar]:hidden"
+        className="flex items-end gap-2 overflow-x-auto scroll-smooth pr-6 [scrollbar-width:none] md:gap-3 md:pr-0 [&::-webkit-scrollbar]:hidden"
       >
         {categoryItems.map((item) => (
-          <CategoryChip
-            key={item.slug}
-            item={item}
-            active={active === item.slug}
-            tier="primary"
-          />
+          <CategoryChip key={item.slug} item={item} active={active === item.slug} tier="primary" />
         ))}
 
         {collectionItems.length > 0 && <TierDivider />}
@@ -148,11 +143,7 @@ function CategoryChip({ item, active, tier }: CategoryChipProps) {
       <span
         className={cn(
           "text-[12px] font-semibold whitespace-nowrap",
-          active
-            ? "text-terra-700"
-            : isPrimary
-              ? "text-olive-900"
-              : "text-leaf-700",
+          active ? "text-terra-700" : isPrimary ? "text-olive-900" : "text-leaf-700",
         )}
       >
         {item.label}

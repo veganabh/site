@@ -64,9 +64,7 @@ describe("useMenuStore — addProduct", () => {
     act(() => result.current.addProduct(novo));
 
     expect(result.current.products).toHaveLength(13);
-    expect(result.current.products.find((p) => p.id === "99")?.name).toBe(
-      "Cookie de Aveia",
-    );
+    expect(result.current.products.find((p) => p.id === "99")?.name).toBe("Cookie de Aveia");
   });
 });
 
@@ -120,9 +118,7 @@ describe("useMenuStore — adjustStock", () => {
 
     act(() => result.current.adjustStock("1", 1));
 
-    expect(result.current.products.find((p) => p.id === "1")?.stock).toBe(
-      estoqueInicial + 1,
-    );
+    expect(result.current.products.find((p) => p.id === "1")?.stock).toBe(estoqueInicial + 1);
   });
 
   it("não deixa o estoque ficar negativo ao decrementar além de zero", () => {
@@ -198,9 +194,7 @@ describe("CardapioList — badge de esgotado", () => {
   it("renderiza badge 'Esgotado' para produto com stock === 0", () => {
     // Sobrescreve o store com apenas 1 produto zerado para teste isolado
     useMenuStore.setState({
-      products: [
-        makeProduct({ id: "1", stock: 0, lowStockThreshold: 3 }),
-      ],
+      products: [makeProduct({ id: "1", stock: 0, lowStockThreshold: 3 })],
     });
 
     // Importar CardapioList dinamicamente para evitar ciclo de deps no mock

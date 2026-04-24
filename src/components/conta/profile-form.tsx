@@ -67,15 +67,12 @@ export function ProfileForm() {
       className="flex flex-col gap-4 rounded-2xl border border-divider bg-paper-50 p-4 md:p-5"
     >
       <header className="flex flex-col gap-1">
-        <h2
-          id="perfil-dados-titulo"
-          className="text-h3 font-bold text-olive-900"
-        >
+        <h2 id="perfil-dados-titulo" className="text-h3 font-bold text-olive-900">
           Seus dados
         </h2>
         <p className="text-[12px] leading-snug text-olive-700">
-          Usados pra confirmar entrega e mandar atualização do pedido no
-          WhatsApp. A gente não compartilha com ninguém.
+          Usados pra confirmar entrega e mandar atualização do pedido no WhatsApp. A gente não
+          compartilha com ninguém.
         </p>
       </header>
 

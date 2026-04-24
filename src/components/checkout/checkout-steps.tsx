@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Tag,
@@ -35,11 +36,7 @@ import { AVAILABLE_COUPONS, isCouponApplicable } from "@/lib/coupons";
 import { getCrossSellSuggestions } from "@/lib/cross-sell";
 import { getPhrasesForSavings } from "@/lib/savings-phrases";
 import { mockProducts } from "@/lib/mock-products";
-import {
-  kitLinePrice,
-  kitLinePriceIfoodAnchor,
-  useCartStore,
-} from "@/stores/cart-store";
+import { kitLinePrice, kitLinePriceIfoodAnchor, useCartStore } from "@/stores/cart-store";
 import { useCheckoutStore } from "@/stores/checkout-store";
 import { useOrdersStore } from "@/stores/orders-store";
 import { useSession } from "@/lib/auth/use-session";
@@ -71,11 +68,7 @@ export function CheckoutSteps() {
   );
 }
 
-const STEP_ORDER: Exclude<CheckoutStep, "confirmado">[] = [
-  "resumo",
-  "endereco",
-  "pagamento",
-];
+const STEP_ORDER: Exclude<CheckoutStep, "confirmado">[] = ["resumo", "endereco", "pagamento"];
 
 const STEP_LABELS: Record<Exclude<CheckoutStep, "confirmado">, string> = {
   resumo: "Resumo",
@@ -83,18 +76,14 @@ const STEP_LABELS: Record<Exclude<CheckoutStep, "confirmado">, string> = {
   pagamento: "Pagamento",
 };
 
-function StepIndicator({
-  current,
-}: {
-  current: Exclude<CheckoutStep, "confirmado">;
-}) {
+function StepIndicator({ current }: { current: Exclude<CheckoutStep, "confirmado"> }) {
   const setStep = useCheckoutStore((s) => s.setStep);
   const currentIdx = STEP_ORDER.indexOf(current);
 
   return (
     <nav
       aria-label="Etapas do checkout"
-      className="flex items-center gap-1.5 text-[12px]"
+      className="flex items-center justify-center gap-1.5 text-[12px]"
     >
       {STEP_ORDER.map((step, idx) => {
         const isActive = idx === currentIdx;
@@ -134,10 +123,7 @@ function StepIndicator({
             {idx < STEP_ORDER.length - 1 && (
               <span
                 aria-hidden="true"
-                className={cn(
-                  "h-px w-4 md:w-6",
-                  idx < currentIdx ? "bg-leaf-500" : "bg-divider",
-                )}
+                className={cn("h-px w-4 md:w-6", idx < currentIdx ? "bg-leaf-500" : "bg-divider")}
               />
             )}
           </div>
@@ -164,18 +150,12 @@ function StepResumo() {
   const [inputError, setInputError] = useState(false);
   const [couponOpen, setCouponOpen] = useState(false);
 
-  if (items.length === 0 && kits.length === 0) return <EmptyCart />;
-
-  const itemsSubtotal = items.reduce(
-    (acc, i) => acc + i.product.price_site * i.quantity,
-    0,
-  );
+  const itemsSubtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
   const kitsSubtotal = kits.reduce((acc, k) => acc + kitLinePrice(k), 0);
   const subtotal = itemsSubtotal + kitsSubtotal;
 
   const itemsSavings = items.reduce(
-    (acc, i) =>
-      acc + (i.product.price_ifood - i.product.price_site) * i.quantity,
+    (acc, i) => acc + (i.product.price_ifood - i.product.price_site) * i.quantity,
     0,
   );
   const kitsSavings = kits.reduce(
@@ -185,24 +165,19 @@ function StepResumo() {
   const savings = itemsSavings + kitsSavings;
 
   const cartCtx = { subtotal, shippingFee: MOCK_SHIPPING_FEE };
-  const couponDiscount = appliedCoupon
-    ? appliedCoupon.discount(subtotal, cartCtx)
-    : 0;
+  const couponDiscount = appliedCoupon ? appliedCoupon.discount(subtotal, cartCtx) : 0;
   const total = subtotal - couponDiscount;
 
-  const applicableCoupons = AVAILABLE_COUPONS.filter((c) =>
-    isCouponApplicable(c, cartCtx),
-  );
+  const applicableCoupons = AVAILABLE_COUPONS.filter((c) => isCouponApplicable(c, cartCtx));
   const hasApplicableCoupons = applicableCoupons.length > 0;
 
-  const cartIds = useMemo(
-    () => new Set(items.map((i) => i.product.id)),
-    [items],
-  );
+  const cartIds = useMemo(() => new Set(items.map((i) => i.product.id)), [items]);
   const suggestions = useMemo(
     () => getCrossSellSuggestions(savings, mockProducts, cartIds, 4),
     [savings, cartIds],
   );
+
+  if (items.length === 0 && kits.length === 0) return <EmptyCart />;
 
   function handleApplyCode() {
     const ok = applyCoupon(code);
@@ -219,24 +194,23 @@ function StepResumo() {
   return (
     <>
       <header className="flex items-center justify-between gap-3">
-        <h1 className="text-[20px] font-bold leading-snug text-olive-900 md:text-[24px]">
+        <h1 className="text-[20px] leading-snug font-bold text-olive-900 md:text-[24px]">
           Seu pedido
         </h1>
-        <a
+        <Link
           href="/"
           className="inline-flex items-center gap-1 text-[12px] font-semibold text-olive-700 transition-colors hover:text-olive-900"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
           cardápio
-        </a>
+        </Link>
       </header>
 
       {savings > 0 && <SavingsHero savings={savings} />}
 
       <section aria-label="Itens do pedido" className="flex flex-col gap-2">
         <h2 className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
-          {items.length + kits.length}{" "}
-          {items.length + kits.length === 1 ? "item" : "itens"}
+          {items.length + kits.length} {items.length + kits.length === 1 ? "item" : "itens"}
         </h2>
         <ul className="flex flex-col gap-2">
           {kits.map((kit) => (
@@ -249,11 +223,7 @@ function StepResumo() {
       </section>
 
       {suggestions.length > 0 && (
-        <CrossSellRail
-          suggestions={suggestions}
-          onAccept={acceptCrossSell}
-          savings={savings}
-        />
+        <CrossSellRail suggestions={suggestions} onAccept={acceptCrossSell} savings={savings} />
       )}
 
       {/* Cupom — fechado por padrão; abre automático se há aplicáveis ou já tem um aplicado */}
@@ -281,9 +251,7 @@ function StepResumo() {
                   <Tag className="h-3.5 w-3.5" aria-hidden="true" />
                   <span>
                     {appliedCoupon.code}{" "}
-                    <span className="font-normal text-olive-700">
-                      · {appliedCoupon.hint}
-                    </span>
+                    <span className="font-normal text-olive-700">· {appliedCoupon.hint}</span>
                   </span>
                 </div>
                 <button
@@ -310,9 +278,7 @@ function StepResumo() {
                     aria-label="Código de cupom"
                     className={cn(
                       "flex-1 rounded-pill border bg-paper-50 px-4 py-2 text-[13px] text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus-visible:outline-2 focus-visible:outline-olive-500",
-                      inputError
-                        ? "border-error"
-                        : "border-divider focus:border-terra-500/50",
+                      inputError ? "border-error" : "border-divider focus:border-terra-500/50",
                     )}
                   />
                   <button
@@ -368,9 +334,7 @@ function StepResumo() {
           <dl className="flex flex-col gap-2 text-body-sm">
             <div className="flex justify-between">
               <dt className="text-olive-700">Subtotal</dt>
-              <dd className="font-semibold text-olive-900 tabular-nums">
-                {formatBRL(subtotal)}
-              </dd>
+              <dd className="font-semibold text-olive-900 tabular-nums">{formatBRL(subtotal)}</dd>
             </div>
             {couponDiscount > 0 && (
               <div className="flex justify-between">
@@ -382,15 +346,11 @@ function StepResumo() {
             )}
             <div className="flex justify-between">
               <dt className="text-olive-700">Entrega</dt>
-              <dd className="font-semibold text-success tabular-nums">
-                Grátis
-              </dd>
+              <dd className="font-semibold text-success tabular-nums">Grátis</dd>
             </div>
             <div className="mt-1 flex items-baseline justify-between border-t border-divider pt-2.5">
               <dt className="font-semibold text-olive-900">Total</dt>
-              <dd className="text-h3 font-bold text-olive-900 tabular-nums">
-                {formatBRL(total)}
-              </dd>
+              <dd className="text-h3 font-bold text-olive-900 tabular-nums">{formatBRL(total)}</dd>
             </div>
           </dl>
         </div>
@@ -450,7 +410,7 @@ function SavingsHero({ savings }: { savings: number }) {
         >
           Você tá economizando
         </p>
-        <p className="text-[40px] font-extrabold leading-none tracking-tight text-paper-50 md:text-[52px]">
+        <p className="text-[40px] leading-none font-extrabold tracking-tight text-paper-50 md:text-[52px]">
           {formatBRL(savings)}
         </p>
         <p className="text-[12px] text-paper-50/70">
@@ -476,10 +436,7 @@ type CrossSellRailProps = {
 
 function CrossSellRail({ suggestions, onAccept, savings }: CrossSellRailProps) {
   return (
-    <section
-      aria-labelledby="cross-sell-heading"
-      className="flex flex-col gap-2"
-    >
+    <section aria-labelledby="cross-sell-heading" className="flex flex-col gap-2">
       <header className="flex items-baseline justify-between gap-2">
         <h2
           id="cross-sell-heading"
@@ -488,16 +445,11 @@ function CrossSellRail({ suggestions, onAccept, savings }: CrossSellRailProps) {
           <Gift className="h-3 w-3 text-leaf-500" aria-hidden="true" />
           Leve também
         </h2>
-        <span className="text-[11px] text-olive-700">
-          dá pra pegar até {formatBRL(savings)}
-        </span>
+        <span className="text-[11px] text-olive-700">dá pra pegar até {formatBRL(savings)}</span>
       </header>
       <ul className="-mx-3 flex snap-x gap-2 overflow-x-auto scroll-smooth px-3 pb-1 md:mx-0 md:grid md:grid-cols-4 md:gap-2 md:overflow-visible md:px-0">
         {suggestions.map((product) => (
-          <li
-            key={product.id}
-            className="w-32 shrink-0 snap-start md:w-auto"
-          >
+          <li key={product.id} className="w-32 shrink-0 snap-start md:w-auto">
             <button
               type="button"
               onClick={() => onAccept(product)}
@@ -510,12 +462,10 @@ function CrossSellRail({ suggestions, onAccept, savings }: CrossSellRailProps) {
                   <Plus className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={2.5} />
                 </span>
               </div>
-              <p className="line-clamp-2 text-[12px] font-semibold leading-tight text-olive-900">
+              <p className="line-clamp-2 text-[12px] leading-tight font-semibold text-olive-900">
                 {product.name}
               </p>
-              <p className="text-[12px] font-bold text-leaf-700">
-                {formatBRL(product.price_site)}
-              </p>
+              <p className="text-[12px] font-bold text-leaf-700">{formatBRL(product.price_site)}</p>
             </button>
           </li>
         ))}
@@ -533,14 +483,7 @@ type StickyCTAProps = {
   hideSummary?: boolean;
 };
 
-function StickyCTA({
-  total,
-  itemCount,
-  label,
-  onClick,
-  disabled,
-  hideSummary,
-}: StickyCTAProps) {
+function StickyCTA({ total, itemCount, label, onClick, disabled, hideSummary }: StickyCTAProps) {
   return (
     <div
       className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] z-20 rounded-2xl border border-divider bg-paper-50/95 px-5 py-3 shadow-lg backdrop-blur md:hidden"
@@ -564,9 +507,7 @@ function StickyCTA({
           disabled={disabled}
           className={cn(
             "inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-pill px-4 text-[13px] font-semibold text-paper-50 transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
-            disabled
-              ? "cursor-not-allowed bg-sage-300"
-              : "bg-terra-500 hover:bg-terra-700",
+            disabled ? "cursor-not-allowed bg-sage-300" : "bg-terra-500 hover:bg-terra-700",
           )}
         >
           {label}
@@ -577,11 +518,13 @@ function StickyCTA({
   );
 }
 
-function isGuestIdentityValid(g: {
-  firstName: string;
-  email: string;
-  phone: string;
-} | null): boolean {
+function isGuestIdentityValid(
+  g: {
+    firstName: string;
+    email: string;
+    phone: string;
+  } | null,
+): boolean {
   if (!g) return false;
   const nameOk = g.firstName.trim().length >= 2;
   const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(g.email.trim());
@@ -602,10 +545,7 @@ function StepEndereco() {
 
   const items = useCartStore((s) => s.items);
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
-  const subtotal = items.reduce(
-    (acc, i) => acc + i.product.price_site * i.quantity,
-    0,
-  );
+  const subtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
   const shippingFee = currentAddress?.shippingFee ?? 0;
   const couponDiscount = appliedCoupon
     ? appliedCoupon.discount(subtotal, { subtotal, shippingFee })
@@ -624,9 +564,7 @@ function StepEndereco() {
   function handleSelect(id: string) {
     const prev = currentAddress?.shippingFee ?? 0;
     selectAddress(id);
-    const next =
-      useAddressStore.getState().addresses.find((a) => a.id === id)
-        ?.shippingFee ?? 0;
+    const next = useAddressStore.getState().addresses.find((a) => a.id === id)?.shippingFee ?? 0;
     setShowFeeWarning(prev !== next);
     prevFeeRef.current = next;
   }
@@ -652,9 +590,7 @@ function StepEndereco() {
   return (
     <>
       <header className="flex items-center justify-between gap-3">
-        <h1 className="text-h2 font-bold text-olive-900">
-          Pra onde vai?
-        </h1>
+        <h1 className="text-h2 font-bold text-olive-900">Pra onde vai?</h1>
         <button
           type="button"
           onClick={() => setStep("resumo")}
@@ -701,12 +637,11 @@ function StepEndereco() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <AddressTypeChip type={address.type} />
-                      {address.nickname &&
-                        address.nickname !== addressTypeLabel(address.type) && (
-                          <p className="text-[13px] font-semibold leading-snug text-olive-900">
-                            {address.nickname}
-                          </p>
-                        )}
+                      {address.nickname && address.nickname !== addressTypeLabel(address.type) && (
+                        <p className="text-[13px] leading-snug font-semibold text-olive-900">
+                          {address.nickname}
+                        </p>
+                      )}
                       {isSelected && (
                         <span
                           aria-label="Selecionado"
@@ -725,8 +660,7 @@ function StepEndereco() {
                       {address.complement ? ` — ${address.complement}` : ""}
                     </p>
                     <p className="text-[12px] leading-relaxed text-olive-700">
-                      {address.neighborhood} · {address.city}/{address.state} ·{" "}
-                      {address.cep}
+                      {address.neighborhood} · {address.city}/{address.state} · {address.cep}
                     </p>
                     {address.shippingFee > 0 && (
                       <p className="mt-1 text-[11px] font-semibold text-terra-700">
@@ -780,10 +714,7 @@ function StepEndereco() {
           aria-live="polite"
           className="flex items-start gap-2 rounded-xl border border-warning/40 bg-warning/8 px-3 py-2.5"
         >
-          <AlertTriangle
-            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning"
-            aria-hidden="true"
-          />
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" aria-hidden="true" />
           <p className="text-[12px] text-olive-900">
             {currentAddress.shippingFee > 0
               ? `Taxa de entrega para este endereço: ${formatBRL(currentAddress.shippingFee)}.`
@@ -797,7 +728,7 @@ function StepEndereco() {
         type="button"
         disabled={!canAdvance}
         onClick={() => setStep("pagamento")}
-        className="hidden h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 disabled:cursor-not-allowed disabled:bg-sage-300 focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex"
+        className="hidden h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500 disabled:cursor-not-allowed disabled:bg-sage-300 md:inline-flex"
       >
         Ir para pagamento
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -812,10 +743,7 @@ function StepEndereco() {
       />
 
       {formOpen && (
-        <AddressFormModal
-          initialData={editingAddress}
-          onClose={() => setFormOpen(false)}
-        />
+        <AddressFormModal initialData={editingAddress} onClose={() => setFormOpen(false)} />
       )}
 
       {removeDialogId && (
@@ -844,7 +772,7 @@ export function AddressTypeChip({ type }: { type: AddressType }) {
   const label = addressTypeLabel(type);
   return (
     <span
-      className="inline-flex shrink-0 items-center gap-1 rounded-pill bg-paper-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-olive-900"
+      className="inline-flex shrink-0 items-center gap-1 rounded-pill bg-paper-100 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-olive-900 uppercase"
       aria-label={label}
     >
       <Icon className="h-2.5 w-2.5" aria-hidden="true" />
@@ -872,9 +800,7 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
   const [street, setStreet] = useState(initialData?.street ?? "");
   const [number, setNumber] = useState(initialData?.number ?? "");
   const [complement, setComplement] = useState(initialData?.complement ?? "");
-  const [neighborhood, setNeighborhood] = useState(
-    initialData?.neighborhood ?? "",
-  );
+  const [neighborhood, setNeighborhood] = useState(initialData?.neighborhood ?? "");
   const [city, setCity] = useState(initialData?.city ?? "");
   const [state, setState] = useState(initialData?.state ?? "MG");
 
@@ -937,13 +863,10 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <fieldset>
-            <legend className="mb-1.5 text-[12px] font-semibold text-olive-900">
-              Tipo
-            </legend>
+            <legend className="mb-1.5 text-[12px] font-semibold text-olive-900">Tipo</legend>
             <div className="flex gap-2">
               {(["casa", "trabalho", "outro"] as AddressType[]).map((t) => {
-                const Icon =
-                  t === "casa" ? Home : t === "trabalho" ? Briefcase : MapPin;
+                const Icon = t === "casa" ? Home : t === "trabalho" ? Briefcase : MapPin;
                 return (
                   <button
                     key={t}
@@ -1078,11 +1001,7 @@ type RemoveAddressDialogProps = {
   onCancel: () => void;
 };
 
-function RemoveAddressDialog({
-  address,
-  onConfirm,
-  onCancel,
-}: RemoveAddressDialogProps) {
+function RemoveAddressDialog({ address, onConfirm, onCancel }: RemoveAddressDialogProps) {
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") onCancel();
@@ -1107,8 +1026,8 @@ function RemoveAddressDialog({
           Remover endereço?
         </h2>
         <p id="remove-addr-desc" className="mt-2 text-[13px] text-olive-700">
-          {address.nickname || addressTypeLabel(address.type)} — {address.street},{" "}
-          {address.number} será removido permanentemente.
+          {address.nickname || addressTypeLabel(address.type)} — {address.street}, {address.number}{" "}
+          será removido permanentemente.
         </p>
         <div className="mt-5 flex justify-end gap-3">
           <button
@@ -1199,10 +1118,7 @@ function StepPagamento() {
   const placeOrder = useOrdersStore((s) => s.placeOrder);
   const placeGifts = useOrdersStore((s) => s.placeGifts);
 
-  const itemsSubtotal = items.reduce(
-    (acc, i) => acc + i.product.price_site * i.quantity,
-    0,
-  );
+  const itemsSubtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
   const kitsSubtotal = kits.reduce((acc, k) => acc + kitLinePrice(k), 0);
   const subtotal = itemsSubtotal + kitsSubtotal;
   const couponDiscount = appliedCoupon ? appliedCoupon.discount(itemsSubtotal) : 0;
@@ -1270,10 +1186,7 @@ function StepPagamento() {
       {tab === "cartao" ? (
         <section aria-label="Dados do cartão" className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="card-number"
-              className="text-[12px] font-semibold text-olive-900"
-            >
+            <label htmlFor="card-number" className="text-[12px] font-semibold text-olive-900">
               Número do cartão
             </label>
             <input
@@ -1289,10 +1202,7 @@ function StepPagamento() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label
-              htmlFor="card-name"
-              className="text-[12px] font-semibold text-olive-900"
-            >
+            <label htmlFor="card-name" className="text-[12px] font-semibold text-olive-900">
               Nome no cartão
             </label>
             <input
@@ -1308,10 +1218,7 @@ function StepPagamento() {
 
           <div className="flex gap-3">
             <div className="flex flex-1 flex-col gap-1.5">
-              <label
-                htmlFor="card-expiry"
-                className="text-[12px] font-semibold text-olive-900"
-              >
+              <label htmlFor="card-expiry" className="text-[12px] font-semibold text-olive-900">
                 Validade
               </label>
               <input
@@ -1327,10 +1234,7 @@ function StepPagamento() {
             </div>
 
             <div className="flex w-28 flex-col gap-1.5">
-              <label
-                htmlFor="card-cvv"
-                className="text-[12px] font-semibold text-olive-900"
-              >
+              <label htmlFor="card-cvv" className="text-[12px] font-semibold text-olive-900">
                 CVV
               </label>
               <input
@@ -1339,9 +1243,7 @@ function StepPagamento() {
                 inputMode="numeric"
                 autoComplete="cc-csc"
                 value={cardCvv}
-                onChange={(e) =>
-                  setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))
-                }
+                onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 placeholder="123"
                 className="rounded-md border border-divider bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-terra-500/50 focus-visible:outline-2 focus-visible:outline-olive-500"
               />
@@ -1349,19 +1251,14 @@ function StepPagamento() {
           </div>
         </section>
       ) : (
-        <section
-          aria-label="Pagamento via PIX"
-          className="flex flex-col items-center gap-4 py-4"
-        >
+        <section aria-label="Pagamento via PIX" className="flex flex-col items-center gap-4 py-4">
           <div
             aria-hidden="true"
             className="flex h-40 w-40 items-center justify-center rounded-2xl border-2 border-dashed border-divider bg-paper-100"
           >
             <QrCode className="h-10 w-10 text-olive-500/40" />
           </div>
-          <p className="text-center text-[13px] text-olive-700">
-            QR Code gerado ao confirmar
-          </p>
+          <p className="text-center text-[13px] text-olive-700">QR Code gerado ao confirmar</p>
         </section>
       )}
 
@@ -1369,9 +1266,7 @@ function StepPagamento() {
         {couponDiscount > 0 && (
           <div className="flex items-center justify-between text-[12px]">
             <span className="text-olive-700">Subtotal</span>
-            <span className="font-semibold text-olive-900 tabular-nums">
-              {formatBRL(subtotal)}
-            </span>
+            <span className="font-semibold text-olive-900 tabular-nums">{formatBRL(subtotal)}</span>
           </div>
         )}
         {couponDiscount > 0 && (
@@ -1384,9 +1279,7 @@ function StepPagamento() {
         )}
         <div className="flex items-baseline justify-between">
           <span className="text-body-sm font-semibold text-olive-900">Total</span>
-          <span className="text-h3 font-bold text-olive-900 tabular-nums">
-            {formatBRL(total)}
-          </span>
+          <span className="text-h3 font-bold text-olive-900 tabular-nums">{formatBRL(total)}</span>
         </div>
       </div>
 
@@ -1435,11 +1328,7 @@ function StepConfirmado() {
   return (
     <div className="flex flex-col items-center gap-6 py-8 text-center">
       <div className="relative flex h-24 w-24 items-center justify-center">
-        <svg
-          className="absolute inset-0 -rotate-90"
-          viewBox="0 0 96 96"
-          aria-hidden="true"
-        >
+        <svg className="absolute inset-0 -rotate-90" viewBox="0 0 96 96" aria-hidden="true">
           <circle
             cx="48"
             cy="48"
@@ -1459,27 +1348,19 @@ function StepConfirmado() {
           />
         </svg>
         <span className="flex h-20 w-20 items-center justify-center rounded-full bg-olive-900/10">
-          <Check
-            className="h-10 w-10 text-olive-900"
-            aria-hidden="true"
-            strokeWidth={2.5}
-          />
+          <Check className="h-10 w-10 text-olive-900" aria-hidden="true" strokeWidth={2.5} />
         </span>
       </div>
 
       <div className="flex flex-col gap-2">
-        <h1 className="text-h1 font-extrabold text-olive-900">
-          Pedido confirmado!
-        </h1>
+        <h1 className="text-h1 font-extrabold text-olive-900">Pedido confirmado!</h1>
         {orderId && (
           <p className="text-body-sm text-olive-700">
-            Número do pedido:{" "}
-            <span className="font-semibold text-olive-900">{orderId}</span>
+            Número do pedido: <span className="font-semibold text-olive-900">{orderId}</span>
           </p>
         )}
         <p className="text-body-sm text-olive-700">
-          Previsão de entrega:{" "}
-          <span className="font-semibold text-olive-900">~60 min</span>
+          Previsão de entrega: <span className="font-semibold text-olive-900">~60 min</span>
         </p>
       </div>
 
@@ -1510,9 +1391,7 @@ function EmptyCart() {
     <div className="flex flex-col items-center gap-4 py-12 text-center">
       <EmptyCartAnimation className="h-48 w-48" />
       <div className="flex flex-col gap-1.5">
-        <h1 className="text-h2 font-bold text-olive-900">
-          Seu cantinho doce tá esperando
-        </h1>
+        <h1 className="text-h2 font-bold text-olive-900">Seu cantinho doce tá esperando</h1>
         <p className="text-body-sm text-olive-700">
           Escolha um bolo, um brigadeiro — e o resto a gente cuida.
         </p>
@@ -1571,9 +1450,7 @@ function CartItemCompact({ item }: { item: CartItem }) {
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1 leading-snug">
-        <p className="text-[13px] font-semibold text-olive-900">
-          {item.product.name}
-        </p>
+        <p className="text-[13px] font-semibold text-olive-900">{item.product.name}</p>
         {isGift ? (
           <p className="inline-flex items-center gap-1 text-[11px] font-semibold text-leaf-700">
             <Gift className="h-2.5 w-2.5" aria-hidden="true" />
@@ -1581,11 +1458,9 @@ function CartItemCompact({ item }: { item: CartItem }) {
           </p>
         ) : (
           <div className="flex items-baseline gap-1.5 text-[11px]">
-            <span className="font-semibold text-olive-900 tabular-nums">
-              {formatBRL(unitSite)}
-            </span>
+            <span className="font-semibold text-olive-900 tabular-nums">{formatBRL(unitSite)}</span>
             {unitIfood > unitSite && (
-              <span className="text-olive-700/60 line-through tabular-nums">
+              <span className="text-olive-700/60 tabular-nums line-through">
                 {formatBRL(unitIfood)}
               </span>
             )}
@@ -1612,7 +1487,7 @@ function CartItemCompact({ item }: { item: CartItem }) {
               )}
             </button>
             <span
-              className="w-5 text-center text-[13px] font-semibold tabular-nums text-olive-900"
+              className="w-5 text-center text-[13px] font-semibold text-olive-900 tabular-nums"
               aria-live="polite"
               aria-label={`${item.quantity} unidades`}
             >
@@ -1689,7 +1564,7 @@ function KitCartItemCompact({ kit }: { kit: KitCartItem }) {
             {formatBRL(linePrice)}
           </span>
           {lineSavings > 0 && (
-            <span className="text-[10px] text-olive-700/60 line-through tabular-nums">
+            <span className="text-[10px] text-olive-700/60 tabular-nums line-through">
               iFood {formatBRL(lineAnchor)}
             </span>
           )}
@@ -1711,11 +1586,8 @@ function KitCartItemCompact({ kit }: { kit: KitCartItem }) {
         )}
         {kit.cardMessage && (
           <li className="mt-0.5 inline-flex items-start gap-1 text-[11px] text-olive-900">
-            <MessageCircle
-              className="mt-0.5 h-3 w-3 shrink-0 text-terra-500"
-              aria-hidden="true"
-            />
-            <span className="italic">"{kit.cardMessage}"</span>
+            <MessageCircle className="mt-0.5 h-3 w-3 shrink-0 text-terra-500" aria-hidden="true" />
+            <span className="italic">&ldquo;{kit.cardMessage}&rdquo;</span>
           </li>
         )}
         {kit.recipient && (
@@ -1784,15 +1656,11 @@ function GuestIdentityCard() {
           <User className="h-4 w-4" aria-hidden="true" />
         </span>
         <div className="flex flex-col gap-0.5">
-          <p
-            id="guest-identity-title"
-            className="text-body-sm font-bold text-olive-900"
-          >
+          <p id="guest-identity-title" className="text-body-sm font-bold text-olive-900">
             Pra gente te reconhecer
           </p>
           <p className="text-[12px] leading-snug text-olive-700">
-            Nome, e-mail e WhatsApp. Sem cadastro — é só pra gente confirmar a
-            entrega.
+            Nome, e-mail e WhatsApp. Sem cadastro — é só pra gente confirmar a entrega.
           </p>
         </div>
       </div>
@@ -1873,5 +1741,3 @@ function GuestIdentityCard() {
     </section>
   );
 }
-
-

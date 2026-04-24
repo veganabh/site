@@ -18,16 +18,15 @@ import {
   Gift,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { ProductPhoto } from "@/components/features/product-photo";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
 import { getPhrasesForSavings } from "@/lib/savings-phrases";
-import { listDeliveryGroups } from "@/lib/mock-orders";
-import type { DeliveryGroup } from "@/lib/mock-orders";
 import { mockProducts } from "@/lib/mock-products";
 import { useCartStore } from "@/stores/cart-store";
 import { useOrdersStore } from "@/stores/orders-store";
-import type { PlacedDelivery } from "@/stores/orders-store";
+import { useAdminOrdersStore } from "@/stores/admin-orders-store";
+import { isTerminal, type Order } from "@/types/order";
+import { OrderStatusBadge } from "@/components/features/order-status-badge";
 import { useSession } from "@/lib/auth/use-session";
 
 const PHRASE_ROTATION_MS = 8000;
@@ -39,10 +38,7 @@ type PricedItem = {
 };
 
 function savingsFromItems(items: PricedItem[]): number {
-  return items.reduce(
-    (acc, i) => acc + Math.max(0, (i.priceIfood - i.priceSite) * i.quantity),
-    0,
-  );
+  return items.reduce((acc, i) => acc + Math.max(0, (i.priceIfood - i.priceSite) * i.quantity), 0);
 }
 
 function spentFromItems(items: PricedItem[]): number {
@@ -75,43 +71,32 @@ type ContaAuthedDashboardProps = {
 };
 
 function ContaAuthedDashboard({ firstName }: ContaAuthedDashboardProps) {
-  const deliveries = useOrdersStore((s) => s.deliveries);
   const gifts = useOrdersStore((s) => s.gifts);
-  const historical = useMemo(() => listDeliveryGroups("entregue"), []);
+  // Usa admin-orders-store como fonte de verdade dos pedidos mock.
+  // Pós-migração: trocar por query Supabase filtrada por customerId.
+  const allOrders = useAdminOrdersStore((s) => s.orders);
 
-  const placedItems = useMemo<PricedItem[]>(
+  const allItems = useMemo<PricedItem[]>(
     () =>
-      deliveries.flatMap((d) =>
-        d.items.map((i) => ({
-          priceSite: i.priceSite,
-          priceIfood: i.priceIfood,
-          quantity: i.quantity,
+      allOrders.flatMap((o) =>
+        o.items.map((i) => ({
+          priceSite: i.unitPriceSite,
+          priceIfood: i.unitPriceIfood,
+          quantity: i.qty,
         })),
       ),
-    [deliveries],
+    [allOrders],
   );
 
-  const historicalItems = useMemo<PricedItem[]>(
-    () =>
-      historical.flatMap((g) =>
-        g.items.map((i) => ({
-          priceSite: i.priceSite,
-          priceIfood: i.priceIfood,
-          quantity: i.quantity,
-        })),
-      ),
-    [historical],
-  );
-
-  const totalSavings = savingsFromItems([...placedItems, ...historicalItems]);
-  const totalSpent = spentFromItems([...placedItems, ...historicalItems]);
-  const totalOrders = deliveries.length + historical.length;
-  const aCaminho = deliveries.filter((d) => d.status === "a-caminho").length;
+  const totalSavings = savingsFromItems(allItems);
+  const totalSpent = spentFromItems(allItems);
+  const totalOrders = allOrders.length;
+  const aCaminho = allOrders.filter((o) => o.status === "A_CAMINHO").length;
 
   return (
     <div className="flex flex-col gap-5">
       <header>
-        <h1 className="text-[20px] font-bold leading-snug text-olive-900 md:text-[24px]">
+        <h1 className="text-[20px] leading-snug font-bold text-olive-900 md:text-[24px]">
           Oi, {firstName} — bora ver seus doces?
         </h1>
       </header>
@@ -125,10 +110,7 @@ function ContaAuthedDashboard({ firstName }: ContaAuthedDashboardProps) {
 
       <ShortcutsRow giftsCount={gifts.length} />
 
-      <OrdersHistory
-        placed={deliveries.filter((d) => d.status === "entregue")}
-        historical={historical}
-      />
+      <OrdersHistory orders={allOrders} />
     </div>
   );
 }
@@ -140,12 +122,7 @@ type SavingsHeroProps = {
   aCaminho: number;
 };
 
-function SavingsHero({
-  totalSavings,
-  totalSpent,
-  totalOrders,
-  aCaminho,
-}: SavingsHeroProps) {
+function SavingsHero({ totalSavings, totalSpent, totalOrders, aCaminho }: SavingsHeroProps) {
   const phrases = getPhrasesForSavings(totalSavings);
   const [index, setIndex] = useState(0);
 
@@ -182,17 +159,14 @@ function SavingsHero({
           Sua economia acumulada
         </p>
 
-        <p className="text-[44px] font-extrabold leading-none tracking-tight text-paper-50 md:text-[64px]">
+        <p className="text-[44px] leading-none font-extrabold tracking-tight text-paper-50 md:text-[64px]">
           {formatBRL(totalSavings)}
         </p>
 
         {!isEmpty && (
           <p className="text-[12px] text-paper-50/70 md:text-[13px]">
-            de{" "}
-            <span className="font-semibold text-paper-50">
-              {formatBRL(totalSpent)}
-            </span>{" "}
-            em {totalOrders} {totalOrders === 1 ? "pedido" : "pedidos"}
+            de <span className="font-semibold text-paper-50">{formatBRL(totalSpent)}</span> em{" "}
+            {totalOrders} {totalOrders === 1 ? "pedido" : "pedidos"}
             {aCaminho > 0 && (
               <>
                 {" · "}
@@ -211,8 +185,7 @@ function SavingsHero({
               Seu primeiro pedido ainda não saiu.
             </p>
             <p className="text-body-sm text-paper-50/70">
-              Assim que ele chegar, a gente começa a contar a grana que você
-              deixou no bolso.
+              Assim que ele chegar, a gente começa a contar a grana que você deixou no bolso.
             </p>
           </div>
         ) : (
@@ -245,13 +218,7 @@ function ShortcutsRow({ giftsCount }: ShortcutsRowProps) {
         label="Meus dados"
         tone="neutral"
       />
-      <ShortcutChip
-        as="link"
-        href="/conta/presentes"
-        icon={Gift}
-        label={giftLabel}
-        tone="leaf"
-      />
+      <ShortcutChip as="link" href="/conta/presentes" icon={Gift} label={giftLabel} tone="leaf" />
     </nav>
   );
 }
@@ -265,12 +232,7 @@ type ShortcutChipProps = {
   | { as: "button"; onClick: () => void; href?: never }
 );
 
-function ShortcutChip({
-  icon: Icon,
-  label,
-  tone,
-  ...rest
-}: ShortcutChipProps) {
+function ShortcutChip({ icon: Icon, label, tone, ...rest }: ShortcutChipProps) {
   const toneClasses =
     tone === "terra"
       ? "bg-terra-500/10 text-terra-700 group-hover:bg-terra-500/20"
@@ -291,7 +253,7 @@ function ShortcutChip({
       >
         <Icon className="h-5 w-5" aria-hidden="true" />
       </span>
-      <span className="text-center text-[12px] font-semibold leading-tight text-olive-900">
+      <span className="text-center text-[12px] leading-tight font-semibold text-olive-900">
         {label}
       </span>
     </>
@@ -312,70 +274,36 @@ function ShortcutChip({
 }
 
 type OrdersHistoryProps = {
-  placed: PlacedDelivery[];
-  historical: DeliveryGroup[];
+  orders: readonly Order[];
 };
 
-type HistoryRow = {
-  id: string;
-  isoDate: string;
-  total: number;
-  items: { productId: string; productName: string; quantity: number }[];
-};
-
-function OrdersHistory({ placed, historical }: OrdersHistoryProps) {
+function OrdersHistory({ orders }: OrdersHistoryProps) {
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
 
-  function reorder(row: HistoryRow) {
-    for (const item of row.items) {
+  function reorder(order: Order) {
+    for (const item of order.items) {
       const product = mockProducts.find((p) => p.id === item.productId);
       if (product) {
-        for (let i = 0; i < item.quantity; i++) addItem(product);
+        for (let i = 0; i < item.qty; i++) addItem(product);
       }
     }
     router.push("/carrinho");
   }
 
-  const rows: HistoryRow[] = [
-    ...placed.map((d) => ({
-      id: d.deliveryId,
-      isoDate: d.placedAt,
-      total: d.total,
-      items: d.items.map((i) => ({
-        productId: i.productId,
-        productName: i.productName,
-        quantity: i.quantity,
-      })),
-    })),
-    ...historical.map((g) => ({
-      id: g.deliveryId,
-      isoDate: g.placedAt,
-      total: g.total,
-      items: g.items.map((i) => ({
-        productId: i.productId,
-        productName: i.productName,
-        quantity: i.quantity,
-      })),
-    })),
-  ].slice(0, 5);
+  const rows = orders.filter((o) => isTerminal(o.status)).slice(0, 8);
 
   if (rows.length === 0) {
     return (
-      <section
-        aria-labelledby="historico-titulo"
-        className="flex flex-col gap-2"
-      >
+      <section aria-labelledby="historico-titulo" className="flex flex-col gap-2">
         <h2 id="historico-titulo" className="text-h3 font-bold text-olive-900">
-          Últimos pedidos
+          Meus pedidos
         </h2>
         <div className="rounded-xl border border-dashed border-divider bg-paper-50 p-6 text-center">
-          <ShoppingBag
-            className="mx-auto mb-2 h-6 w-6 text-olive-700"
-            aria-hidden="true"
-          />
+          <ShoppingBag className="mx-auto mb-2 h-6 w-6 text-olive-700" aria-hidden="true" />
           <p className="text-body-sm text-olive-700">
-            Seus pedidos entregues vão aparecer por aqui.
+            Pedidos entregues ou cancelados vão aparecer por aqui. Acompanhe os ativos no painel
+            lateral.
           </p>
         </div>
       </section>
@@ -385,61 +313,57 @@ function OrdersHistory({ placed, historical }: OrdersHistoryProps) {
   return (
     <section aria-labelledby="historico-titulo" className="flex flex-col gap-2">
       <h2 id="historico-titulo" className="text-h3 font-bold text-olive-900">
-        Últimos pedidos
+        Meus pedidos
       </h2>
       <ul className="flex flex-col gap-1.5">
-        {rows.map((r) => (
-          <li
-            key={r.id}
-            className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-divider bg-paper-50 px-3 py-2 transition-shadow hover:shadow-sm"
-          >
-            <span className="shrink-0 text-[11px] font-semibold text-olive-700">
-              {formatShortDate(r.isoDate)}
-            </span>
-            <ul className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
-              {r.items.slice(0, 3).map((item) => {
-                const product = mockProducts.find(
-                  (p) => p.id === item.productId,
-                );
-                return (
-                  <li
-                    key={`${r.id}-${item.productId}`}
-                    className="flex items-center gap-1"
-                  >
-                    {product && (
-                      <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded bg-paper-100">
-                        <ProductPhoto product={product} sizes="24px" />
-                      </div>
-                    )}
-                    <span className="text-[11.5px] font-medium text-olive-900">
-                      {item.productName}
-                    </span>
-                    <span className="text-[10.5px] font-semibold text-olive-700">
-                      {item.quantity}×
-                    </span>
-                  </li>
-                );
-              })}
-              {r.items.length > 3 && (
-                <span className="text-[10.5px] text-olive-700">
-                  +{r.items.length - 3}
+        {rows.map((order) => {
+          const itemsSummary = order.items
+            .slice(0, 3)
+            .map((it) => `${it.productName} ${it.qty}×`)
+            .join(" · ");
+          const extraItems = order.items.length > 3 ? order.items.length - 3 : 0;
+
+          return (
+            <li key={order.id}>
+              <Link
+                href={`/pedido/${order.id}`}
+                className="grid grid-cols-[4.5rem_7rem_minmax(0,1fr)_auto_auto] items-center gap-x-3 rounded-lg border border-divider bg-paper-50 px-3 py-2 transition-shadow hover:bg-paper-100/60 hover:shadow-sm"
+              >
+                <span className="text-[11px] font-semibold text-olive-700 tabular-nums">
+                  {formatShortDate(order.createdAt)}
                 </span>
-              )}
-            </ul>
-            <span className="shrink-0 text-body-sm font-bold tabular-nums text-olive-900">
-              {formatBRL(r.total)}
-            </span>
-            <button
-              type="button"
-              onClick={() => reorder(r)}
-              aria-label="Repetir pedido"
-              className="inline-flex shrink-0 items-center gap-1 rounded-pill border border-terra-500/30 bg-terra-500/5 px-2.5 py-0.5 text-[11px] font-semibold text-terra-700 transition-colors hover:bg-terra-500/10"
-            >
-              <RotateCcw className="h-3 w-3" aria-hidden="true" />
-              Repetir
-            </button>
-          </li>
-        ))}
+
+                <div className="flex min-w-0">
+                  <OrderStatusBadge status={order.status} />
+                </div>
+
+                <p className="min-w-0 truncate text-[11.5px] font-medium text-olive-900">
+                  {itemsSummary}
+                  {extraItems > 0 && (
+                    <span className="ml-1 text-olive-700">+{extraItems}</span>
+                  )}
+                </p>
+
+                <span className="text-body-sm font-bold text-olive-900 tabular-nums">
+                  {formatBRL(order.total)}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    reorder(order);
+                  }}
+                  aria-label="Repetir pedido"
+                  className="inline-flex items-center gap-1 rounded-pill border border-terra-500/30 bg-terra-500/5 px-2.5 py-0.5 text-[11px] font-semibold text-terra-700 transition-colors hover:bg-terra-500/10"
+                >
+                  <RotateCcw className="h-3 w-3" aria-hidden="true" />
+                  Repetir
+                </button>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
@@ -450,8 +374,7 @@ function ContaAnonLanding() {
     {
       icon: Wallet,
       title: "Veja sua economia",
-      description:
-        "Acumulamos quanto você deixa no bolso comprando aqui em vez do iFood.",
+      description: "Acumulamos quanto você deixa no bolso comprando aqui em vez do iFood.",
     },
     {
       icon: PackageCheck,
@@ -461,20 +384,19 @@ function ContaAnonLanding() {
     {
       icon: Heart,
       title: "Repita favoritos",
-      description:
-        "Seus doces preferidos voltam pro carrinho em um toque, no dia que der vontade.",
+      description: "Seus doces preferidos voltam pro carrinho em um toque, no dia que der vontade.",
     },
   ];
 
   return (
     <div className="flex flex-col gap-5">
       <header>
-        <h1 className="text-[20px] font-bold leading-snug text-olive-900 md:text-[24px]">
+        <h1 className="text-[20px] leading-snug font-bold text-olive-900 md:text-[24px]">
           Sua conta, seus doces.
         </h1>
         <p className="mt-1 text-body-sm text-olive-700">
-          Crie uma conta rapidinho pra acompanhar pedidos, repetir favoritos e
-          ver quanto já economizou.
+          Crie uma conta rapidinho pra acompanhar pedidos, repetir favoritos e ver quanto já
+          economizou.
         </p>
       </header>
 
@@ -500,7 +422,7 @@ function ContaAnonLanding() {
             Entre ou crie uma conta
           </p>
 
-          <p className="text-[28px] font-extrabold leading-tight text-paper-50 md:text-[40px]">
+          <p className="text-[28px] leading-tight font-extrabold text-paper-50 md:text-[40px]">
             Leva dois minutos.
             <br className="hidden md:block" /> Vale pra sempre.
           </p>
@@ -529,9 +451,7 @@ function ContaAnonLanding() {
       </section>
 
       <section aria-label="Por que criar conta" className="flex flex-col gap-2">
-        <h2 className="text-h3 font-bold text-olive-900">
-          O que tem aqui dentro
-        </h2>
+        <h2 className="text-h3 font-bold text-olive-900">O que tem aqui dentro</h2>
         <ul className="grid gap-2 sm:grid-cols-3">
           {benefits.map((b) => (
             <li
@@ -541,12 +461,8 @@ function ContaAnonLanding() {
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-terra-500/10 text-terra-700">
                 <b.icon className="h-4 w-4" aria-hidden="true" />
               </span>
-              <p className="text-body-sm font-bold text-olive-900">
-                {b.title}
-              </p>
-              <p className="text-[12px] leading-snug text-olive-700">
-                {b.description}
-              </p>
+              <p className="text-body-sm font-bold text-olive-900">{b.title}</p>
+              <p className="text-[12px] leading-snug text-olive-700">{b.description}</p>
             </li>
           ))}
         </ul>

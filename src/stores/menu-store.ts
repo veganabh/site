@@ -35,21 +35,16 @@ type MenuStore = {
 export const useMenuStore = create<MenuStore>((set, get) => ({
   products: mockProducts.map((p) => ({ ...p })),
 
-  addProduct: (product) =>
-    set((state) => ({ products: [...state.products, product] })),
+  addProduct: (product) => set((state) => ({ products: [...state.products, product] })),
 
   updateProduct: (id, changes) =>
     set((state) => ({
-      products: state.products.map((p) =>
-        p.id === id ? { ...p, ...changes } : p,
-      ),
+      products: state.products.map((p) => (p.id === id ? { ...p, ...changes } : p)),
     })),
 
   toggleActive: (id) =>
     set((state) => ({
-      products: state.products.map((p) =>
-        p.id === id ? { ...p, active: !p.active } : p,
-      ),
+      products: state.products.map((p) => (p.id === id ? { ...p, active: !p.active } : p)),
     })),
 
   deleteProduct: (id) =>
@@ -60,19 +55,14 @@ export const useMenuStore = create<MenuStore>((set, get) => ({
   adjustStock: (id, delta) =>
     set((state) => ({
       products: state.products.map((p) =>
-        p.id === id
-          ? { ...p, stock: Math.max(0, p.stock + delta) }
-          : p,
+        p.id === id ? { ...p, stock: Math.max(0, p.stock + delta) } : p,
       ),
     })),
 
   setStock: (id, value) =>
     set((state) => ({
-      products: state.products.map((p) =>
-        p.id === id ? { ...p, stock: Math.max(0, value) } : p,
-      ),
+      products: state.products.map((p) => (p.id === id ? { ...p, stock: Math.max(0, value) } : p)),
     })),
 
-  getLowStockProducts: () =>
-    get().products.filter((p) => p.stock <= p.lowStockThreshold),
+  getLowStockProducts: () => get().products.filter((p) => p.stock <= p.lowStockThreshold),
 }));

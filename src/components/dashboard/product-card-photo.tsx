@@ -71,9 +71,7 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
           <div
             className={cn(
               "absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-pill px-2 py-0.5 text-[10px] font-semibold shadow-sm",
-              isSoldOut
-                ? "bg-olive-900/85 text-paper-50"
-                : "bg-terra-500/95 text-paper-50",
+              isSoldOut ? "bg-olive-900/85 text-paper-50" : "bg-terra-500/95 text-paper-50",
             )}
             aria-label={isSoldOut ? "Esgotado" : `Restam ${product.stock}`}
           >
@@ -91,12 +89,8 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
           className={cn(
             "absolute top-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-full text-paper-50 shadow-md transition-transform duration-200 active:scale-95",
             "before:absolute before:-inset-2 before:content-['']",
-            isSoldOut
-              ? "cursor-not-allowed bg-olive-500/60"
-              : "bg-leaf-500 hover:bg-terra-500",
-            popping && !isSoldOut
-              ? "scale-125 rotate-12"
-              : !isSoldOut && "hover:scale-105",
+            isSoldOut ? "cursor-not-allowed bg-olive-500/60" : "bg-leaf-500 hover:bg-terra-500",
+            popping && !isSoldOut ? "scale-125 rotate-12" : !isSoldOut && "hover:scale-105",
           )}
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
@@ -115,8 +109,7 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
         {/* ETA quando CEP consultado e área coberta */}
         {deliveryQuote?.covered && !isSoldOut && (
           <p className="inline-flex items-center gap-1 text-[10px] text-leaf-700">
-            <Truck className="h-2.5 w-2.5" aria-hidden="true" />
-            ~{deliveryQuote.eta}
+            <Truck className="h-2.5 w-2.5" aria-hidden="true" />~{deliveryQuote.eta}
           </p>
         )}
 
@@ -136,4 +129,3 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
     </article>
   );
 }
-

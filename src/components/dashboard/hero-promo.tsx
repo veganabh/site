@@ -15,7 +15,7 @@ export function HeroPromo({ className }: HeroPromoProps) {
     <section
       aria-label="Doce feito em casa em Belo Horizonte"
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-olive-900 p-5 text-paper-50 shadow-lg md:p-8",
+        "relative flex min-h-[270px] flex-col justify-center overflow-hidden rounded-2xl bg-olive-900 p-5 text-paper-50 shadow-lg md:min-h-[305px] md:p-8",
         className,
       )}
     >
@@ -30,7 +30,7 @@ export function HeroPromo({ className }: HeroPromoProps) {
 
       <div className="relative flex flex-col gap-3">
         <span
-          className="inline-flex w-fit items-center gap-1.5 rounded-pill bg-paper-50/10 px-2.5 py-1 text-[11px] font-medium text-paper-50/90 ring-1 ring-inset ring-paper-50/15"
+          className="inline-flex w-fit items-center gap-1.5 rounded-pill bg-paper-50/10 px-2.5 py-1 text-[11px] font-medium text-paper-50/90 ring-1 ring-paper-50/15 ring-inset"
           aria-label="Avaliação 4.9 no iFood com mais de 420 pedidos"
         >
           <Star
@@ -44,12 +44,11 @@ export function HeroPromo({ className }: HeroPromoProps) {
         </span>
 
         <div>
-          <h1 className="text-[28px] font-extrabold leading-tight text-paper-50 md:text-[40px]">
+          <h1 className="text-[28px] leading-tight font-extrabold text-paper-50 md:text-[40px]">
             Doce feito em casa.
           </h1>
           <p className="mt-2 max-w-xl text-[13px] text-paper-50/85 md:text-[14px]">
-            Sem lactose, feito à mão em Belo Horizonte. Bolos, brigadeiros e
-            palha italiana.
+            Sem lactose, feito à mão em Belo Horizonte. Bolos, brigadeiros e palha italiana.
           </p>
         </div>
 
