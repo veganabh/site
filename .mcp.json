@@ -3,10 +3,7 @@
     "ux-audit": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@elsahafy/ux-mcp-server@5"
-      ],
+      "args": ["-y", "@elsahafy/ux-mcp-server@5"],
       "env": {}
     }
   }

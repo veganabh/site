@@ -30,7 +30,7 @@ Observações concretas da v16:
 | Estado client             | Zustand (carrinho)                                          |
 | Estado server-in-client   | TanStack Query                                              |
 | Database / Auth / Storage | Supabase                                                    |
-| Pagamento                 | Pagar.me (sandbox → prod)                                   |
+| Pagamento                 | AbacatePay (dev mode → prod)                                |
 | WhatsApp                  | Cloud API                                                   |
 | Analytics                 | PostHog                                                     |
 | Testes                    | Vitest + Testing Library (unit/component), Playwright (e2e) |
@@ -157,9 +157,10 @@ NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...        # só server — nunca expor
 
-# Pagar.me (sandbox até OK final)
-PAGARME_API_KEY=ak_test_...
-PAGARME_WEBHOOK_SECRET=...
+# AbacatePay (dev mode até OK final)
+ABACATEPAY_API_KEY=...
+ABACATEPAY_WEBHOOK_SECRET=...
+ABACATEPAY_ENV=dev
 
 # WhatsApp Cloud API
 WHATSAPP_TOKEN=...
@@ -259,7 +260,7 @@ npm install -D prettier vitest @testing-library/react @testing-library/jest-dom 
 npm install @supabase/supabase-js @supabase/ssr
 ```
 
-Lista completa e ordem: aguardar **ADR 0001** do `site-architect` que vai consolidar dependências + justificativa (incluindo nome correto do pacote Pagar.me e do SDK PostHog).
+Lista completa e ordem: aguardar **ADR 0001** do `site-architect` que vai consolidar dependências + justificativa (incluindo nome correto do pacote AbacatePay e do SDK PostHog).
 
 ---
 
