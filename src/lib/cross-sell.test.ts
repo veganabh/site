@@ -20,11 +20,11 @@ const makeProduct = (id: string, price_site: number, price_ifood?: number): Prod
 });
 
 const ALL_PRODUCTS: readonly Product[] = [
-  makeProduct("A", 5),   // R$5
+  makeProduct("A", 5), // R$5
   makeProduct("B", 7.5), // R$7.50
-  makeProduct("C", 12),  // R$12
-  makeProduct("D", 22),  // R$22
-  makeProduct("E", 30),  // R$30 — acima do teto máximo (R$25)
+  makeProduct("C", 12), // R$12
+  makeProduct("D", 22), // R$22
+  makeProduct("E", 30), // R$30 — acima do teto máximo (R$25)
 ];
 
 describe("getCrossSellSuggestion — sem sugestão", () => {

@@ -21,7 +21,7 @@ export type CrossSellTier = {
 };
 
 export const CROSS_SELL_TIERS: CrossSellTier[] = [
-  { minInclusive: 0, maxExclusive: 8, priceCap: 0 },      // sem sugestão
+  { minInclusive: 0, maxExclusive: 8, priceCap: 0 }, // sem sugestão
   { minInclusive: 8, maxExclusive: 15, priceCap: 8 },
   { minInclusive: 15, maxExclusive: 25, priceCap: 15 },
   { minInclusive: 25, maxExclusive: Infinity, priceCap: 25 },
@@ -47,9 +47,7 @@ export function getCrossSellSuggestion(
   if (accepted) return null;
   if (savings < 8) return null;
 
-  const tier = CROSS_SELL_TIERS.find(
-    (t) => savings >= t.minInclusive && savings < t.maxExclusive,
-  );
+  const tier = CROSS_SELL_TIERS.find((t) => savings >= t.minInclusive && savings < t.maxExclusive);
   if (!tier || tier.priceCap === 0) return null;
 
   const candidates = products
