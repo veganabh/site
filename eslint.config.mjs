@@ -13,6 +13,31 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Anti-mock rule — mocks de domínio só vivem em src/__fixtures__/ ou
+  // scripts/ (seed). Importar de outros lugares é red flag — código de
+  // produção deve usar reader Supabase + store hidratada.
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: [
+      "src/__fixtures__/**",
+      "src/**/*.test.{ts,tsx}",
+      "src/**/*.spec.{ts,tsx}",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/mock-*", "@/lib/mock-*", "@/__fixtures__/*"],
+              message:
+                "Mocks/fixtures não podem ser importados em código de produção. Use reader Supabase em src/server/ + store hidratada. Fixtures são consumidas só em scripts/seed-*.ts.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]);
 
 export default eslintConfig;

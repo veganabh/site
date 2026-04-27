@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRingsStore } from "@/stores/rings-store";
 import { STORE_LOCATION } from "@/lib/store-location";
@@ -23,15 +23,22 @@ const StoreMap = dynamic(
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
+type ToastState =
+  | { kind: "idle" }
+  | { kind: "success" }
+  | { kind: "error"; message: string };
+
 function useToast() {
-  const [visible, setVisible] = useState(false);
+  const [state, setState] = useState<ToastState>({ kind: "idle" });
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function show() {
-    setVisible(true);
+  const dismiss = useCallback(() => setState({ kind: "idle" }), []);
+
+  const show = useCallback((next: Exclude<ToastState, { kind: "idle" }>) => {
+    setState(next);
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setVisible(false), 2500);
-  }
+    timerRef.current = setTimeout(() => setState({ kind: "idle" }), 2500);
+  }, []);
 
   useEffect(
     () => () => {
@@ -40,7 +47,7 @@ function useToast() {
     [],
   );
 
-  return { visible, show };
+  return { state, show, dismiss };
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
@@ -51,14 +58,16 @@ export function ZonesClient() {
   const [highlightedId, setHighlightedId] = useState<string | undefined>();
   const toast = useToast();
 
-  // Toast observa mudanças no store de anéis
-  const ringsRef = useRef(rings);
-  useEffect(() => {
-    if (ringsRef.current !== rings) {
-      toast.show();
-      ringsRef.current = rings;
-    }
-  }, [rings, toast]);
+  const handleSuccess = useCallback(() => {
+    toast.show({ kind: "success" });
+  }, [toast]);
+
+  const handleError = useCallback(
+    (message: string) => {
+      toast.show({ kind: "error", message });
+    },
+    [toast],
+  );
 
   return (
     <div className="relative flex flex-col gap-4">
@@ -92,20 +101,31 @@ export function ZonesClient() {
         <aside className="flex min-w-0 flex-col gap-6">
           <CepTester />
           <hr className="border-divider" />
-          <MaxRadiusSlider />
+          <MaxRadiusSlider
+            onMutationSuccess={handleSuccess}
+            onMutationError={handleError}
+          />
           <hr className="border-divider" />
-          <RingsTable highlightedId={highlightedId} />
+          <RingsTable
+            highlightedId={highlightedId}
+            onMutationSuccess={handleSuccess}
+            onMutationError={handleError}
+          />
         </aside>
       </div>
 
-      {/* Toast "Zonas atualizadas" */}
+      {/* Toast */}
       <div
-        role="status"
+        role={toast.state.kind === "error" ? "alert" : "status"}
         aria-live="polite"
         aria-atomic="true"
-        className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-pill bg-olive-900 px-4 py-2 text-body-sm font-semibold text-paper-50 shadow-md transition-all duration-300 ${toast.visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"} `}
+        className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-pill px-4 py-2 text-body-sm font-semibold shadow-md transition-all duration-300 ${
+          toast.state.kind === "error"
+            ? "bg-terra-700 text-paper-50"
+            : "bg-olive-900 text-paper-50"
+        } ${toast.state.kind === "idle" ? "pointer-events-none translate-y-2 opacity-0" : "translate-y-0 opacity-100"}`}
       >
-        Zonas atualizadas
+        {toast.state.kind === "error" ? toast.state.message : "Zonas atualizadas"}
       </div>
     </div>
   );

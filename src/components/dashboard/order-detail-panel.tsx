@@ -14,17 +14,16 @@ import {
   Gift,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { ProductPhoto } from "@/components/features/product-photo";
+import { KitPicksPanel } from "@/components/dashboard/kit-picks-panel";
 import { EmptyCartAnimation } from "@/components/features/empty-cart-animation";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
-import { AVAILABLE_COUPONS } from "@/lib/coupons";
+import { computeCouponDiscount } from "@/lib/coupons";
 import { getCrossSellSuggestions } from "@/lib/cross-sell";
-import { listDeliveryGroups } from "@/lib/mock-orders";
-import type { DeliveryGroup } from "@/lib/mock-orders";
-import { mockProducts } from "@/lib/mock-products";
 import { useCartStore } from "@/stores/cart-store";
+import { useMenuStore } from "@/stores/menu-store";
 import type { CartItem } from "@/stores/cart-store";
 import { useOrdersStore } from "@/stores/orders-store";
 import type { PlacedDelivery } from "@/stores/orders-store";
@@ -41,7 +40,17 @@ type OrderDetailPanelProps = { className?: string };
 
 const TAB_IDS: Tab[] = ["em-preparo", "a-caminho", "entregue"];
 
+const KIT_BUILDER_PATH = /^\/presentear\/[^/]+\/montar(?:\/|$)/;
+
 export function OrderDetailPanel({ className }: OrderDetailPanelProps) {
+  const pathname = usePathname() ?? "";
+  if (KIT_BUILDER_PATH.test(pathname)) {
+    return <KitPicksPanel className={className} />;
+  }
+  return <OrderDetailPanelInner className={className} />;
+}
+
+function OrderDetailPanelInner({ className }: OrderDetailPanelProps) {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>(() => {
     const raw = searchParams?.get("tab");
@@ -52,10 +61,13 @@ export function OrderDetailPanel({ className }: OrderDetailPanelProps) {
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQty = useCartStore((s) => s.updateQty);
 
-  const deliveredGroups = listDeliveryGroups("entregue");
   const allDeliveries = useOrdersStore((s) => s.deliveries);
   const placedDeliveries = useMemo(
     () => allDeliveries.filter((d) => d.status === "a-caminho"),
+    [allDeliveries],
+  );
+  const deliveredGroups = useMemo(
+    () => allDeliveries.filter((d) => d.status === "entregue"),
     [allDeliveries],
   );
 
@@ -140,6 +152,7 @@ function CartView({
   const router = useRouter();
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
   const removeCoupon = useCartStore((s) => s.removeCoupon);
+  const products = useMenuStore((s) => s.products);
 
   const [couponOpen, setCouponOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -149,13 +162,15 @@ function CartView({
     (acc, i) => acc + (i.product.price_ifood - i.product.price_site) * i.quantity,
     0,
   );
-  const couponDiscount = appliedCoupon ? appliedCoupon.discount(subtotal) : 0;
+  const couponDiscount = appliedCoupon
+    ? computeCouponDiscount(appliedCoupon, { subtotal, shippingFee: 0 })
+    : 0;
   const total = subtotal - couponDiscount;
 
   const cartIds = useMemo(() => new Set(items.map((i) => i.product.id)), [items]);
   const hasSuggestions = useMemo(
-    () => getCrossSellSuggestions(savings, mockProducts, cartIds, 1).length > 0,
-    [savings, cartIds],
+    () => getCrossSellSuggestions(savings, products, cartIds, 1).length > 0,
+    [savings, cartIds, products],
   );
 
   return (
@@ -266,31 +281,32 @@ function CartView({
       </button>
 
       {/* Overlay do cupom */}
-      {couponOpen && <CouponSheet onClose={() => setCouponOpen(false)} />}
+      {couponOpen && (
+        <CouponSheet onClose={() => setCouponOpen(false)} subtotal={subtotal} />
+      )}
     </>
   );
 }
 
 // ── Overlay do cupom ──────────────────────────────────────────────────────
 
-function CouponSheet({ onClose }: { onClose: () => void }) {
+function CouponSheet({ onClose, subtotal }: { onClose: () => void; subtotal: number }) {
   const applyCoupon = useCartStore((s) => s.applyCoupon);
   const [code, setCode] = useState("");
-  const [inputError, setInputError] = useState(false);
+  const [inputError, setInputError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
-  function handleApplyCode() {
-    const ok = applyCoupon(code);
-    if (ok) {
-      setInputError(false);
+  async function handleApplyCode() {
+    if (!code.trim()) return;
+    setPending(true);
+    setInputError(null);
+    const result = await applyCoupon(code, Math.round(subtotal * 100));
+    setPending(false);
+    if (result.ok) {
       onClose();
     } else {
-      setInputError(true);
+      setInputError(result.message);
     }
-  }
-
-  function handleApplyChip(c: string) {
-    const ok = applyCoupon(c);
-    if (ok) onClose();
   }
 
   return (
@@ -324,7 +340,7 @@ function CouponSheet({ onClose }: { onClose: () => void }) {
             value={code}
             onChange={(e) => {
               setCode(e.target.value);
-              setInputError(false);
+              setInputError(null);
             }}
             onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
             placeholder="Código de cupom"
@@ -337,32 +353,13 @@ function CouponSheet({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={handleApplyCode}
-            className="hover:bg-paper-200 rounded-md bg-olive-900 px-3 py-1.5 text-[12px] font-semibold text-paper-50 transition-colors hover:bg-terra-500"
+            disabled={pending}
+            className="rounded-md bg-olive-900 px-3 py-1.5 text-[12px] font-semibold text-paper-50 transition-colors hover:bg-terra-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Aplicar
+            {pending ? "..." : "Aplicar"}
           </button>
         </div>
-        {inputError && <p className="text-[11px] text-red-500">Cupom inválido.</p>}
-
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[10px] font-semibold tracking-wide text-olive-700 uppercase">
-            Cupons disponíveis
-          </p>
-          <div className="flex flex-wrap gap-1">
-            {AVAILABLE_COUPONS.map((c) => (
-              <button
-                key={c.code}
-                type="button"
-                onClick={() => handleApplyChip(c.code)}
-                className="group inline-flex items-center gap-1 rounded-pill border border-terra-500/30 bg-terra-500/5 px-2 py-0.5 text-[11px] font-semibold text-terra-700 transition-colors hover:border-terra-500 hover:bg-terra-500 hover:text-paper-50"
-              >
-                <Tag className="h-2.5 w-2.5" aria-hidden="true" />
-                {c.code}
-                <span className="text-terra-700/70 group-hover:text-paper-50/80">· {c.hint}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        {inputError && <p className="text-[11px] text-red-500">{inputError}</p>}
       </div>
     </div>
   );
@@ -484,13 +481,14 @@ function PlacedDeliveryCard({ delivery }: { delivery: PlacedDelivery }) {
   );
 }
 
-function DeliveryCard({ group }: { group: DeliveryGroup }) {
+function DeliveryCard({ group }: { group: PlacedDelivery }) {
   const addItem = useCartStore((s) => s.addItem);
+  const products = useMenuStore((s) => s.products);
   const date = group.placedAt.slice(5, 10).replace("-", "/");
 
   function reorderAll() {
     for (const item of group.items) {
-      const product = mockProducts.find((p) => p.id === item.productId);
+      const product = products.find((p) => p.id === item.productId);
       if (product) addItem(product);
     }
   }
@@ -504,9 +502,9 @@ function DeliveryCard({ group }: { group: DeliveryGroup }) {
 
       <ul className="flex flex-col gap-1.5">
         {group.items.map((item) => {
-          const product = mockProducts.find((p) => p.id === item.productId);
+          const product = products.find((p) => p.id === item.productId);
           return (
-            <li key={item.id} className="flex items-center gap-2">
+            <li key={item.productId} className="flex items-center gap-2">
               {product && (
                 <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-sm bg-paper-100">
                   <ProductPhoto product={product} sizes="36px" />

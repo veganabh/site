@@ -1,66 +1,58 @@
-/**
- * Fonte canônica de cupons da Veg.ana.
- * Importar daqui — nunca redefinir em componente.
- */
-
-export type Coupon = {
-  code: string;
-  /** Rótulo curto exibido no chip (ex: "VEGANA10"). */
-  label: string;
-  /** Descrição da vantagem (ex: "−10% no pedido"). */
-  hint: string;
-  /** Calcula o valor de desconto dado o subtotal atual (em R$). Contexto opcional para cupons condicionais (ex: FRETE0). */
-  discount: (subtotal: number, ctx?: CartContext) => number;
-};
+import type { CouponType } from "@/types/coupon";
 
 /**
- * Contexto do carrinho necessário para avaliar aplicabilidade do cupom.
+ * Lib pura de cálculo de desconto. Shape do `Coupon` espelha a tabela
+ * `public.coupons` (DB). Validação real (status/expiração/uso) acontece
+ * server-side via RPC `validate_coupon` em `applyCouponAction`.
+ *
+ * Estas funções são para preview/render — nunca para autorizar pedido.
  */
+
 export type CartContext = {
   subtotal: number;
-  /** Taxa de entrega atual (0 = grátis). */
+  /** Taxa de entrega atual (R$). 0 = grátis. */
   shippingFee: number;
 };
 
-export const COUPONS_MAP: Record<string, Coupon> = {
-  VEGANA10: {
-    code: "VEGANA10",
-    label: "VEGANA10",
-    hint: "−10% no pedido",
-    discount: (s) => s * 0.1,
-  },
-  FRETE0: {
-    code: "FRETE0",
-    label: "FRETE0",
-    hint: "frete grátis",
-    // Desconto real é o frete cobrado; se frete já é 0, cupom não agrega valor.
-    discount: (_, ctx?: CartContext) => ctx?.shippingFee ?? 0,
-  },
-  BEM5: {
-    code: "BEM5",
-    label: "BEM5",
-    hint: "−R$ 5,00",
-    discount: (subtotal) => Math.min(5, subtotal),
-  },
+/**
+ * Shape mínimo necessário pra calcular desconto. Aceita tanto `Coupon`
+ * (admin, completo) quanto `AppliedCoupon` (cliente, derivado da RPC).
+ */
+export type DiscountableCoupon = {
+  type: CouponType;
+  /** PERCENTUAL: 0-100. FIXO: R$. FRETE_GRATIS: ignorado. */
+  value: number;
+  /** Em R$. Undefined = sem mínimo. */
+  minOrderValue?: number;
 };
 
-export const AVAILABLE_COUPONS: Coupon[] = Object.values(COUPONS_MAP);
-
 /**
- * Valida um código de cupom (case-insensitive).
- * Retorna o Coupon se válido, null se inválido.
+ * Calcula o valor de desconto em R$ aplicado pelo cupom no contexto atual.
+ *
+ * - PERCENTUAL: subtotal × value/100
+ * - FIXO: min(value, subtotal)
+ * - FRETE_GRATIS: shippingFee (zera entrega)
  */
-export function validateCoupon(code: string): Coupon | null {
-  return COUPONS_MAP[code.trim().toUpperCase()] ?? null;
+export function computeCouponDiscount(coupon: DiscountableCoupon, ctx: CartContext): number {
+  switch (coupon.type) {
+    case "PERCENTUAL":
+      return Math.max(0, (ctx.subtotal * coupon.value) / 100);
+    case "FIXO":
+      return Math.max(0, Math.min(coupon.value, ctx.subtotal));
+    case "FRETE_GRATIS":
+      return Math.max(0, ctx.shippingFee);
+    default:
+      return 0;
+  }
 }
 
 /**
- * Retorna true se aplicar o cupom no contexto atual resultaria em desconto > 0.
- *
- * Use para filtrar a lista "Cupons disponíveis" — ocultar cupons que não dariam
- * benefício real ao cliente (ex: FRETE0 quando frete já é grátis; BEM5 quando
- * subtotal é zero).
+ * Retorna true se aplicar o cupom geraria desconto > 0 no contexto atual.
+ * Útil pra esconder cupons inúteis (ex: FRETE0 com frete já 0).
  */
-export function isCouponApplicable(coupon: Coupon, ctx: CartContext): boolean {
-  return coupon.discount(ctx.subtotal, ctx) > 0;
+export function isCouponApplicable(coupon: DiscountableCoupon, ctx: CartContext): boolean {
+  if (coupon.minOrderValue !== undefined && ctx.subtotal < coupon.minOrderValue) {
+    return false;
+  }
+  return computeCouponDiscount(coupon, ctx) > 0;
 }

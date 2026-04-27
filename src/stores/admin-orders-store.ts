@@ -3,8 +3,16 @@
 import { create } from "zustand";
 import type { Order, OrderStatus } from "@/types/order";
 import { canTransitionTo, isTerminal } from "@/types/order";
-import { mockOrders } from "@/lib/mock-orders";
-import { getRandomDeliveryPerson } from "@/lib/mock-delivery-persons";
+import { useDeliveryPersonsStore } from "@/stores/delivery-persons-store";
+import {
+  acceptOrderAction,
+  rejectOrderAction,
+  markOrderReadyAction,
+  callOrderDeliveryAction,
+  markOrderDeliveredAction,
+  cancelOrderAction,
+  type OrderActionResult,
+} from "@/server/actions/orders";
 
 // ── BroadcastChannel types ──────────────────────────────────────────────────
 
@@ -44,22 +52,28 @@ type AdminOrdersState = {
 };
 
 type AdminOrdersActions = {
+  /**
+   * Hidrata orders do servidor (chamado pelo `AdminOrdersStoreHydrator` no
+   * mount + a cada SSR re-render). Usar ref-comparison para evitar overwrite
+   * de estado otimista.
+   */
+  hydrateOrders: (orders: Order[]) => void;
   /** Aceita pedido NOVO → PREPARANDO. */
-  acceptOrder: (id: string) => void;
+  acceptOrder: (id: string) => Promise<OrderActionResult>;
   /** Recusa pedido NOVO → CANCELADO (motivo obrigatório). */
-  rejectOrder: (id: string, reason: string) => void;
+  rejectOrder: (id: string, reason: string) => Promise<OrderActionResult>;
   /** Marca pedido PREPARANDO → PRONTO. */
-  markReady: (id: string) => void;
+  markReady: (id: string) => Promise<OrderActionResult>;
   /**
    * PRONTO → A_CAMINHO.
-   * Sorteia um motoqueiro do pool, simula chamada de 2 s, depois publica
-   * status-change. O `deliveryCallId` fica disponível no pedido.
+   * Sorteia um motoqueiro do pool (ainda em mock — migração própria) e
+   * registra `delivery_call_id` no pedido via server action.
    */
-  callDelivery: (id: string) => void;
+  callDelivery: (id: string) => Promise<OrderActionResult>;
   /** Marca pedido A_CAMINHO → ENTREGUE. */
-  markDelivered: (id: string) => void;
+  markDelivered: (id: string) => Promise<OrderActionResult>;
   /** Cancela pedido (NOVO | PREPARANDO | PRONTO → CANCELADO). Motivo obrigatório. */
-  cancelOrder: (id: string, reason: string) => void;
+  cancelOrder: (id: string, reason: string) => Promise<OrderActionResult>;
   /** Zera badge de "novo" para este pedido — chamar ao abrir o drawer. */
   acknowledgeOrder: (id: string) => void;
   /** Computed: orders agrupados por status. */
@@ -74,8 +88,9 @@ type AdminOrdersActions = {
 
 type AdminOrdersStore = AdminOrdersState & AdminOrdersActions;
 
-// ── Helper: aplica transição de status no array ────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
+/** Aplica transição otimista no array local. */
 function applyTransition(
   orders: Order[],
   id: string,
@@ -96,8 +111,7 @@ function applyTransition(
   });
 }
 
-// ── Helper: publica no BroadcastChannel ────────────────────────────────────
-
+/** Publica no BroadcastChannel para sincronizar abas/cliente-store. */
 function publish(msg: OrderChannelMessage): void {
   try {
     if (typeof window === "undefined") return;
@@ -105,128 +119,194 @@ function publish(msg: OrderChannelMessage): void {
     ch.postMessage(msg);
     ch.close();
   } catch {
-    // BroadcastChannel não disponível (SSR/ambientes sem suporte) — ignorar silenciosamente.
+    // BroadcastChannel não disponível (SSR/ambientes sem suporte) — ignorar.
   }
 }
 
 // ── Store Zustand ──────────────────────────────────────────────────────────
 
 export const useAdminOrdersStore = create<AdminOrdersStore>((set, get) => ({
-  // Estado inicial com os mocks do Passo 1
-  orders: [...mockOrders],
+  orders: [],
   newOrderCount: 0,
   unacknowledgedIds: new Set<string>(),
 
+  hydrateOrders: (orders) => set({ orders }),
+
   ordersByStatus: (status) => get().orders.filter((o) => o.status === status),
 
-  acceptOrder: (id) => {
+  acceptOrder: async (id) => {
     const order = get().orders.find((o) => o.id === id);
-    if (!order || !canTransitionTo(order.status, "PREPARANDO")) return;
+    if (!order) return { ok: false, message: "Pedido não encontrado." };
+    if (!canTransitionTo(order.status, "PREPARANDO")) {
+      return { ok: false, message: "Transição inválida." };
+    }
 
-    const at = new Date().toISOString();
-    set((s) => ({
-      orders: applyTransition(s.orders, id, "PREPARANDO"),
-    }));
+    const prevOrders = get().orders;
+    set({ orders: applyTransition(prevOrders, id, "PREPARANDO") });
+
+    const result = await acceptOrderAction(id);
+    if (!result.ok) {
+      set({ orders: prevOrders });
+      return result;
+    }
+
     publish({
       type: "order:status-change",
       orderId: id,
       prevStatus: order.status,
       nextStatus: "PREPARANDO",
-      at,
+      at: new Date().toISOString(),
     });
+    return result;
   },
 
-  rejectOrder: (id, reason) => {
-    if (!reason.trim()) return;
+  rejectOrder: async (id, reason) => {
+    if (!reason.trim()) return { ok: false, message: "Motivo obrigatório." };
     const order = get().orders.find((o) => o.id === id);
-    if (!order || !canTransitionTo(order.status, "CANCELADO")) return;
+    if (!order) return { ok: false, message: "Pedido não encontrado." };
+    if (!canTransitionTo(order.status, "CANCELADO")) {
+      return { ok: false, message: "Transição inválida." };
+    }
 
-    const at = new Date().toISOString();
-    set((s) => ({
-      orders: applyTransition(s.orders, id, "CANCELADO", { cancelReason: reason }),
-    }));
+    const prevOrders = get().orders;
+    set({
+      orders: applyTransition(prevOrders, id, "CANCELADO", { cancelReason: reason }),
+    });
+
+    const result = await rejectOrderAction(id, reason);
+    if (!result.ok) {
+      set({ orders: prevOrders });
+      return result;
+    }
+
     publish({
       type: "order:status-change",
       orderId: id,
       prevStatus: order.status,
       nextStatus: "CANCELADO",
-      at,
+      at: new Date().toISOString(),
       cancelReason: reason,
     });
+    return result;
   },
 
-  markReady: (id) => {
+  markReady: async (id) => {
     const order = get().orders.find((o) => o.id === id);
-    if (!order || !canTransitionTo(order.status, "PRONTO")) return;
+    if (!order) return { ok: false, message: "Pedido não encontrado." };
+    if (!canTransitionTo(order.status, "PRONTO")) {
+      return { ok: false, message: "Transição inválida." };
+    }
 
-    const at = new Date().toISOString();
-    set((s) => ({ orders: applyTransition(s.orders, id, "PRONTO") }));
+    const prevOrders = get().orders;
+    set({ orders: applyTransition(prevOrders, id, "PRONTO") });
+
+    const result = await markOrderReadyAction(id);
+    if (!result.ok) {
+      set({ orders: prevOrders });
+      return result;
+    }
+
     publish({
       type: "order:status-change",
       orderId: id,
       prevStatus: order.status,
       nextStatus: "PRONTO",
-      at,
+      at: new Date().toISOString(),
     });
+    return result;
   },
 
-  callDelivery: (id) => {
+  callDelivery: async (id) => {
     const order = get().orders.find((o) => o.id === id);
-    if (!order || !canTransitionTo(order.status, "A_CAMINHO")) return;
+    if (!order) return { ok: false, message: "Pedido não encontrado." };
+    if (!canTransitionTo(order.status, "A_CAMINHO")) {
+      return { ok: false, message: "Transição inválida." };
+    }
 
-    const person = getRandomDeliveryPerson();
+    const person = useDeliveryPersonsStore.getState().pickRandom();
+    if (!person) {
+      return { ok: false, message: "Nenhum entregador ativo cadastrado." };
+    }
+    const prevOrders = get().orders;
+    set({
+      orders: applyTransition(prevOrders, id, "A_CAMINHO", {
+        deliveryCallId: person.id,
+      }),
+    });
 
-    // Simula latência da chamada à API de WhatsApp (2 s)
-    setTimeout(() => {
-      const at = new Date().toISOString();
-      set((s) => ({
-        orders: applyTransition(s.orders, id, "A_CAMINHO", {
-          deliveryCallId: person.id,
-        }),
-      }));
-      publish({
-        type: "order:status-change",
-        orderId: id,
-        prevStatus: "PRONTO",
-        nextStatus: "A_CAMINHO",
-        at,
-      });
-    }, 2000);
+    const result = await callOrderDeliveryAction(id, person.id);
+    if (!result.ok) {
+      set({ orders: prevOrders });
+      return result;
+    }
+
+    publish({
+      type: "order:status-change",
+      orderId: id,
+      prevStatus: order.status,
+      nextStatus: "A_CAMINHO",
+      at: new Date().toISOString(),
+    });
+    return result;
   },
 
-  markDelivered: (id) => {
+  markDelivered: async (id) => {
     const order = get().orders.find((o) => o.id === id);
-    if (!order || !canTransitionTo(order.status, "ENTREGUE")) return;
+    if (!order) return { ok: false, message: "Pedido não encontrado." };
+    if (!canTransitionTo(order.status, "ENTREGUE")) {
+      return { ok: false, message: "Transição inválida." };
+    }
 
-    const at = new Date().toISOString();
-    set((s) => ({ orders: applyTransition(s.orders, id, "ENTREGUE") }));
+    const prevOrders = get().orders;
+    set({ orders: applyTransition(prevOrders, id, "ENTREGUE") });
+
+    const result = await markOrderDeliveredAction(id);
+    if (!result.ok) {
+      set({ orders: prevOrders });
+      return result;
+    }
+
     publish({
       type: "order:status-change",
       orderId: id,
       prevStatus: order.status,
       nextStatus: "ENTREGUE",
-      at,
+      at: new Date().toISOString(),
     });
+    return result;
   },
 
-  cancelOrder: (id, reason) => {
-    if (!reason.trim()) return;
+  cancelOrder: async (id, reason) => {
+    if (!reason.trim()) return { ok: false, message: "Motivo obrigatório." };
     const order = get().orders.find((o) => o.id === id);
-    if (!order || isTerminal(order.status)) return;
-    if (!canTransitionTo(order.status, "CANCELADO")) return;
+    if (!order) return { ok: false, message: "Pedido não encontrado." };
+    if (isTerminal(order.status)) {
+      return { ok: false, message: "Pedido já em estado terminal." };
+    }
+    if (!canTransitionTo(order.status, "CANCELADO")) {
+      return { ok: false, message: "Transição inválida." };
+    }
 
-    const at = new Date().toISOString();
-    set((s) => ({
-      orders: applyTransition(s.orders, id, "CANCELADO", { cancelReason: reason }),
-    }));
+    const prevOrders = get().orders;
+    set({
+      orders: applyTransition(prevOrders, id, "CANCELADO", { cancelReason: reason }),
+    });
+
+    const result = await cancelOrderAction(id, reason);
+    if (!result.ok) {
+      set({ orders: prevOrders });
+      return result;
+    }
+
     publish({
       type: "order:status-change",
       orderId: id,
       prevStatus: order.status,
       nextStatus: "CANCELADO",
-      at,
+      at: new Date().toISOString(),
       cancelReason: reason,
     });
+    return result;
   },
 
   acknowledgeOrder: (id) => {

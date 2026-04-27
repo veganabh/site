@@ -1,13 +1,13 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import type { AdminKitTemplate } from "@/stores/admin-kits-store";
+import type { GiftKitTemplate } from "@/types/gift-kit";
 
 // ── Tipos ──────────────────────────────────────────────────────────────────────
 
 type KitDeleteDialogProps = {
   /** Kit a ser excluído. null = dialog fechado. */
-  kit: AdminKitTemplate | null;
+  kit: GiftKitTemplate | null;
   onConfirm: () => void;
   onCancel: () => void;
 };

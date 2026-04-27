@@ -20,10 +20,10 @@ import {
   SlidersHorizontal,
   MapPin,
 } from "lucide-react";
-import { AVAILABLE_COUPONS } from "@/lib/coupons";
-import { mockProducts } from "@/lib/mock-products";
-import { mockOrders } from "@/lib/mock-orders";
-import { MOCK_DELIVERY_RINGS } from "@/lib/mock-delivery-rings";
+import { listProducts } from "@/server/products";
+import { listAllRings } from "@/server/rings";
+import { listAdminCoupons } from "@/server/coupons";
+import { listAllOrders } from "@/server/orders";
 
 export const metadata: Metadata = {
   title: "Módulos — Gestão Veg.ana",
@@ -40,28 +40,23 @@ type GestaoCard = {
   phase?: "disponível" | "em construção" | "fase 4";
 };
 
-const lowStock = mockProducts.filter((p) => p.stock > 0 && p.stock <= p.lowStockThreshold).length;
-
-const activeRingsCount = MOCK_DELIVERY_RINGS.filter((r) => r.active).length;
-const maxActiveM = Math.max(
-  ...MOCK_DELIVERY_RINGS.filter((r) => r.active).map((r) => r.outerRadiusM),
-  0,
-);
-const maxKm = maxActiveM / 1000;
-
-const newOrdersCount = mockOrders.filter((o) => o.status === "NOVO").length;
-const inProgressOrdersCount = mockOrders.filter(
-  (o) => o.status === "PREPARANDO" || o.status === "PRONTO" || o.status === "A_CAMINHO",
-).length;
-
-const GESTAO_CARDS: GestaoCard[] = [
+function buildCards(opts: {
+  activeProducts: number;
+  lowStock: number;
+  activeRingsCount: number;
+  maxKm: number;
+  couponsCount: number;
+  newOrdersCount: number;
+  inProgressOrdersCount: number;
+}): GestaoCard[] {
+  return [
   {
     icon: Package,
     title: "Cardápio",
     description: "Gerir produtos, preços de venda e fotos do cardápio.",
     href: "/gestao/cardapio",
-    stat: `${mockProducts.filter((p) => p.active).length} produtos ativos`,
-    statSecondary: lowStock > 0 ? `${lowStock} com estoque baixo` : undefined,
+    stat: `${opts.activeProducts} produtos ativos`,
+    statSecondary: opts.lowStock > 0 ? `${opts.lowStock} com estoque baixo` : undefined,
     phase: "disponível",
   },
   {
@@ -69,7 +64,7 @@ const GESTAO_CARDS: GestaoCard[] = [
     title: "Cupons",
     description: "Criar, desativar e medir o uso de cupons de desconto.",
     href: "/gestao/cupons",
-    stat: `${AVAILABLE_COUPONS.length} cupons cadastrados`,
+    stat: `${opts.couponsCount} cupons cadastrados`,
     phase: "em construção",
   },
   {
@@ -84,8 +79,9 @@ const GESTAO_CARDS: GestaoCard[] = [
     title: "Pedidos",
     description: "Kanban dos pedidos do site — aceitar, preparar, chamar entregador.",
     href: "/gestao/pedidos",
-    stat: `${inProgressOrdersCount} em andamento`,
-    statSecondary: newOrdersCount > 0 ? `${newOrdersCount} novo(s) esperando aceite` : undefined,
+    stat: `${opts.inProgressOrdersCount} em andamento`,
+    statSecondary:
+      opts.newOrdersCount > 0 ? `${opts.newOrdersCount} novo(s) esperando aceite` : undefined,
     phase: "disponível",
   },
   {
@@ -114,7 +110,7 @@ const GESTAO_CARDS: GestaoCard[] = [
     title: "Zonas de Entrega",
     description: "Raio de atendimento, taxa e tempo estimado por região.",
     href: "/gestao/zonas",
-    stat: `${activeRingsCount} anéis ativos (até ${maxKm} km)`,
+    stat: `${opts.activeRingsCount} anéis ativos (até ${opts.maxKm} km)`,
     phase: "disponível",
   },
   {
@@ -124,7 +120,8 @@ const GESTAO_CARDS: GestaoCard[] = [
     href: "/gestao/configuracoes",
     phase: "disponível",
   },
-];
+  ];
+}
 
 const PHASE_LABELS: Record<NonNullable<GestaoCard["phase"]>, string> = {
   disponível: "Disponível",
@@ -138,7 +135,34 @@ const PHASE_CLASSES: Record<NonNullable<GestaoCard["phase"]>, string> = {
   "fase 4": "bg-terra-500/10 text-terra-700",
 };
 
-export default function ModulosPage() {
+export default async function ModulosPage() {
+  const [products, rings, coupons, orders] = await Promise.all([
+    listProducts({ onlyActive: false }),
+    listAllRings(),
+    listAdminCoupons(),
+    listAllOrders(),
+  ]);
+  const activeProducts = products.filter((p) => p.active).length;
+  const lowStock = products.filter(
+    (p) => p.stock > 0 && p.stock <= p.lowStockThreshold,
+  ).length;
+  const activeRingsCount = rings.filter((r) => r.active).length;
+  const maxKm =
+    Math.max(...rings.filter((r) => r.active).map((r) => r.outerRadiusM), 0) / 1000;
+  const newOrdersCount = orders.filter((o) => o.status === "NOVO").length;
+  const inProgressOrdersCount = orders.filter(
+    (o) => o.status === "PREPARANDO" || o.status === "PRONTO" || o.status === "A_CAMINHO",
+  ).length;
+  const cards = buildCards({
+    activeProducts,
+    lowStock,
+    activeRingsCount,
+    maxKm,
+    couponsCount: coupons.length,
+    newOrdersCount,
+    inProgressOrdersCount,
+  });
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -154,7 +178,7 @@ export default function ModulosPage() {
         </h2>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {GESTAO_CARDS.map((card) => {
+          {cards.map((card) => {
             const Icon = card.icon;
             const phase = card.phase ?? "disponível";
             const isUnavailable = phase !== "disponível";

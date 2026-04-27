@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check, Mail, Phone, User } from "lucide-react";
+import { useActionState, useEffect, useState } from "react";
+import { Check, IdCard, Mail, Phone, User } from "lucide-react";
+
+import { useAuth } from "@/components/providers/auth-provider";
 import { cn } from "@/lib/utils";
-import { useDevSessionStore } from "@/stores/dev-session-store";
+import { updateProfileAction, type ProfileActionResult } from "@/server/profile/actions";
 
 const SAVED_FEEDBACK_MS = 2200;
+const INITIAL_STATE: ProfileActionResult | null = null;
 
 function formatPhone(raw: string): string {
   const digits = raw.replace(/\D/g, "").slice(0, 11);
@@ -17,19 +20,44 @@ function formatPhone(raw: string): string {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
 
-function isValidEmail(v: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+function formatCpf(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9)
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 }
 
 export function ProfileForm() {
-  const user = useDevSessionStore((s) => s.user);
-  const updateUser = useDevSessionStore((s) => s.updateUser);
+  const { user, refresh } = useAuth();
 
-  const [firstName, setFirstName] = useState(user.firstName);
-  const [lastName, setLastName] = useState(user.lastName);
-  const [email, setEmail] = useState(user.email);
-  const [phone, setPhone] = useState(user.phone);
+  const [firstName, setFirstName] = useState(user?.firstName ?? "");
+  const [lastName, setLastName] = useState(user?.lastName ?? "");
+  const [phone, setPhone] = useState(user?.phone ?? "");
+  const [cpf, setCpf] = useState(user?.cpf ? formatCpf(user.cpf) : "");
   const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.firstName);
+      setLastName(user.lastName);
+      setPhone(user.phone);
+      setCpf(user.cpf ? formatCpf(user.cpf) : "");
+    }
+  }, [user]);
+
+  const [state, formAction, pending] = useActionState<ProfileActionResult | null, FormData>(
+    async (_prev, formData) => {
+      const result = await updateProfileAction(formData);
+      if (result.ok) {
+        await refresh();
+        setSavedAt(Date.now());
+      }
+      return result;
+    },
+    INITIAL_STATE,
+  );
 
   useEffect(() => {
     if (!savedAt) return;
@@ -38,31 +66,17 @@ export function ProfileForm() {
   }, [savedAt]);
 
   const dirty =
-    firstName.trim() !== user.firstName ||
-    lastName.trim() !== user.lastName ||
-    email.trim() !== user.email ||
-    phone !== user.phone;
+    user !== null &&
+    (firstName.trim() !== user.firstName ||
+      lastName.trim() !== user.lastName ||
+      phone !== user.phone ||
+      cpf.replace(/\D/g, "") !== user.cpf);
 
-  const firstNameOk = firstName.trim().length >= 2;
-  const emailOk = isValidEmail(email);
-  const phoneOk = phone.replace(/\D/g, "").length >= 10;
-  const canSave = dirty && firstNameOk && emailOk && phoneOk;
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!canSave) return;
-    updateUser({
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      email: email.trim(),
-      phone,
-    });
-    setSavedAt(Date.now());
-  }
+  const fieldErrors = state && !state.ok ? state.fieldErrors ?? {} : {};
 
   return (
     <form
-      onSubmit={handleSubmit}
+      action={formAction}
       aria-labelledby="perfil-dados-titulo"
       className="flex flex-col gap-4 rounded-2xl border border-divider bg-paper-50 p-4 md:p-5"
     >
@@ -81,37 +95,43 @@ export function ProfileForm() {
           label="Primeiro nome"
           icon={User}
           inputProps={{
+            name: "firstName",
             value: firstName,
             onChange: (e) => setFirstName(e.target.value),
             autoComplete: "given-name",
             placeholder: "Ana",
+            required: true,
           }}
+          errors={fieldErrors.firstName}
         />
         <Field
           label="Sobrenome"
           icon={User}
           inputProps={{
+            name: "lastName",
             value: lastName,
             onChange: (e) => setLastName(e.target.value),
             autoComplete: "family-name",
             placeholder: "Ribeiro",
           }}
+          errors={fieldErrors.lastName}
         />
         <Field
           label="E-mail"
           icon={Mail}
           inputProps={{
-            value: email,
-            onChange: (e) => setEmail(e.target.value),
-            autoComplete: "email",
+            value: user?.email ?? "",
+            disabled: true,
             type: "email",
             placeholder: "ana@exemplo.com",
           }}
+          hint="Pra mudar o email, fala com a gente."
         />
         <Field
           label="WhatsApp"
           icon={Phone}
           inputProps={{
+            name: "phone",
             value: phone,
             onChange: (e) => setPhone(formatPhone(e.target.value)),
             autoComplete: "tel",
@@ -119,8 +139,32 @@ export function ProfileForm() {
             inputMode: "numeric",
             placeholder: "(31) 99999-9999",
           }}
+          errors={fieldErrors.phone}
+        />
+        <Field
+          label="CPF"
+          icon={IdCard}
+          inputProps={{
+            name: "cpf",
+            value: cpf,
+            onChange: (e) => setCpf(formatCpf(e.target.value)),
+            autoComplete: "off",
+            inputMode: "numeric",
+            placeholder: "000.000.000-00",
+          }}
+          errors={fieldErrors.cpf}
+          hint="Necessário pra emitir o PIX. Fica só com a Veg.ana."
         />
       </div>
+
+      {state && !state.ok ? (
+        <p
+          role="alert"
+          className="rounded-md bg-terra-500/10 px-3 py-2 text-[12px] font-semibold text-terra-700"
+        >
+          {state.message}
+        </p>
+      ) : null}
 
       <div className="flex items-center justify-between gap-3 pt-1">
         {savedAt ? (
@@ -140,15 +184,15 @@ export function ProfileForm() {
 
         <button
           type="submit"
-          disabled={!canSave}
+          disabled={!dirty || pending}
           className={cn(
             "inline-flex h-10 items-center justify-center gap-2 rounded-pill px-5 text-[13px] font-semibold transition-colors",
-            canSave
+            dirty && !pending
               ? "bg-terra-500 text-paper-50 hover:bg-terra-700"
               : "cursor-not-allowed bg-sage-300 text-paper-50/80",
           )}
         >
-          Salvar alterações
+          {pending ? "Salvando…" : "Salvar alterações"}
         </button>
       </div>
     </form>
@@ -159,9 +203,11 @@ type FieldProps = {
   label: string;
   icon: React.ElementType;
   inputProps: React.InputHTMLAttributes<HTMLInputElement>;
+  errors?: string[];
+  hint?: string;
 };
 
-function Field({ label, icon: Icon, inputProps }: FieldProps) {
+function Field({ label, icon: Icon, inputProps, errors, hint }: FieldProps) {
   return (
     <label className="flex flex-col gap-1">
       <span className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
@@ -174,9 +220,20 @@ function Field({ label, icon: Icon, inputProps }: FieldProps) {
         />
         <input
           {...inputProps}
-          className="h-10 w-full rounded-md border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50"
+          aria-invalid={Boolean(errors?.length)}
+          className={cn(
+            "h-10 w-full rounded-md border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50",
+            inputProps.disabled && "bg-paper-100 text-olive-700/70",
+          )}
         />
       </div>
+      {errors?.length ? (
+        <span role="alert" className="text-[11px] font-semibold text-terra-700">
+          {errors[0]}
+        </span>
+      ) : hint ? (
+        <span className="text-[11px] text-olive-700/60">{hint}</span>
+      ) : null}
     </label>
   );
 }

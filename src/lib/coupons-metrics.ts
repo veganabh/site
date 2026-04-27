@@ -6,7 +6,7 @@
  */
 
 import type { Coupon } from "@/types/coupon";
-import { computeCouponStatus } from "@/lib/mock-coupons-admin";
+import { computeCouponStatus } from "@/lib/coupon-status";
 
 export type CouponsMetrics = {
   /** Cupons com status computado ATIVO. */

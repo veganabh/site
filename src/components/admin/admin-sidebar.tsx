@@ -19,10 +19,10 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import { useAdminOrdersStore } from "@/stores/admin-orders-store";
-import { useDevSessionStore } from "@/stores/dev-session-store";
 import { useSidebarStore } from "@/stores/sidebar-store";
 import { AdminNavItem } from "@/components/admin/admin-nav-item";
 import { cn } from "@/lib/utils";
+import { signOutAction } from "@/server/auth/actions";
 
 // ── Definição dos módulos de nav ──────────────────────────────────────────────
 
@@ -102,11 +102,6 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
   const newOrderCount = useAdminOrdersStore(
     (s) => s.orders.filter((o) => o.status === "NOVO").length,
   );
-  const resetUser = useDevSessionStore((s) => s.resetUser);
-
-  function handleExitAdmin() {
-    resetUser();
-  }
 
   return (
     <div className="flex h-full flex-col">
@@ -219,35 +214,34 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
           {!collapsed && <span className="text-body-sm font-medium">Ver loja pública</span>}
         </Link>
 
-        <button
-          type="button"
-          onClick={() => {
-            handleExitAdmin();
-            onClose?.();
-          }}
-          aria-label="Sair do painel admin e voltar como cliente"
-          title={collapsed ? "Sair do admin" : undefined}
-          className={cn(
-            "flex items-center rounded-md text-terra-700 transition-colors hover:bg-terra-500/10 hover:text-terra-700",
-            collapsed ? "h-10 w-10 justify-center" : "w-full gap-3 px-3 py-2",
-          )}
-        >
-          <svg
-            className="h-[18px] w-[18px] shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.75}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            onClick={() => onClose?.()}
+            aria-label="Sair do painel admin"
+            title={collapsed ? "Sair" : undefined}
+            className={cn(
+              "flex items-center rounded-md text-terra-700 transition-colors hover:bg-terra-500/10 hover:text-terra-700",
+              collapsed ? "h-10 w-10 justify-center" : "w-full gap-3 px-3 py-2",
+            )}
           >
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-            <polyline points="16 17 21 12 16 7" />
-            <line x1="21" y1="12" x2="9" y2="12" />
-          </svg>
-          {!collapsed && <span className="text-body-sm font-medium">Sair do admin</span>}
-        </button>
+              <svg
+              className="h-[18px] w-[18px] shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.75}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            {!collapsed && <span className="text-body-sm font-medium">Sair</span>}
+          </button>
+        </form>
 
         {/* Toggle fica no rodapé quando collapsed */}
         {collapsed && onToggleCollapse && (

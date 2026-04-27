@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Plus, Pencil, Trash2, MapPin } from "lucide-react";
 import {
   AddressFormModal,
@@ -10,14 +10,17 @@ import {
 import { formatBRL } from "@/lib/format";
 import { useAddressStore } from "@/stores/address-store";
 import type { Address } from "@/stores/address-store";
+import { removeAddressAction } from "@/server/profile/address-actions";
 
 export function AddressManager() {
   const addresses = useAddressStore((s) => s.addresses);
-  const removeAddress = useAddressStore((s) => s.removeAddress);
+  const removeAddressLocal = useAddressStore((s) => s.removeAddressLocal);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Address | null>(null);
   const [toRemoveId, setToRemoveId] = useState<string | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
+  const [removing, startRemoving] = useTransition();
 
   function handleAddNew() {
     setEditing(null);
@@ -30,8 +33,18 @@ export function AddressManager() {
   }
 
   function confirmRemove() {
-    if (toRemoveId) removeAddress(toRemoveId);
-    setToRemoveId(null);
+    const id = toRemoveId;
+    if (!id) return;
+    setRemoveError(null);
+    startRemoving(async () => {
+      const result = await removeAddressAction(id);
+      if (!result.ok) {
+        setRemoveError(result.message);
+        return;
+      }
+      removeAddressLocal(id);
+      setToRemoveId(null);
+    });
   }
 
   return (
@@ -128,7 +141,7 @@ export function AddressManager() {
           aria-label="Confirmar remoção"
           className="fixed inset-0 z-50 flex items-center justify-center bg-olive-900/40 backdrop-blur-sm"
           onClick={(e) => {
-            if (e.target === e.currentTarget) setToRemoveId(null);
+            if (e.target === e.currentTarget && !removing) setToRemoveId(null);
           }}
         >
           <div className="w-full max-w-sm rounded-2xl bg-paper-50 p-6 shadow-lg">
@@ -136,20 +149,30 @@ export function AddressManager() {
             <p className="mt-2 text-body-sm text-olive-700">
               A gente não apaga em outros lugares — só daqui da sua lista.
             </p>
+            {removeError ? (
+              <p
+                role="alert"
+                className="mt-3 rounded-md bg-terra-500/10 px-3 py-2 text-[12px] font-semibold text-terra-700"
+              >
+                {removeError}
+              </p>
+            ) : null}
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setToRemoveId(null)}
-                className="inline-flex h-10 items-center rounded-pill px-4 text-[13px] font-semibold text-olive-700 hover:bg-paper-100"
+                disabled={removing}
+                className="inline-flex h-10 items-center rounded-pill px-4 text-[13px] font-semibold text-olive-700 hover:bg-paper-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 onClick={confirmRemove}
-                className="inline-flex h-10 items-center rounded-pill bg-error px-4 text-[13px] font-semibold text-paper-50 hover:bg-error/90"
+                disabled={removing}
+                className="inline-flex h-10 items-center rounded-pill bg-error px-4 text-[13px] font-semibold text-paper-50 hover:bg-error/90 disabled:cursor-wait disabled:opacity-70"
               >
-                Remover
+                {removing ? "Removendo…" : "Remover"}
               </button>
             </div>
           </div>

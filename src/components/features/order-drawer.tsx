@@ -6,7 +6,7 @@ import { X, Phone, MapPin, Package, Tag, Truck } from "lucide-react";
 import type { OrderStatus } from "@/types/order";
 import { canTransitionTo, isTerminal } from "@/types/order";
 import { useAdminOrdersStore } from "@/stores/admin-orders-store";
-import { MOCK_DELIVERY_PERSONS } from "@/lib/mock-delivery-persons";
+import { useDeliveryPersonsStore } from "@/stores/delivery-persons-store";
 import { formatBRL } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CancelReasonDialog } from "@/components/features/cancel-reason-dialog";
@@ -73,9 +73,8 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
     if (orderId) acknowledgeOrder(orderId);
   }, [orderId, acknowledgeOrder]);
 
-  const deliveryPerson = order?.deliveryCallId
-    ? MOCK_DELIVERY_PERSONS.find((p) => p.id === order.deliveryCallId)
-    : null;
+  const findDeliveryPerson = useDeliveryPersonsStore((s) => s.findById);
+  const deliveryPerson = findDeliveryPerson(order?.deliveryCallId);
 
   function handleCancel() {
     setCancelMode("cancel");
@@ -121,7 +120,7 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                 <div className="flex items-center justify-between border-b border-divider px-5 py-4">
                   <div className="flex flex-col gap-0.5">
                     <Dialog.Title className="text-body font-bold text-olive-900">
-                      Pedido #{order.id}
+                      Pedido #{order.orderNumber}
                     </Dialog.Title>
                     <p id="order-drawer-description" className="text-caption text-olive-700">
                       {formatDateTime(order.createdAt)} · {STATUS_LABELS[order.status]}

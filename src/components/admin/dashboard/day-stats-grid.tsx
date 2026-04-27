@@ -2,7 +2,8 @@
  * day-stats-grid.tsx — Grid de estatísticas do dia com hierarquia visual.
  *
  * Server Component: recebe métricas já calculadas como props.
- * Os valores de "ontem" (deltas) vêm do mock-dashboard-deltas até integração Supabase.
+ * "Ontem" vem de calcDayMetrics(orders, yesterday) sobre a mesma lista de
+ * orders já carregada — sem query extra.
  *
  * Hierarquia (alinhado com /gestao/pedidos DayStatsStrip):
  *   - Primários: Receita + Pedidos (bg olive-900/[0.04], border-leaf accent, text-h4)

@@ -2,7 +2,6 @@
 
 import { create } from "zustand";
 import type { Product } from "@/types/product";
-import { mockProducts } from "@/lib/mock-products";
 
 type MenuStore = {
   products: Product[];
@@ -33,7 +32,7 @@ type MenuStore = {
 };
 
 export const useMenuStore = create<MenuStore>((set, get) => ({
-  products: mockProducts.map((p) => ({ ...p })),
+  products: [],
 
   addProduct: (product) => set((state) => ({ products: [...state.products, product] })),
 

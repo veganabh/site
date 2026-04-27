@@ -17,20 +17,18 @@
 import Link from "next/link";
 import { ClipboardList, Clock, Package } from "lucide-react";
 import { useAdminOrdersStore } from "@/stores/admin-orders-store";
+import { useMenuStore } from "@/stores/menu-store";
 import { countDelayedOrders } from "@/lib/dashboard-metrics";
-import { mockProducts } from "@/lib/mock-products";
-
-/** Produtos com estoque crítico — calculado em módulo (não reage a runtime, mock). */
-const LOW_STOCK_COUNT = mockProducts.filter(
-  (p) => p.active && p.stock > 0 && p.stock <= p.lowStockThreshold,
-).length;
 
 export function AttentionHero() {
   const orders = useAdminOrdersStore((s) => s.orders);
+  const products = useMenuStore((s) => s.products);
 
   const newCount = orders.filter((o) => o.status === "NOVO").length;
   const delayedCount = countDelayedOrders(orders);
-  const lowStockCount = LOW_STOCK_COUNT;
+  const lowStockCount = products.filter(
+    (p) => p.active && p.stock > 0 && p.stock <= p.lowStockThreshold,
+  ).length;
 
   const hasAlerts = newCount > 0 || delayedCount > 0 || lowStockCount > 0;
 

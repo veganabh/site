@@ -1,11 +1,10 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { Product } from "@/types/product";
-import type { GiftKitPick, GiftKitRecipient, KitCartItem } from "@/types/gift-kit";
+import type { GiftKitPick, GiftKitRecipient, GiftKitTemplate, KitCartItem } from "@/types/gift-kit";
 import { GIFT_PACKAGING_PRICE } from "@/types/gift-kit";
-import { findKitById } from "@/lib/mock-gift-kits";
-import { validateCoupon } from "@/lib/coupons";
-import type { Coupon } from "@/lib/coupons";
+import { applyCouponAction } from "@/server/actions/apply-coupon";
+import type { CouponType } from "@/types/coupon";
 
 export type CartItem = {
   product: Product;
@@ -17,6 +16,21 @@ export type CartItem = {
   fromCrossSell?: boolean;
 };
 
+/**
+ * Cupom aplicado no carrinho. Shape mínimo derivado da tabela `coupons`
+ * via RPC `validate_coupon`. Sem `discount` como método — `computeCouponDiscount`
+ * em `lib/coupons` calcula client-side a partir desse shape.
+ */
+export type AppliedCoupon = {
+  id: string;
+  code: string;
+  label: string;
+  hint: string;
+  type: CouponType;
+  /** Para PERCENTUAL: 0–100 (%). Para FIXO: valor em R$. Para FRETE_GRATIS: 0. */
+  value: number;
+};
+
 type CartStore = {
   items: CartItem[];
   /**
@@ -26,7 +40,7 @@ type CartStore = {
   kits: KitCartItem[];
 
   /** Cupom aplicado no momento. null = sem cupom. */
-  appliedCoupon: Coupon | null;
+  appliedCoupon: AppliedCoupon | null;
 
   /**
    * @deprecated Mantido temporariamente para compat. Solução 2:
@@ -58,10 +72,13 @@ type CartStore = {
   ) => void;
 
   /**
-   * Aplica um cupom pelo código (case-insensitive).
-   * Retorna true se válido e aplicado, false se inválido.
+   * Aplica cupom validado server-side via RPC `validate_coupon`.
+   * Retorna { ok: true } ou { ok: false, message } pra UI exibir erro.
    */
-  applyCoupon: (code: string) => boolean;
+  applyCoupon: (
+    code: string,
+    subtotalCents: number,
+  ) => Promise<{ ok: true } | { ok: false; message: string }>;
   removeCoupon: () => void;
 
   /**
@@ -136,11 +153,13 @@ export const useCartStore = create<CartStore>()(
           kits: state.kits.map((k) => (k.cartId === cartId ? { ...k, ...patch } : k)),
         })),
 
-      applyCoupon: (code) => {
-        const coupon = validateCoupon(code);
-        if (!coupon) return false;
-        set({ appliedCoupon: coupon });
-        return true;
+      applyCoupon: async (code, subtotalCents) => {
+        const result = await applyCouponAction({ code, subtotalCents });
+        if (!result.ok) {
+          return { ok: false, message: result.message };
+        }
+        set({ appliedCoupon: result.coupon });
+        return { ok: true };
       },
 
       removeCoupon: () => set({ appliedCoupon: null }),
@@ -161,7 +180,7 @@ export const useCartStore = create<CartStore>()(
     {
       name: "vegana-cart-v1",
       storage: createJSONStorage(() => localStorage),
-      version: 1,
+      version: 2,
       // Persiste só carrinho real. `crossSellAccepted` é flag deprecada (live recompute).
       partialize: (state) => ({
         items: state.items,
@@ -169,7 +188,8 @@ export const useCartStore = create<CartStore>()(
         appliedCoupon: state.appliedCoupon,
       }),
       migrate() {
-        // Shape mudou → reset seguro (evita blob corrupto quebrar /carrinho).
+        // v1 → v2: shape do appliedCoupon mudou (sem método `discount`).
+        // Reset seguro evita blob corrupto quebrar /carrinho.
         return {
           items: [],
           kits: [],
@@ -182,15 +202,18 @@ export const useCartStore = create<CartStore>()(
 
 // ── Selectors ────────────────────────────────────────────────────────────
 // Helpers para consumidores agregarem itens avulsos + kits no total.
+// Templates são injetados pelo caller (via useGiftKitsStore) — evita
+// dependência cíclica entre stores e mantém função pura.
 
-export function kitLinePrice(kit: KitCartItem): number {
-  const template = findKitById(kit.templateId);
+export function kitLinePrice(kit: KitCartItem, template: GiftKitTemplate | undefined): number {
   if (!template) return 0;
   return template.price + (kit.packaging ? GIFT_PACKAGING_PRICE : 0);
 }
 
-export function kitLinePriceIfoodAnchor(kit: KitCartItem): number {
-  const template = findKitById(kit.templateId);
+export function kitLinePriceIfoodAnchor(
+  kit: KitCartItem,
+  template: GiftKitTemplate | undefined,
+): number {
   if (!template) return 0;
   return template.priceIfoodAnchor + (kit.packaging ? GIFT_PACKAGING_PRICE : 0);
 }
@@ -200,14 +223,26 @@ export function cartUnitCount(state: Pick<CartStore, "items" | "kits">): number 
   return itemUnits + state.kits.length;
 }
 
-export function cartSubtotal(state: Pick<CartStore, "items" | "kits">): number {
+export function cartSubtotal(
+  state: Pick<CartStore, "items" | "kits">,
+  templatesById: Map<string, GiftKitTemplate>,
+): number {
   const itemsSubtotal = state.items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
-  const kitsSubtotal = state.kits.reduce((acc, k) => acc + kitLinePrice(k), 0);
+  const kitsSubtotal = state.kits.reduce(
+    (acc, k) => acc + kitLinePrice(k, templatesById.get(k.templateId)),
+    0,
+  );
   return itemsSubtotal + kitsSubtotal;
 }
 
-export function cartIfoodAnchor(state: Pick<CartStore, "items" | "kits">): number {
+export function cartIfoodAnchor(
+  state: Pick<CartStore, "items" | "kits">,
+  templatesById: Map<string, GiftKitTemplate>,
+): number {
   const itemsAnchor = state.items.reduce((acc, i) => acc + i.product.price_ifood * i.quantity, 0);
-  const kitsAnchor = state.kits.reduce((acc, k) => acc + kitLinePriceIfoodAnchor(k), 0);
+  const kitsAnchor = state.kits.reduce(
+    (acc, k) => acc + kitLinePriceIfoodAnchor(k, templatesById.get(k.templateId)),
+    0,
+  );
   return itemsAnchor + kitsAnchor;
 }

@@ -3,15 +3,15 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, LogIn, UserCheck, UserX } from "lucide-react";
+import { Bell, LogIn, LogOut, UserCog } from "lucide-react";
+import { ActiveOrderChip } from "@/components/dashboard/active-order-chip";
 import { SearchBar } from "@/components/dashboard/search-bar";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth/use-session";
-import { useDevSessionStore } from "@/stores/dev-session-store";
+import { signOutAction } from "@/server/auth/actions";
 
 const OPEN_HOUR = 10;
 const CLOSE_HOUR = 20;
-const IS_DEV = process.env.NODE_ENV !== "production";
 
 type TopBarProps = {
   className?: string;
@@ -20,7 +20,6 @@ type TopBarProps = {
 export function TopBar({ className }: TopBarProps) {
   const pathname = usePathname() ?? "/";
   const { isAuthed, user } = useSession();
-  const toggleAuth = useDevSessionStore((s) => s.toggle);
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -57,13 +56,12 @@ export function TopBar({ className }: TopBarProps) {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        {/* Status de funcionamento — descontraído, cor indica estado */}
+        <ActiveOrderChip />
+
+        {/* Status da loja — visual neutro pra não competir com o ActiveOrderChip. */}
         {now && (
           <div
-            className={cn(
-              "hidden items-center gap-2 rounded-pill px-3 py-1.5 text-[12px] font-semibold md:inline-flex",
-              isOpen ? "bg-leaf-500/10 text-leaf-700" : "bg-terra-500/10 text-terra-700",
-            )}
+            className="hidden items-center gap-2 rounded-pill border border-divider bg-paper-50 px-3 py-1.5 text-[12px] font-medium text-olive-700 md:inline-flex"
             aria-live="polite"
           >
             <span
@@ -73,34 +71,8 @@ export function TopBar({ className }: TopBarProps) {
               )}
               aria-hidden="true"
             />
-            {isOpen ? `Forno ligado · até ${CLOSE_HOUR}h` : `Forno em pausa · volta ${OPEN_HOUR}h`}
+            {isOpen ? "Loja aberta" : "Loja fechada"}
           </div>
-        )}
-
-        {/* Dev toggle — mobile only (desktop tem na Sidebar) */}
-        {IS_DEV && (
-          <button
-            type="button"
-            onClick={toggleAuth}
-            aria-label={
-              isAuthed
-                ? "Dev: sessão autenticada (clicar pra simular anônimo)"
-                : "Dev: sessão anônima (clicar pra simular logado)"
-            }
-            title={isAuthed ? "Dev · logado" : "Dev · anônimo"}
-            className={cn(
-              "relative inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors md:hidden",
-              isAuthed
-                ? "border-leaf-500/40 bg-leaf-500/10 text-leaf-700"
-                : "border-divider bg-paper-100 text-olive-700",
-            )}
-          >
-            {isAuthed ? (
-              <UserCheck className="h-4 w-4" aria-hidden="true" />
-            ) : (
-              <UserX className="h-4 w-4" aria-hidden="true" />
-            )}
-          </button>
         )}
 
         <button
@@ -113,23 +85,53 @@ export function TopBar({ className }: TopBarProps) {
         </button>
 
         {isAuthed ? (
-          <Link
-            href="/conta/perfil"
-            aria-current={pathname.startsWith("/conta/perfil") ? "page" : undefined}
-            aria-label={`Abrir perfil de ${user?.firstName ?? "usuário"}`}
-            className="ml-0.5 flex items-center gap-2.5 rounded-pill border border-divider bg-paper-50 py-1 pr-3 pl-1 transition-colors hover:bg-paper-100"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sage-300 text-[14px] font-bold text-olive-900">
-              {initial}
-            </span>
-            <div className="hidden leading-tight md:block">
-              <p className="text-[13px] font-semibold text-olive-900">{user?.firstName}</p>
-              <p className="text-[11px] text-olive-900/60">{user?.city}</p>
+          <details className="group relative ml-0.5">
+            <summary
+              aria-label={`Menu da conta de ${user?.firstName ?? "usuário"}`}
+              className={cn(
+                "flex cursor-pointer list-none items-center gap-2.5 rounded-pill border border-divider bg-paper-50 py-1 pr-3 pl-1 transition-colors",
+                "hover:bg-paper-100",
+                "[&::-webkit-details-marker]:hidden",
+              )}
+            >
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sage-300 text-[14px] font-bold text-olive-900">
+                {initial}
+              </span>
+              <div className="hidden leading-tight md:block">
+                <p className="text-[13px] font-semibold text-olive-900">{user?.firstName}</p>
+                <p className="text-[11px] text-olive-900/60">{user?.city}</p>
+              </div>
+            </summary>
+
+            <div className="absolute top-full right-0 z-30 mt-1 w-56 origin-top-right rounded-md border border-divider bg-paper-50 shadow-md">
+              <div className="border-b border-divider px-4 py-3">
+                <p className="text-body-sm font-semibold text-olive-900">{user?.firstName}</p>
+                <p className="truncate text-caption text-olive-700">{user?.email}</p>
+              </div>
+              <div className="p-1">
+                <Link
+                  href="/conta/perfil"
+                  aria-current={pathname.startsWith("/conta/perfil") ? "page" : undefined}
+                  className="flex items-center gap-2 rounded-sm px-3 py-2 text-body-sm text-olive-900 transition-colors hover:bg-paper-100"
+                >
+                  <UserCog className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  Meus dados
+                </Link>
+                <form action={signOutAction}>
+                  <button
+                    type="submit"
+                    className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-body-sm text-terra-700 transition-colors hover:bg-terra-500/10"
+                  >
+                    <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    Sair
+                  </button>
+                </form>
+              </div>
             </div>
-          </Link>
+          </details>
         ) : (
           <Link
-            href="/conta"
+            href="/login"
             className="ml-0.5 inline-flex h-9 items-center gap-1.5 rounded-pill bg-olive-900 px-3.5 text-[13px] font-semibold text-paper-50 transition-colors hover:bg-olive-700"
           >
             <LogIn className="h-3.5 w-3.5" aria-hidden="true" />

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Gift, Package, MessageCircle, MapPin } from "lucide-react";
 import { ProductGridPhoto } from "@/components/dashboard/product-grid-photo";
 import { CategoryCircles } from "@/components/dashboard/category-circles";
-import { mockProducts } from "@/lib/mock-products";
+import { listProducts } from "@/server/products";
 import { KitGrid } from "@/components/gift/kit-grid";
 
 export const metadata: Metadata = {
@@ -11,8 +11,8 @@ export const metadata: Metadata = {
     "Doces veganos pra levar, mandar, emocionar. Kits curados com embalagem bonita e cartão personalizado.",
 };
 
-export default function PresentearPage() {
-  const giftProducts = mockProducts.filter((p) => p.tags.includes("presente"));
+export default async function PresentearPage() {
+  const giftProducts = await listProducts({ tag: "presente" });
 
   return (
     <div className="flex flex-col gap-5">

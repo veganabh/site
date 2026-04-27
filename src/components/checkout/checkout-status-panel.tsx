@@ -1,8 +1,10 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { CheckCircle2, Circle, ClipboardList, Gift, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
+import { computeCouponDiscount } from "@/lib/coupons";
 import { ProductPhoto } from "@/components/features/product-photo";
 import { useCartStore } from "@/stores/cart-store";
 import { useAddressStore, selectCurrentAddress } from "@/stores/address-store";
@@ -28,7 +30,15 @@ function stepIndex(step: CheckoutStep): number {
 }
 
 export function CheckoutStatusPanel({ className }: { className?: string }) {
-  const currentStep = useCheckoutStore((s) => s.step);
+  const storeStep = useCheckoutStore((s) => s.step);
+  const pathname = usePathname();
+
+  // Path > store. F5 em /obrigado zera a store em memória — pathname é a
+  // fonte de verdade que sobrevive reload. Path /obrigado/* sempre cai em
+  // "confirmado" mesmo com store resetado.
+  const currentStep: CheckoutStep = pathname?.startsWith("/obrigado")
+    ? "confirmado"
+    : storeStep;
   const currentIdx = stepIndex(currentStep);
 
   // Resumo aparece em endereço e pagamento — acompanha usuário até pagar
@@ -109,7 +119,7 @@ function OrderSummaryMini() {
   const subtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
   const shippingFee = step === "pagamento" ? (currentAddress?.shippingFee ?? 0) : 0;
   const cartCtx = { subtotal, shippingFee };
-  const couponDiscount = appliedCoupon ? appliedCoupon.discount(subtotal, cartCtx) : 0;
+  const couponDiscount = appliedCoupon ? computeCouponDiscount(appliedCoupon, cartCtx) : 0;
   const total = subtotal - couponDiscount + shippingFee;
 
   return (

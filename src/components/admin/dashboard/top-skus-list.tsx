@@ -1,19 +1,21 @@
 /**
  * top-skus-list.tsx — Lista dos top SKUs vendidos no dia.
  *
- * Server Component: recebe lista pré-calculada de SkuStat como props.
- * Thumbnail buscado em mockProducts pelo productId.
+ * Server Component: recebe lista pré-calculada de SkuStat + map de
+ * thumbnails (productId → photo) montado pelo caller.
  */
 
 import Image from "next/image";
-import { mockProducts } from "@/lib/mock-products";
 import type { SkuStat } from "@/lib/dashboard-metrics";
+
+export type ProductThumb = { url: string; alt: string };
 
 type TopSkusListProps = {
   skus: SkuStat[];
+  thumbs: Map<string, ProductThumb>;
 };
 
-export function TopSkusList({ skus }: TopSkusListProps) {
+export function TopSkusList({ skus, thumbs }: TopSkusListProps) {
   if (skus.length === 0) {
     return (
       <div className="flex flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
@@ -29,7 +31,7 @@ export function TopSkusList({ skus }: TopSkusListProps) {
 
       <ol className="flex flex-col gap-2">
         {skus.map((sku, index) => {
-          const product = mockProducts.find((p) => p.id === sku.productId);
+          const thumb = thumbs.get(sku.productId);
           const isTop = index === 0;
           const revenue = sku.revenue.toLocaleString("pt-BR", {
             style: "currency",
@@ -40,10 +42,10 @@ export function TopSkusList({ skus }: TopSkusListProps) {
             <li key={sku.productId} className="flex items-center gap-2">
               {/* Thumbnail */}
               <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-sm bg-paper-100">
-                {product?.photo?.url ? (
+                {thumb ? (
                   <Image
-                    src={product.photo.url}
-                    alt={product.photo.alt ?? sku.productName}
+                    src={thumb.url}
+                    alt={thumb.alt || sku.productName}
                     fill
                     sizes="36px"
                     className="object-cover"

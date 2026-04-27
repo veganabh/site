@@ -71,6 +71,11 @@ export type OrderItem = {
 
 export type Order = {
   id: string;
+  /**
+   * Numero humano sequencial (bigserial em `public.orders.order_number`).
+   * Usado em UI e WhatsApp — `#1042`. URLs usam `id` (UUID) por estabilidade.
+   */
+  orderNumber: number;
   /** ISO 8601 — quando o pedido foi criado. */
   createdAt: string;
   /** ISO 8601 — última atualização de status. */

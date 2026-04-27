@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, ArrowRight, Package, MessageCircle, MapPin } from "lucide-react";
-import { findKitBySlug } from "@/lib/mock-gift-kits";
+import { getGiftKitBySlug } from "@/server/gift-kits";
 import { KitCoverPhoto } from "@/components/gift/kit-cover-photo";
+import { KitIcon } from "@/components/gift/kit-icon";
 import { formatBRL } from "@/lib/format";
 
 type PageProps = {
@@ -12,7 +13,7 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const kit = findKitBySlug(slug);
+  const kit = await getGiftKitBySlug(slug);
   if (!kit) return { title: "Kit — Veg.ana" };
   return {
     title: `${kit.name} — Veg.ana`,
@@ -22,10 +23,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function KitDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const kit = findKitBySlug(slug);
+  const kit = await getGiftKitBySlug(slug);
   if (!kit) notFound();
 
-  const Icon = kit.icon;
   const totalItems = kit.slots.reduce((acc, s) => acc + s.qty, 0);
   const savingsVsIfood = kit.priceIfoodAnchor - kit.price;
 
@@ -44,7 +44,7 @@ export default async function KitDetailPage({ params }: PageProps) {
           <div className="relative aspect-[5/4] overflow-hidden rounded-2xl bg-paper-100 shadow-sm">
             <KitCoverPhoto photo={kit.coverPhoto} priority />
             <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-pill bg-paper-50/95 px-2.5 py-1 text-[11px] font-bold text-olive-900 shadow-sm backdrop-blur-sm">
-              <Icon className="h-3 w-3 text-terra-700" aria-hidden="true" />
+              <KitIcon name={kit.iconName} className="h-3 w-3 text-terra-700" aria-hidden="true" />
               Kit de Presente
             </span>
           </div>

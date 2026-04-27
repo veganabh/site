@@ -5,18 +5,20 @@ import { ArrowRight } from "lucide-react";
 import { KitCoverPhoto } from "@/components/gift/kit-cover-photo";
 import { KitDeliveryGate } from "@/components/gift/kit-delivery-gate";
 import { formatBRL } from "@/lib/format";
-import { mockGiftKits } from "@/lib/mock-gift-kits";
+import { resolveKitIcon } from "@/lib/kit-icons";
+import { useGiftKitsStore } from "@/stores/gift-kits-store";
 import type { GiftKitTemplate } from "@/types/gift-kit";
 
 export function KitGrid() {
-  const kits = mockGiftKits.filter((k) => k.active);
+  const allKits = useGiftKitsStore((s) => s.kits);
+  const kits = allKits.filter((k) => k.active);
   const [selectedKit, setSelectedKit] = useState<GiftKitTemplate | null>(null);
 
   return (
     <>
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {kits.map((kit) => {
-          const Icon = kit.icon;
+          const Icon = resolveKitIcon(kit.iconName);
           const totalItems = kit.slots.reduce((acc, s) => acc + s.qty, 0);
           return (
             <li key={kit.id}>

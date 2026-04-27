@@ -12,13 +12,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { renderHook, act, render, screen } from "@testing-library/react";
 import { useMenuStore } from "@/stores/menu-store";
-import { mockProducts } from "@/lib/mock-products";
+import { productFixtures } from "@/__fixtures__/products";
 import type { Product } from "@/types/product";
 
 // Reseta o store antes de cada teste para isolamento
 beforeEach(() => {
   useMenuStore.setState({
-    products: mockProducts.map((p) => ({ ...p })),
+    products: productFixtures.map((p) => ({ ...p })),
   });
 });
 
@@ -44,7 +44,7 @@ const makeProduct = (overrides: Partial<Product> = {}): Product => ({
 // ── Testes originais ──────────────────────────────────────────────────────
 
 describe("useMenuStore — lista", () => {
-  it("inicializa com os 12 produtos do mockProducts", () => {
+  it("inicializa com os 12 produtos do productFixtures", () => {
     const { result } = renderHook(() => useMenuStore());
     expect(result.current.products).toHaveLength(12);
   });

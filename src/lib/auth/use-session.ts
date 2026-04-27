@@ -1,8 +1,8 @@
 "use client";
 
-import { useDevSessionStore } from "@/stores/dev-session-store";
+import { useAuth } from "@/components/providers/auth-provider";
 
-export type AuthStatus = "anon" | "authed";
+export type AuthStatus = "loading" | "anon" | "authed";
 
 export type SessionUser = {
   id: string;
@@ -10,6 +10,7 @@ export type SessionUser = {
   firstName: string;
   email: string;
   city: string;
+  role: "admin" | "customer";
 };
 
 type SessionResult = {
@@ -19,29 +20,30 @@ type SessionResult = {
 };
 
 /**
- * Camada única de sessão. Consumers NÃO tocam no store dev diretamente —
- * lêem deste hook. Quando o login real chegar, trocamos só o corpo:
+ * Camada única de sessão. Lê do `AuthProvider` que escuta Supabase
+ * `onAuthStateChange` e carrega o profile.
  *
- *   const { data } = useSupabaseSession();
- *   return { status: data ? "authed" : "anon", ... };
- *
- * Nenhuma página/componente precisa mudar.
+ * `status` pode ser `"loading"` enquanto a primeira chamada `getUser()`
+ * resolve. Componentes que renderizam algo crítico durante o carregamento
+ * devem checar `status === "loading"` explicitamente.
  */
 export function useSession(): SessionResult {
-  const isAuthed = useDevSessionStore((s) => s.isAuthed);
-  const mockUser = useDevSessionStore((s) => s.user);
+  const { status, user } = useAuth();
 
-  if (!isAuthed) {
-    return { status: "anon", isAuthed: false, user: null };
+  if (status !== "authed" || !user) {
+    return { status, isAuthed: false, user: null };
   }
 
-  const user: SessionUser = {
-    id: mockUser.id,
-    firstName: mockUser.firstName,
-    name: `${mockUser.firstName} ${mockUser.lastName}`.trim(),
-    email: mockUser.email,
-    city: mockUser.city,
+  return {
+    status,
+    isAuthed: true,
+    user: {
+      id: user.id,
+      firstName: user.firstName,
+      name: user.name,
+      email: user.email,
+      city: user.city,
+      role: user.role,
+    },
   };
-
-  return { status: "authed", isAuthed: true, user };
 }

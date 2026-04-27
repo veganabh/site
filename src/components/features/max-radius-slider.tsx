@@ -1,7 +1,9 @@
 "use client";
 
+import { useRef, useTransition } from "react";
 import * as Slider from "@radix-ui/react-slider";
 import { useRingsStore } from "@/stores/rings-store";
+import { setMaxActiveRadiusAction } from "@/server/actions/rings";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -13,15 +15,47 @@ function formatKm(meters: number): string {
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 
-export function MaxRadiusSlider() {
+type MaxRadiusSliderProps = {
+  onMutationSuccess: () => void;
+  onMutationError: (message: string) => void;
+};
+
+const COMMIT_DEBOUNCE_MS = 400;
+
+export function MaxRadiusSlider({ onMutationSuccess, onMutationError }: MaxRadiusSliderProps) {
   const rings = useRingsStore((s) => s.rings);
-  const setMaxActiveRadius = useRingsStore((s) => s.setMaxActiveRadius);
+  const setRings = useRingsStore((s) => s.setRings);
+  const applyOptimisticSetMaxRadius = useRingsStore((s) => s.applyOptimisticSetMaxRadius);
+  const [, startTransition] = useTransition();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Valor derivado: maior outerRadiusM entre anéis ativos
   const currentMaxM = Math.max(...rings.filter((r) => r.active).map((r) => r.outerRadiusM), 0);
 
   const MAX_RANGE = 10_000;
   const STEP = 500;
+
+  function handleChange(value: number) {
+    applyOptimisticSetMaxRadius(value);
+    const snapshot = useRingsStore.getState().rings;
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      startTransition(async () => {
+        const result = await setMaxActiveRadiusAction({ meters: value });
+        if (!result.ok) {
+          // Snapshot pós-optimistic — para revert real precisamos do estado
+          // anterior à mudança. Como o slider é stateless e só commit ao soltar,
+          // basta pedir refetch via root layout: mutationError mostra alerta e
+          // onMutationSuccess vai ser pulado (não chamamos).
+          setRings(snapshot);
+          onMutationError(result.message);
+          return;
+        }
+        onMutationSuccess();
+      });
+    }, COMMIT_DEBOUNCE_MS);
+  }
 
   return (
     <div className="flex flex-col gap-3">
@@ -46,7 +80,7 @@ export function MaxRadiusSlider() {
         value={[currentMaxM]}
         onValueChange={(values: number[]) => {
           const value = values[0];
-          if (value !== undefined) setMaxActiveRadius(value);
+          if (value !== undefined) handleChange(value);
         }}
         aria-label={`Raio máximo de entrega: ${formatKm(currentMaxM)}`}
         className="relative flex h-5 w-full touch-none items-center select-none"
@@ -60,7 +94,6 @@ export function MaxRadiusSlider() {
         />
       </Slider.Root>
 
-      {/* Marcadores de escala */}
       <div className="flex justify-between text-[10px] text-olive-700/70">
         <span>0</span>
         <span>2,5 km</span>

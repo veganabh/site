@@ -5,7 +5,7 @@ import { DeliveryGate } from "@/components/dashboard/delivery-gate";
 import { CategoryCircles } from "@/components/dashboard/category-circles";
 import { ProductGridPhoto } from "@/components/dashboard/product-grid-photo";
 import { isProductCategory } from "@/lib/product-meta";
-import { findCollectionBySlug } from "@/lib/mock-collections";
+import { getCollectionBySlug } from "@/server/collections";
 
 export const metadata: Metadata = {
   title: "Veg.ana — doces sem lactose em BH",
@@ -20,7 +20,7 @@ type HomeProps = {
 export default async function Home({ searchParams }: HomeProps) {
   const { cat, col, q } = await searchParams;
   const category = isProductCategory(cat) ? cat : undefined;
-  const collection = col ? findCollectionBySlug(col) : undefined;
+  const collection = col ? await getCollectionBySlug(col) : null;
   const query = q?.trim() || undefined;
 
   const products = await listProducts({

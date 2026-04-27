@@ -4,6 +4,8 @@
 **Autor:** `site-architect` (Opus)
 **Status:** **aceita** (aprovada e implementada em 2026-04-19 — 19/19 testes passando, build OK)
 
+> **Nota 2026-04-26:** referências a `src/lib/mock-products.ts` neste documento são históricas. Em produção a fonte é a tabela `public.products` no Supabase (ADR 0005). O arquivo foi movido para `src/__fixtures__/products.ts` e seu uso é restrito a vitest + script de seed. `src/server/products.ts` lê do banco.
+
 ---
 
 ## 1. Contexto

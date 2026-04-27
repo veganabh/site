@@ -1,15 +1,23 @@
 "use client";
 
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Image from "next/image";
-import { useMenuStore } from "@/stores/menu-store";
 import { PRODUCT_CATEGORIES } from "@/types/product";
 import type { Product } from "@/types/product";
 import { CATEGORY_LABELS } from "@/components/features/cardapio/category-labels";
 import { cn } from "@/lib/utils";
+import {
+  createProductAction,
+  updateProductAction,
+} from "@/server/actions/products";
+import { uploadProductPhotoAction } from "@/server/actions/upload-product-photo";
+
+const ACCEPTED_IMAGE_TYPES = "image/jpeg,image/png,image/webp";
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 
 // Campos numéricos ficam como string no formulário (HTML input retorna string).
 // A conversão para number acontece no onSubmit para manter tipagem correta.
@@ -45,18 +53,13 @@ type ProdutoFormProps = { mode: "novo" } | { mode: "editar"; product: Product };
 
 // ──────────────────────────────────────────────────────────────────────────
 
-function toSlug(name: string) {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
 export function ProdutoForm(props: ProdutoFormProps) {
   const router = useRouter();
-  const { addProduct, updateProduct } = useMenuStore();
+  const [isPending, startTransition] = useTransition();
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Campos numéricos são strings no form (HTML retorna string)
   const defaultValues: ProdutoFormValues =
@@ -92,6 +95,7 @@ export function ProdutoForm(props: ProdutoFormProps) {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ProdutoFormValues>({
     resolver: zodResolver(produtoSchema),
@@ -100,46 +104,73 @@ export function ProdutoForm(props: ProdutoFormProps) {
 
   const previewUrl = watch("photo_url");
 
-  function onSubmit(values: ProdutoFormValues) {
-    if (props.mode === "novo") {
-      const newProduct: Product = {
-        id: String(Date.now()),
-        slug: toSlug(values.name),
-        name: values.name,
-        description: values.description,
-        category: values.category,
-        gramatura_g: Number(values.gramatura_g),
-        price_site: Number(values.price_site),
-        price_ifood: Number(values.price_ifood),
-        attributes: ["sem-lactose", "vegano"] as const,
-        tags: [],
-        photo: {
-          url: values.photo_url ?? "",
-          alt: values.photo_alt ?? values.name,
-        },
-        active: values.active,
-        stock: Number(values.stock),
-        lowStockThreshold: Number(values.lowStockThreshold),
-      };
-      addProduct(newProduct);
-    } else {
-      updateProduct(props.product.id, {
-        name: values.name,
-        description: values.description,
-        category: values.category,
-        gramatura_g: Number(values.gramatura_g),
-        price_site: Number(values.price_site),
-        price_ifood: Number(values.price_ifood),
-        photo: {
-          url: values.photo_url ?? "",
-          alt: values.photo_alt ?? values.name,
-        },
-        active: values.active,
-        stock: Number(values.stock),
-        lowStockThreshold: Number(values.lowStockThreshold),
-      });
+  async function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadError(null);
+
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setUploadError("Imagem maior que 2 MB. Reduza antes de enviar.");
+      event.target.value = "";
+      return;
     }
-    router.push("/gestao/cardapio");
+    if (!ACCEPTED_IMAGE_TYPES.split(",").includes(file.type)) {
+      setUploadError("Formato inválido. Use JPG, PNG ou WebP.");
+      event.target.value = "";
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const result = await uploadProductPhotoAction(formData);
+      if (!result.ok) {
+        setUploadError(result.message);
+        return;
+      }
+      setValue("photo_url", result.url, { shouldValidate: true, shouldDirty: true });
+    } catch {
+      setUploadError("Falha no upload. Tente novamente.");
+    } finally {
+      setIsUploading(false);
+      event.target.value = "";
+    }
+  }
+
+  function onSubmit(values: ProdutoFormValues) {
+    setServerError(null);
+    startTransition(async () => {
+      const payload = {
+        name: values.name,
+        description: values.description,
+        category: values.category,
+        gramatura_g: Number(values.gramatura_g),
+        price_site: Number(values.price_site),
+        price_ifood: Number(values.price_ifood),
+        photo_url: values.photo_url ?? "",
+        photo_alt: values.photo_alt ?? values.name,
+        active: values.active,
+        stock: Number(values.stock),
+        lowStockThreshold: Number(values.lowStockThreshold),
+        attributes: ["sem-lactose", "vegano"] as ("sem-lactose" | "vegano")[],
+        tags: [] as never[],
+        contains: [] as never[],
+      };
+
+      const result =
+        props.mode === "novo"
+          ? await createProductAction(payload)
+          : await updateProductAction(props.product.id, payload);
+
+      if (!result.ok) {
+        setServerError(result.message);
+        return;
+      }
+      router.push("/gestao/cardapio");
+      router.refresh();
+    });
   }
 
   return (
@@ -246,30 +277,47 @@ export function ProdutoForm(props: ProdutoFormProps) {
       </div>
 
       <Field
-        label="Foto (caminho ou URL)"
-        error={errors.photo_url?.message}
-        hint="Ex: /produtos/bolo-cenoura-brigadeiro.png — upload real em breve."
+        label="Foto do produto"
+        error={errors.photo_url?.message ?? uploadError ?? undefined}
+        hint="JPG, PNG ou WebP. Máximo 2 MB."
       >
-        <input
-          {...register("photo_url")}
-          type="text"
-          placeholder="/produtos/bolo-cenoura-brigadeiro.png"
-          className={inputClass(!!errors.photo_url)}
-        />
-        {previewUrl && (
-          <div className="relative mt-2 h-24 w-24 overflow-hidden rounded-md border border-divider bg-paper-100">
-            <Image
-              src={previewUrl}
-              alt="Prévia da foto"
-              fill
-              className="object-cover"
-              sizes="96px"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).style.display = "none";
-              }}
-            />
-          </div>
-        )}
+        <input type="hidden" {...register("photo_url")} />
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ACCEPTED_IMAGE_TYPES}
+            onChange={onFileChange}
+            disabled={isUploading}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="rounded-sm border border-divider bg-paper-100 px-4 py-2 text-cta text-olive-900 transition hover:bg-paper-50 disabled:opacity-60"
+          >
+            {isUploading
+              ? "Enviando..."
+              : previewUrl
+                ? "Trocar imagem"
+                : "Enviar imagem"}
+          </button>
+          {previewUrl && (
+            <div className="relative h-24 w-24 overflow-hidden rounded-md border border-divider bg-paper-100">
+              <Image
+                src={previewUrl}
+                alt="Prévia da foto"
+                fill
+                className="object-cover"
+                sizes="96px"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            </div>
+          )}
+        </div>
       </Field>
 
       <Field label="Texto alternativo da foto" error={errors.photo_alt?.message}>
@@ -293,18 +341,32 @@ export function ProdutoForm(props: ProdutoFormProps) {
         </label>
       </div>
 
+      {serverError && (
+        <p
+          role="alert"
+          className="rounded-sm border border-terra-500 bg-terra-500/10 px-3 py-2 text-body-sm text-terra-700"
+        >
+          {serverError}
+        </p>
+      )}
+
       <div className="flex flex-wrap gap-3 pt-2">
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isPending || isUploading}
           className="rounded-sm bg-olive-900 px-6 py-2.5 text-cta text-paper-50 transition hover:bg-olive-700 disabled:opacity-60"
         >
-          {props.mode === "novo" ? "Adicionar produto" : "Salvar alterações"}
+          {isPending
+            ? "Salvando..."
+            : props.mode === "novo"
+              ? "Adicionar produto"
+              : "Salvar alterações"}
         </button>
         <button
           type="button"
           onClick={() => router.push("/gestao/cardapio")}
-          className="rounded-sm border border-divider bg-paper-100 px-6 py-2.5 text-cta text-olive-900 transition hover:bg-paper-100"
+          disabled={isPending}
+          className="rounded-sm border border-divider bg-paper-100 px-6 py-2.5 text-cta text-olive-900 transition hover:bg-paper-100 disabled:opacity-60"
         >
           Cancelar
         </button>

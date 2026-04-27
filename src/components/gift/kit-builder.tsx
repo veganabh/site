@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ChevronLeft,
@@ -16,11 +16,12 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
-import { mockProducts } from "@/lib/mock-products";
+import { useMenuStore } from "@/stores/menu-store";
 import { ProductPhoto } from "@/components/features/product-photo";
 import { useCartStore } from "@/stores/cart-store";
 import { useDeliveryStore } from "@/stores/delivery-store";
-import { findKitBySlug } from "@/lib/mock-gift-kits";
+import { useGiftKitDraftStore } from "@/stores/gift-kit-draft-store";
+import { useGiftKitsStore } from "@/stores/gift-kits-store";
 import { GIFT_CARD_MESSAGE_MAX, GIFT_PACKAGING_PRICE } from "@/types/gift-kit";
 import type { GiftKitRecipient, GiftKitSlot } from "@/types/gift-kit";
 import type { Product } from "@/types/product";
@@ -77,7 +78,10 @@ export function KitBuilder({ slug }: KitBuilderProps) {
   const searchParams = useSearchParams();
   const addKit = useCartStore((s) => s.addKit);
   const ownQuote = useDeliveryStore((s) => s.quote);
-  const kit = findKitBySlug(slug);
+  const setDraft = useGiftKitDraftStore((s) => s.setDraft);
+  const resetDraft = useGiftKitDraftStore((s) => s.reset);
+  const kits = useGiftKitsStore((s) => s.kits);
+  const kit = kits.find((k) => k.slug === slug && k.active);
 
   const queryIntent = searchParams.get("to");
   const queryCep = searchParams.get("cep") ?? "";
@@ -155,6 +159,28 @@ export function KitBuilder({ slug }: KitBuilderProps) {
     ownQuote,
     recipient.neighborhood,
   ]);
+
+  // Espelha state local → draft store, pra KitPicksPanel ler.
+  useEffect(() => {
+    if (!kit) return;
+    setDraft({
+      slug: kit.slug,
+      templateId: kit.id,
+      picks: kit.slots.map((s) => ({
+        slotId: s.id,
+        productIds: picks[s.id] ?? [],
+      })),
+      packaging,
+      cardMessage,
+    });
+  }, [kit, picks, packaging, cardMessage, setDraft]);
+
+  // Limpa draft ao sair do builder (cancelar / concluir / desmontar).
+  useEffect(() => {
+    return () => {
+      resetDraft();
+    };
+  }, [resetDraft]);
 
   if (!kit) return null;
 
@@ -356,12 +382,15 @@ type SlotStepProps = {
 };
 
 function SlotStep({ slot, picks, onPick, onDecrement }: SlotStepProps) {
+  const products = useMenuStore((s) => s.products);
+  // eligibleProductIds são UUIDs (gift_kit_slots.eligible_product_ids uuid[]).
+  // Picks runtime usam o mesmo UUID via p.id no onPick.
   const eligible = useMemo(
     () =>
       slot.eligibleProductIds
-        .map((id) => mockProducts.find((p) => p.id === id))
+        .map((id) => products.find((p) => p.id === id))
         .filter((p): p is Product => p !== undefined && p.active),
-    [slot.eligibleProductIds],
+    [slot.eligibleProductIds, products],
   );
 
   return (

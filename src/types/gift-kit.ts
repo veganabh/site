@@ -1,5 +1,5 @@
-import type { LucideIcon } from "lucide-react";
 import type { ProductPhoto } from "@/types/product";
+import type { GiftKitIconName } from "@/lib/kit-icons";
 
 /**
  * Slot do kit — uma "posição" que o cliente preenche escolhendo 1 de N
@@ -14,13 +14,15 @@ export type GiftKitSlot = {
   helper?: string;
   /** Quantas unidades o cliente escolhe nesse slot (cada uma independe). */
   qty: number;
-  /** Pool de produtos válidos para esse slot. */
+  /** Pool de produtos válidos para esse slot — UUIDs de products.id. */
   eligibleProductIds: readonly string[];
 };
 
 /**
- * Template de kit — criado no admin, nunca vira "produto" do catálogo.
+ * Template de kit — criado no admin, persistido em `gift_kit_templates`.
  * Preço fixo independente dos itens escolhidos (admin cura pool com CPV similar).
+ *
+ * `iconName` resolve via `lib/kit-icons.ts` no client.
  */
 export type GiftKitTemplate = {
   id: string;
@@ -37,7 +39,7 @@ export type GiftKitTemplate = {
    * recalcula a cada escolha (usuário não espera que mude).
    */
   priceIfoodAnchor: number;
-  icon: LucideIcon;
+  iconName: GiftKitIconName;
   coverPhoto: ProductPhoto;
   slots: readonly GiftKitSlot[];
   active: boolean;

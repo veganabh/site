@@ -13,6 +13,7 @@ import {
   PackageCheck,
   Wallet,
   LogIn,
+  LogOut,
   UserPlus,
   UserCog,
   Gift,
@@ -21,13 +22,14 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
 import { getPhrasesForSavings } from "@/lib/savings-phrases";
-import { mockProducts } from "@/lib/mock-products";
 import { useCartStore } from "@/stores/cart-store";
 import { useOrdersStore } from "@/stores/orders-store";
+import { useMenuStore } from "@/stores/menu-store";
 import { useAdminOrdersStore } from "@/stores/admin-orders-store";
 import { isTerminal, type Order } from "@/types/order";
 import { OrderStatusBadge } from "@/components/features/order-status-badge";
 import { useSession } from "@/lib/auth/use-session";
+import { signOutAction } from "@/server/auth/actions";
 
 const PHRASE_ROTATION_MS = 8000;
 
@@ -71,10 +73,19 @@ type ContaAuthedDashboardProps = {
 };
 
 function ContaAuthedDashboard({ firstName }: ContaAuthedDashboardProps) {
+  const { user } = useSession();
   const gifts = useOrdersStore((s) => s.gifts);
-  // Usa admin-orders-store como fonte de verdade dos pedidos mock.
-  // Pós-migração: trocar por query Supabase filtrada por customerId.
-  const allOrders = useAdminOrdersStore((s) => s.orders);
+  // Fonte de verdade: admin-orders-store hidratado via layout (`listAllOrders`).
+  // RLS já filtra pra cliente (`auth.uid() = profile_id`); como admin enxerga
+  // tudo, aplicamos filtro local por `customerId` para garantir que /conta
+  // mostre só os pedidos do usuário logado mesmo em sessão admin.
+  // Selector retorna `s.orders` cru — filtrar dentro do selector cria novo
+  // array a cada render e dispara loop em `useSyncExternalStore`.
+  const allOrdersRaw = useAdminOrdersStore((s) => s.orders);
+  const allOrders = useMemo(
+    () => (user?.id ? allOrdersRaw.filter((o) => o.customerId === user.id) : allOrdersRaw),
+    [allOrdersRaw, user?.id],
+  );
 
   const allItems = useMemo<PricedItem[]>(
     () =>
@@ -95,10 +106,19 @@ function ContaAuthedDashboard({ firstName }: ContaAuthedDashboardProps) {
 
   return (
     <div className="flex flex-col gap-5">
-      <header>
+      <header className="flex items-start justify-between gap-3">
         <h1 className="text-[20px] leading-snug font-bold text-olive-900 md:text-[24px]">
           Oi, {firstName} — bora ver seus doces?
         </h1>
+        <form action={signOutAction}>
+          <button
+            type="submit"
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-pill border border-divider bg-paper-50 px-3 text-[12px] font-semibold text-olive-700 transition-colors hover:bg-paper-100"
+          >
+            <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
+            Sair
+          </button>
+        </form>
       </header>
 
       <SavingsHero
@@ -109,6 +129,8 @@ function ContaAuthedDashboard({ firstName }: ContaAuthedDashboardProps) {
       />
 
       <ShortcutsRow giftsCount={gifts.length} />
+
+      <ActiveOrders orders={allOrders} />
 
       <OrdersHistory orders={allOrders} />
     </div>
@@ -273,6 +295,64 @@ function ShortcutChip({ icon: Icon, label, tone, ...rest }: ShortcutChipProps) {
   );
 }
 
+type ActiveOrdersProps = {
+  orders: readonly Order[];
+};
+
+/**
+ * Pedidos em andamento (não-terminais: NOVO/PREPARANDO/PRONTO/A_CAMINHO).
+ * Aparece ANTES do histórico — assim que o cliente fecha o pedido ele vê
+ * aqui imediatamente. Status terminal cai pro `OrdersHistory`.
+ */
+function ActiveOrders({ orders }: ActiveOrdersProps) {
+  const rows = orders.filter((o) => !isTerminal(o.status));
+
+  if (rows.length === 0) return null;
+
+  return (
+    <section aria-labelledby="ativos-titulo" className="flex flex-col gap-2">
+      <h2 id="ativos-titulo" className="text-h3 font-bold text-olive-900">
+        Em andamento
+      </h2>
+      <ul className="flex flex-col gap-1.5">
+        {rows.map((order) => {
+          const itemsSummary = order.items
+            .slice(0, 3)
+            .map((it) => `${it.productName} ${it.qty}×`)
+            .join(" · ");
+          const extraItems = order.items.length > 3 ? order.items.length - 3 : 0;
+
+          return (
+            <li key={order.id}>
+              <Link
+                href={`/pedido/${order.id}`}
+                className="grid grid-cols-[4.5rem_7rem_minmax(0,1fr)_auto] items-center gap-x-3 rounded-lg border border-leaf-500/30 bg-leaf-500/5 px-3 py-2 transition-shadow hover:bg-leaf-500/10 hover:shadow-sm"
+              >
+                <span className="text-[11px] font-semibold text-olive-700 tabular-nums">
+                  {formatShortDate(order.createdAt)}
+                </span>
+
+                <div className="flex min-w-0">
+                  <OrderStatusBadge status={order.status} />
+                </div>
+
+                <p className="min-w-0 truncate text-[11.5px] font-medium text-olive-900">
+                  {itemsSummary}
+                  {extraItems > 0 && <span className="ml-1 text-olive-700">+{extraItems}</span>}
+                </p>
+
+                <span className="text-body-sm font-bold text-olive-900 tabular-nums">
+                  {formatBRL(order.total)}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 type OrdersHistoryProps = {
   orders: readonly Order[];
 };
@@ -280,10 +360,11 @@ type OrdersHistoryProps = {
 function OrdersHistory({ orders }: OrdersHistoryProps) {
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
+  const products = useMenuStore((s) => s.products);
 
   function reorder(order: Order) {
     for (const item of order.items) {
-      const product = mockProducts.find((p) => p.id === item.productId);
+      const product = products.find((p) => p.id === item.productId);
       if (product) {
         for (let i = 0; i < item.qty; i++) addItem(product);
       }
@@ -433,14 +514,14 @@ function ContaAnonLanding() {
 
           <div className="mt-1 flex flex-col gap-2 sm:flex-row">
             <Link
-              href="/conta"
+              href="/cadastro"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-5 text-[13px] font-semibold text-paper-50 transition-transform active:scale-[0.98]"
             >
               <UserPlus className="h-4 w-4" aria-hidden="true" />
               Criar conta
             </Link>
             <Link
-              href="/conta"
+              href="/login"
               className="inline-flex h-11 items-center justify-center gap-2 rounded-pill border border-paper-50/25 bg-paper-50/5 px-5 text-[13px] font-semibold text-paper-50 transition-colors hover:bg-paper-50/10"
             >
               <LogIn className="h-4 w-4" aria-hidden="true" />

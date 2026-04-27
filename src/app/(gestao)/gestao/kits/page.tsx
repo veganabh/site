@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Image from "next/image";
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Gift } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { resolveKitIcon } from "@/lib/kit-icons";
-import { useAdminKitsStore } from "@/stores/admin-kits-store";
-import type { AdminKitTemplate } from "@/stores/admin-kits-store";
+import { useGiftKitsStore } from "@/stores/gift-kits-store";
+import type { GiftKitTemplate } from "@/types/gift-kit";
+import {
+  deleteGiftKitAction,
+  toggleActiveGiftKitAction,
+} from "@/server/actions/gift-kits";
 import { KitFormDialog } from "@/components/admin/kits/kit-form-dialog";
 import { KitDeleteDialog } from "@/components/admin/kits/kit-delete-dialog";
 
@@ -16,7 +20,7 @@ function formatCurrency(value: number): string {
   return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function countEligibleProducts(kit: AdminKitTemplate): number {
+function countEligibleProducts(kit: GiftKitTemplate): number {
   const allIds = kit.slots.flatMap((s) => s.eligibleProductIds);
   return new Set(allIds).size;
 }
@@ -24,19 +28,19 @@ function countEligibleProducts(kit: AdminKitTemplate): number {
 // ── Componente ─────────────────────────────────────────────────────────────────
 
 export default function KitsPage() {
-  const kits = useAdminKitsStore((s) => s.kits);
-  const store = useAdminKitsStore();
+  const kits = useGiftKitsStore((s) => s.kits);
+  const [, startTransition] = useTransition();
 
   const [formOpen, setFormOpen] = useState(false);
-  const [editingKit, setEditingKit] = useState<AdminKitTemplate | null>(null);
-  const [deletingKit, setDeletingKit] = useState<AdminKitTemplate | null>(null);
+  const [editingKit, setEditingKit] = useState<GiftKitTemplate | null>(null);
+  const [deletingKit, setDeletingKit] = useState<GiftKitTemplate | null>(null);
 
   function handleOpenCreate() {
     setEditingKit(null);
     setFormOpen(true);
   }
 
-  function handleOpenEdit(kit: AdminKitTemplate) {
+  function handleOpenEdit(kit: GiftKitTemplate) {
     setEditingKit(kit);
     setFormOpen(true);
   }
@@ -46,13 +50,16 @@ export default function KitsPage() {
     setEditingKit(null);
   }
 
-  function handleDeleteRequest(kit: AdminKitTemplate) {
+  function handleDeleteRequest(kit: GiftKitTemplate) {
     setDeletingKit(kit);
   }
 
   function handleDeleteConfirm() {
     if (deletingKit) {
-      store.delete(deletingKit.id);
+      const id = deletingKit.id;
+      startTransition(async () => {
+        await deleteGiftKitAction(id);
+      });
     }
     setDeletingKit(null);
   }
@@ -61,8 +68,10 @@ export default function KitsPage() {
     setDeletingKit(null);
   }
 
-  function handleToggle(kit: AdminKitTemplate) {
-    store.toggleActive(kit.id);
+  function handleToggle(kit: GiftKitTemplate) {
+    startTransition(async () => {
+      await toggleActiveGiftKitAction(kit.id, !kit.active);
+    });
   }
 
   return (

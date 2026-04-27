@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+import { placeOrderAction } from "@/server/actions/place-order";
+import {
+  createAddressAction,
+  removeAddressAction,
+  updateAddressAction,
+} from "@/server/profile/address-actions";
 import {
   Tag,
   X,
@@ -32,13 +39,13 @@ import { ProductPhoto } from "@/components/features/product-photo";
 import { EmptyCartAnimation } from "@/components/features/empty-cart-animation";
 import { cn } from "@/lib/utils";
 import { formatBRL, formatCEP } from "@/lib/format";
-import { AVAILABLE_COUPONS, isCouponApplicable } from "@/lib/coupons";
+import { computeCouponDiscount } from "@/lib/coupons";
 import { getCrossSellSuggestions } from "@/lib/cross-sell";
 import { getPhrasesForSavings } from "@/lib/savings-phrases";
-import { mockProducts } from "@/lib/mock-products";
 import { kitLinePrice, kitLinePriceIfoodAnchor, useCartStore } from "@/stores/cart-store";
+import { useMenuStore } from "@/stores/menu-store";
 import { useCheckoutStore } from "@/stores/checkout-store";
-import { useOrdersStore } from "@/stores/orders-store";
+import { useGiftKitsStore, giftKitsById } from "@/stores/gift-kits-store";
 import { useSession } from "@/lib/auth/use-session";
 import {
   useAddressStore,
@@ -48,7 +55,7 @@ import {
 } from "@/stores/address-store";
 import type { CartItem } from "@/stores/cart-store";
 import type { CheckoutStep } from "@/stores/checkout-store";
-import { findKitById } from "@/lib/mock-gift-kits";
+import type { Product } from "@/types/product";
 import { KitCoverPhoto } from "@/components/gift/kit-cover-photo";
 import { GIFT_PACKAGING_PRICE, type KitCartItem } from "@/types/gift-kit";
 
@@ -150,46 +157,59 @@ function StepResumo() {
   const [inputError, setInputError] = useState(false);
   const [couponOpen, setCouponOpen] = useState(false);
 
+  const giftKits = useGiftKitsStore((s) => s.kits);
+  const templatesById = useMemo(() => giftKitsById(giftKits), [giftKits]);
+
   const itemsSubtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
-  const kitsSubtotal = kits.reduce((acc, k) => acc + kitLinePrice(k), 0);
+  const kitsSubtotal = kits.reduce(
+    (acc, k) => acc + kitLinePrice(k, templatesById.get(k.templateId)),
+    0,
+  );
   const subtotal = itemsSubtotal + kitsSubtotal;
 
   const itemsSavings = items.reduce(
     (acc, i) => acc + (i.product.price_ifood - i.product.price_site) * i.quantity,
     0,
   );
-  const kitsSavings = kits.reduce(
-    (acc, k) => acc + (kitLinePriceIfoodAnchor(k) - kitLinePrice(k)),
-    0,
-  );
+  const kitsSavings = kits.reduce((acc, k) => {
+    const tpl = templatesById.get(k.templateId);
+    return acc + (kitLinePriceIfoodAnchor(k, tpl) - kitLinePrice(k, tpl));
+  }, 0);
   const savings = itemsSavings + kitsSavings;
 
   const cartCtx = { subtotal, shippingFee: MOCK_SHIPPING_FEE };
-  const couponDiscount = appliedCoupon ? appliedCoupon.discount(subtotal, cartCtx) : 0;
+  const couponDiscount = appliedCoupon ? computeCouponDiscount(appliedCoupon, cartCtx) : 0;
   const total = subtotal - couponDiscount;
 
-  const applicableCoupons = AVAILABLE_COUPONS.filter((c) => isCouponApplicable(c, cartCtx));
-  const hasApplicableCoupons = applicableCoupons.length > 0;
-
+  const products = useMenuStore((s) => s.products);
   const cartIds = useMemo(() => new Set(items.map((i) => i.product.id)), [items]);
   const suggestions = useMemo(
-    () => getCrossSellSuggestions(savings, mockProducts, cartIds, 4),
-    [savings, cartIds],
+    () => getCrossSellSuggestions(savings, products, cartIds, 4),
+    [savings, cartIds, products],
   );
+
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponPending, setCouponPending] = useState(false);
 
   if (items.length === 0 && kits.length === 0) return <EmptyCart />;
 
-  function handleApplyCode() {
-    const ok = applyCoupon(code);
-    if (ok) {
+  async function handleApplyCode() {
+    if (!code.trim()) return;
+    setCouponPending(true);
+    setCouponError(null);
+    const result = await applyCoupon(code, Math.round(subtotal * 100));
+    setCouponPending(false);
+    if (result.ok) {
       setInputError(false);
+      setCouponError(null);
       setCode("");
     } else {
       setInputError(true);
+      setCouponError(result.message);
     }
   }
 
-  const showCouponPanel = couponOpen || hasApplicableCoupons || !!appliedCoupon;
+  const showCouponPanel = couponOpen || !!appliedCoupon;
 
   return (
     <>
@@ -284,37 +304,16 @@ function StepResumo() {
                   <button
                     type="button"
                     onClick={handleApplyCode}
-                    className="rounded-pill bg-olive-900 px-5 text-[13px] font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500"
+                    disabled={couponPending}
+                    className="rounded-pill bg-olive-900 px-5 text-[13px] font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    Aplicar
+                    {couponPending ? "Validando..." : "Aplicar"}
                   </button>
                 </div>
                 {inputError && (
                   <p className="text-[11px] text-error" role="alert">
-                    Cupom inválido.
+                    {couponError ?? "Cupom inválido."}
                   </p>
-                )}
-                {hasApplicableCoupons && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {applicableCoupons.map((c) => (
-                      <button
-                        key={c.code}
-                        type="button"
-                        onClick={() => {
-                          applyCoupon(c.code);
-                          setInputError(false);
-                          setCode("");
-                        }}
-                        className="group inline-flex items-center gap-1 rounded-pill border border-terra-500/30 bg-terra-500/5 px-2.5 py-1 text-[11px] font-semibold text-terra-700 transition-colors hover:border-terra-500 hover:bg-terra-500 hover:text-paper-50"
-                      >
-                        <Tag className="h-2.5 w-2.5" aria-hidden="true" />
-                        {c.code}
-                        <span className="text-terra-700/70 group-hover:text-paper-50/80">
-                          · {c.hint}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
                 )}
               </div>
             )}
@@ -429,8 +428,8 @@ function SavingsHero({ savings }: { savings: number }) {
 }
 
 type CrossSellRailProps = {
-  suggestions: typeof mockProducts;
-  onAccept: (product: (typeof mockProducts)[number]) => void;
+  suggestions: readonly Product[];
+  onAccept: (product: Product) => void;
   savings: number;
 };
 
@@ -539,16 +538,19 @@ function StepEndereco() {
   const addresses = useAddressStore((s) => s.addresses);
   const selectedId = useAddressStore((s) => s.selectedId);
   const selectAddress = useAddressStore((s) => s.selectAddress);
-  const removeAddress = useAddressStore((s) => s.removeAddress);
+  const removeAddressLocal = useAddressStore((s) => s.removeAddressLocal);
 
   const currentAddress = useAddressStore(selectCurrentAddress);
+
+  const [removing, startRemoving] = useTransition();
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const items = useCartStore((s) => s.items);
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
   const subtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
   const shippingFee = currentAddress?.shippingFee ?? 0;
   const couponDiscount = appliedCoupon
-    ? appliedCoupon.discount(subtotal, { subtotal, shippingFee })
+    ? computeCouponDiscount(appliedCoupon, { subtotal, shippingFee })
     : 0;
   const total = subtotal - couponDiscount + shippingFee;
   const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
@@ -570,8 +572,18 @@ function StepEndereco() {
   }
 
   function handleRemoveConfirm() {
-    if (removeDialogId) removeAddress(removeDialogId);
-    setRemoveDialogId(null);
+    const id = removeDialogId;
+    if (!id) return;
+    setRemoveError(null);
+    startRemoving(async () => {
+      const result = await removeAddressAction(id);
+      if (!result.ok) {
+        setRemoveError(result.message);
+        return;
+      }
+      removeAddressLocal(id);
+      setRemoveDialogId(null);
+    });
   }
 
   function handleEdit(address: Address) {
@@ -791,8 +803,7 @@ type AddressFormModalProps = {
 };
 
 export function AddressFormModal({ initialData, onClose }: AddressFormModalProps) {
-  const addAddress = useAddressStore((s) => s.addAddress);
-  const updateAddress = useAddressStore((s) => s.updateAddress);
+  const upsertAddress = useAddressStore((s) => s.upsertAddress);
 
   const [type, setType] = useState<AddressType>(initialData?.type ?? "casa");
   const [nickname, setNickname] = useState(initialData?.nickname ?? "");
@@ -803,6 +814,9 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
   const [neighborhood, setNeighborhood] = useState(initialData?.neighborhood ?? "");
   const [city, setCity] = useState(initialData?.city ?? "");
   const [state, setState] = useState(initialData?.state ?? "MG");
+
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
 
   const isEditing = !!initialData;
 
@@ -816,24 +830,37 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const payload = {
-      type,
-      nickname,
-      cep,
-      street,
-      number,
-      complement,
-      neighborhood,
-      city,
-      state,
-      shippingFee: 0,
-    };
-    if (isEditing) {
-      updateAddress(initialData.id, payload);
-    } else {
-      addAddress(payload);
-    }
-    onClose();
+    setError(null);
+
+    const finalNickname = nickname.trim() || addressTypeLabel(type);
+
+    startTransition(async () => {
+      const payload = {
+        nickname: finalNickname,
+        cep,
+        street,
+        number,
+        complement: complement || undefined,
+        neighborhood,
+        city,
+        state,
+        ...(initialData?.isDefault ? { isDefault: true } : {}),
+      };
+
+      const result = isEditing
+        ? await updateAddressAction(initialData.id, payload)
+        : await createAddressAction(payload);
+
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+
+      // Atualiza store local imediatamente — revalidatePath também vai puxar
+      // do servidor mas sem aguardar HTTP roundtrip da revalidação.
+      upsertAddress(result.address);
+      onClose();
+    });
   }
 
   return (
@@ -970,17 +997,33 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
             </div>
           </div>
 
+          {error ? (
+            <p
+              role="alert"
+              className="rounded-md bg-terra-500/10 px-3 py-2 text-[12px] font-semibold text-terra-700"
+            >
+              {error}
+            </p>
+          ) : null}
+
           <div className="mt-2 flex gap-3">
             <button
               type="submit"
-              className="inline-flex h-10 flex-1 items-center justify-center rounded-pill bg-olive-900 px-4 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500"
+              disabled={pending}
+              className={cn(
+                "inline-flex h-10 flex-1 items-center justify-center rounded-pill px-4 text-body-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
+                pending
+                  ? "cursor-wait bg-sage-300 text-paper-50/80"
+                  : "bg-olive-900 text-paper-50 hover:bg-terra-500",
+              )}
             >
-              {isEditing ? "Salvar" : "Adicionar"}
+              {pending ? "Salvando…" : isEditing ? "Salvar" : "Adicionar"}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-10 items-center justify-center rounded-pill border border-divider px-4 text-[13px] font-semibold text-olive-700 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
+              disabled={pending}
+              className="inline-flex h-10 items-center justify-center rounded-pill border border-divider px-4 text-[13px] font-semibold text-olive-700 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancelar
             </button>
@@ -1103,25 +1146,35 @@ function FormField({
 type PaymentTab = "cartao" | "pix";
 
 function StepPagamento() {
-  const [tab, setTab] = useState<PaymentTab>("cartao");
+  const [tab, setTab] = useState<PaymentTab>("pix");
   const [cardNumber, setCardNumber] = useState("");
   const [cardName, setCardName] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
+  const router = useRouter();
   const items = useCartStore((s) => s.items);
   const kits = useCartStore((s) => s.kits);
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
   const clearCart = useCartStore((s) => s.clearCart);
   const setStep = useCheckoutStore((s) => s.setStep);
   const setOrderId = useCheckoutStore((s) => s.setOrderId);
-  const placeOrder = useOrdersStore((s) => s.placeOrder);
-  const placeGifts = useOrdersStore((s) => s.placeGifts);
+  const selectedAddress = useAddressStore(selectCurrentAddress);
+
+  const giftKits = useGiftKitsStore((s) => s.kits);
+  const templatesById = useMemo(() => giftKitsById(giftKits), [giftKits]);
 
   const itemsSubtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
-  const kitsSubtotal = kits.reduce((acc, k) => acc + kitLinePrice(k), 0);
+  const kitsSubtotal = kits.reduce(
+    (acc, k) => acc + kitLinePrice(k, templatesById.get(k.templateId)),
+    0,
+  );
   const subtotal = itemsSubtotal + kitsSubtotal;
-  const couponDiscount = appliedCoupon ? appliedCoupon.discount(itemsSubtotal) : 0;
+  const couponDiscount = appliedCoupon
+    ? computeCouponDiscount(appliedCoupon, { subtotal: itemsSubtotal, shippingFee: 0 })
+    : 0;
   const total = subtotal - couponDiscount;
   const itemCount = items.reduce((acc, i) => acc + i.quantity, 0) + kits.length;
 
@@ -1137,12 +1190,53 @@ function StepPagamento() {
   }
 
   function handleConfirm() {
-    const id = `VG-${Date.now().toString(36).toUpperCase()}`;
-    placeOrder(items, id);
-    placeGifts(kits, id);
-    clearCart();
-    setOrderId(id);
-    setStep("confirmado");
+    if (isPending) return;
+    setError(null);
+
+    if (!selectedAddress) {
+      setError("Selecione um endereço de entrega.");
+      setStep("endereco");
+      return;
+    }
+
+    if (kits.length > 0) {
+      setError(
+        "Kits presente ainda não estão suportados no checkout atual. Remova os kits do carrinho.",
+      );
+      return;
+    }
+
+    if (items.length === 0) {
+      setError("Carrinho vazio.");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await placeOrderAction({
+        items: items.map((i) => ({ productId: i.product.id, qty: i.quantity })),
+        shippingAddress: {
+          street: selectedAddress.street,
+          number: selectedAddress.number,
+          complement: selectedAddress.complement || undefined,
+          neighborhood: selectedAddress.neighborhood,
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          cep: selectedAddress.cep,
+        },
+        shippingFee: selectedAddress.shippingFee,
+        couponCode: appliedCoupon?.code,
+      });
+
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+
+      clearCart();
+      setStep("confirmado");
+      setOrderId(result.orderId);
+      router.push(`/obrigado/${result.orderId}`);
+    });
   }
 
   return (
@@ -1283,20 +1377,44 @@ function StepPagamento() {
         </div>
       </div>
 
+      {error ? (
+        <div
+          role="alert"
+          className="flex flex-col gap-2 rounded-md bg-terra-500/10 px-3 py-2 text-[12px] font-semibold text-terra-700"
+        >
+          <span>{error}</span>
+          {error.includes("/conta") ? (
+            <Link
+              href="/conta"
+              className="inline-flex w-fit items-center gap-1 rounded-pill bg-terra-500 px-3 py-1 text-paper-50 transition-colors hover:bg-terra-700"
+            >
+              Ir pra minha conta
+              <ArrowRight className="h-3 w-3" aria-hidden="true" />
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
+
       {/* CTA desktop inline */}
       <button
         type="button"
         onClick={handleConfirm}
-        className="hidden h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex"
+        disabled={isPending}
+        className={cn(
+          "hidden h-11 items-center justify-center gap-2 rounded-pill px-6 text-body-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex",
+          isPending
+            ? "cursor-wait bg-sage-300 text-paper-50/80"
+            : "bg-terra-500 text-paper-50 hover:bg-terra-700",
+        )}
       >
         <CreditCard className="h-4 w-4" aria-hidden="true" />
-        Efetuar pagamento
+        {isPending ? "Registrando…" : "Efetuar pagamento"}
       </button>
 
       <StickyCTA
         total={total}
         itemCount={itemCount}
-        label="Efetuar pagamento"
+        label={isPending ? "Registrando…" : "Efetuar pagamento"}
         onClick={handleConfirm}
       />
     </>
@@ -1522,17 +1640,19 @@ function CartItemCompact({ item }: { item: CartItem }) {
 
 function KitCartItemCompact({ kit }: { kit: KitCartItem }) {
   const removeKit = useCartStore((s) => s.removeKit);
-  const template = findKitById(kit.templateId);
+  const products = useMenuStore((s) => s.products);
+  const giftKits = useGiftKitsStore((s) => s.kits);
+  const template = giftKits.find((k) => k.id === kit.templateId);
   if (!template) return null;
 
-  const linePrice = kitLinePrice(kit);
-  const lineAnchor = kitLinePriceIfoodAnchor(kit);
+  const linePrice = kitLinePrice(kit, template);
+  const lineAnchor = kitLinePriceIfoodAnchor(kit, template);
   const lineSavings = Math.max(0, lineAnchor - linePrice);
 
   const picksByLabel = template.slots.map((slot) => {
     const pick = kit.picks.find((p) => p.slotId === slot.id);
     const names = (pick?.productIds ?? [])
-      .map((id) => mockProducts.find((p) => p.id === id)?.name)
+      .map((id) => products.find((p) => p.id === id)?.name)
       .filter((n): n is string => Boolean(n));
     return {
       slotId: slot.id,

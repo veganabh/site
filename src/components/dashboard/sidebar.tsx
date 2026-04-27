@@ -8,8 +8,6 @@ import {
   CircleUser,
   Settings,
   LayoutDashboard,
-  UserCheck,
-  UserX,
   LogIn,
   ChevronsLeft,
   ChevronsRight,
@@ -17,11 +15,8 @@ import {
 import { cn } from "@/lib/utils";
 import { LeafLoaderAnimation } from "@/components/features/leaf-loader-animation";
 import { useCartStore } from "@/stores/cart-store";
-import { useDevSessionStore } from "@/stores/dev-session-store";
 import { useSession } from "@/lib/auth/use-session";
 import { useSidebarStore } from "@/stores/sidebar-store";
-
-const IS_DEV = process.env.NODE_ENV !== "production";
 
 type NavItem = {
   href: string;
@@ -70,7 +65,6 @@ export function Sidebar() {
   const pathname = usePathname() ?? "/";
   const cartCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
   const { isAuthed } = useSession();
-  const toggleAuth = useDevSessionStore((s) => s.toggle);
   const expanded = useSidebarStore((s) => s.publicExpanded);
   const toggleExpanded = useSidebarStore((s) => s.togglePublic);
 
@@ -208,48 +202,6 @@ export function Sidebar() {
           />
           {expanded && <span className="truncate text-[13px] font-semibold">Gestão</span>}
         </Link>
-
-        {IS_DEV && (
-          <button
-            type="button"
-            onClick={toggleAuth}
-            aria-label={
-              isAuthed
-                ? "Dev: sessão autenticada (clicar pra simular anônimo)"
-                : "Dev: sessão anônima (clicar pra simular logado)"
-            }
-            title={isAuthed ? "Dev · logado (Ana)" : "Dev · anônimo (visitante)"}
-            className={cn(
-              "relative flex items-center border transition-colors",
-              expanded
-                ? "h-10 gap-3 rounded-md px-3"
-                : "h-10 w-10 justify-center self-center rounded-full",
-              isAuthed
-                ? "border-leaf-500/40 bg-leaf-500/10 text-leaf-700 hover:bg-leaf-500/20"
-                : "border-divider bg-paper-100 text-olive-700 hover:bg-paper-50",
-            )}
-          >
-            <span className="relative flex shrink-0 items-center justify-center">
-              {isAuthed ? (
-                <UserCheck className="h-[18px] w-[18px]" aria-hidden="true" />
-              ) : (
-                <UserX className="h-[18px] w-[18px]" aria-hidden="true" />
-              )}
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "absolute -top-1.5 -right-1.5 h-2.5 w-2.5 rounded-full border-2 border-paper-50",
-                  isAuthed ? "bg-leaf-500" : "bg-olive-700",
-                )}
-              />
-            </span>
-            {expanded && (
-              <span className="truncate text-[12px] font-medium">
-                {isAuthed ? "Dev · logado" : "Dev · anônimo"}
-              </span>
-            )}
-          </button>
-        )}
 
         <button
           type="button"

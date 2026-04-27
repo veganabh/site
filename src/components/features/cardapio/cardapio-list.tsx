@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Pencil, Eye, EyeOff, Minus, Plus, Search, X, SlidersHorizontal } from "lucide-react";
 import { useMenuStore } from "@/stores/menu-store";
 import { formatBRL } from "@/lib/format";
@@ -10,6 +11,10 @@ import { cn } from "@/lib/utils";
 import { CATEGORY_LABELS } from "@/components/features/cardapio/category-labels";
 import { PRODUCT_CATEGORIES, type Product, type ProductCategory } from "@/types/product";
 import { CardapioStatsStrip } from "@/components/admin/cardapio/cardapio-stats-strip";
+import {
+  setStockAction,
+  toggleActiveProductAction,
+} from "@/server/actions/products";
 
 type StockFilter = "todos" | "esgotado" | "baixo" | "ok";
 type StatusFilter = "todos" | "ativos" | "inativos";
@@ -26,6 +31,39 @@ type StatusFilter = "todos" | "ativos" | "inativos";
  */
 export function CardapioList() {
   const { products, toggleActive, adjustStock } = useMenuStore();
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  /**
+   * Otimistic UI: aplica mudança Zustand local pra resposta instantânea,
+   * dispara server action em paralelo. Erro = reverte local + mostra alerta;
+   * sucesso = router.refresh re-hidrata via root layout.
+   */
+  const persistToggleActive = (id: string, nextActive: boolean) => {
+    toggleActive(id);
+    startTransition(async () => {
+      const result = await toggleActiveProductAction(id, nextActive);
+      if (!result.ok) {
+        toggleActive(id);
+        setActionError(result.message);
+      }
+    });
+  };
+
+  const persistAdjustStock = (id: string, delta: number, currentStock: number) => {
+    const next = Math.max(0, currentStock + delta);
+    adjustStock(id, delta);
+    startTransition(async () => {
+      const result = await setStockAction({ id, value: next });
+      if (!result.ok) {
+        adjustStock(id, -delta);
+        setActionError(result.message);
+      } else {
+        router.refresh();
+      }
+    });
+  };
 
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<"todas" | ProductCategory>("todas");
@@ -246,6 +284,14 @@ export function CardapioList() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
+          {actionError && (
+            <p
+              role="alert"
+              className="rounded-sm border border-terra-500 bg-terra-500/10 px-3 py-2 text-body-sm text-terra-700"
+            >
+              {actionError}
+            </p>
+          )}
           {PRODUCT_CATEGORIES.map((cat) => {
             const list = grouped.get(cat) ?? [];
             if (list.length === 0) return null;
@@ -254,8 +300,14 @@ export function CardapioList() {
                 key={cat}
                 category={cat}
                 products={list}
-                onToggleActive={toggleActive}
-                onAdjustStock={adjustStock}
+                onToggleActive={(id) => {
+                  const product = list.find((p) => p.id === id);
+                  if (product) persistToggleActive(id, !product.active);
+                }}
+                onAdjustStock={(id, delta) => {
+                  const product = list.find((p) => p.id === id);
+                  if (product) persistAdjustStock(id, delta, product.stock);
+                }}
               />
             );
           })}

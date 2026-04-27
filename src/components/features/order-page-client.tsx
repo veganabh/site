@@ -128,7 +128,7 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
       {/* Cabeçalho */}
       <header className="mb-5">
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-[18px] font-bold text-olive-900">Pedido #{order.id}</h1>
+          <h1 className="text-[18px] font-bold text-olive-900">Pedido #{order.orderNumber}</h1>
           <OrderStatusBadge status={order.status} />
         </div>
         <p className="mt-1 text-[12px] text-olive-700">{formatDateTime(order.createdAt)}</p>

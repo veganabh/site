@@ -3,8 +3,9 @@
 import { Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useDevSessionStore } from "@/stores/dev-session-store";
+import { useSession } from "@/lib/auth/use-session";
 import { useAdminSettingsStore } from "@/stores/admin-settings-store";
+import { signOutAction } from "@/server/auth/actions";
 
 // ── Mapeamento pathname → título de página ────────────────────────────────────
 
@@ -59,21 +60,14 @@ type AdminTopbarProps = {
  */
 export function AdminTopbar({ onMenuOpen, pageTitle, className }: AdminTopbarProps) {
   const pathname = usePathname() ?? "/gestao";
-  const user = useDevSessionStore((s) => s.user);
-  const resetUser = useDevSessionStore((s) => s.resetUser);
+  const { user } = useSession();
   const storeStatus = useAdminSettingsStore((s) => s.storeStatus);
 
   const title = pageTitle ?? getPageTitle(pathname);
   const isAtivo = storeStatus === "ATIVO";
 
-  // Inicial do nome da gestora para o avatar
-  const initial = (user.firstName.charAt(0) ?? "G").toUpperCase();
-  const displayName = user.role === "admin" ? user.firstName || "Gestora" : "Admin";
-
-  function handleReturnAsClient() {
-    // resetUser restaura INITIAL_USER (role: "customer") — suficiente em pré-migração
-    resetUser();
-  }
+  const initial = (user?.firstName.charAt(0) ?? "G").toUpperCase();
+  const displayName = user?.firstName || "Gestora";
 
   return (
     <header
@@ -146,32 +140,31 @@ export function AdminTopbar({ onMenuOpen, pageTitle, className }: AdminTopbarPro
           >
             <div className="border-b border-divider px-4 py-3">
               <p className="text-body-sm font-semibold text-olive-900">{displayName}</p>
-              <p className="text-caption text-olive-700">{user.email}</p>
+              <p className="text-caption text-olive-700">{user?.email}</p>
             </div>
             <div className="p-1">
-              <button
-                type="button"
-                onClick={handleReturnAsClient}
-                className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-body-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
-              >
-                {/* Ícone de troca de usuário */}
-                <svg
-                  className="h-4 w-4 shrink-0"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.75}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
+              <form action={signOutAction}>
+                <button
+                  type="submit"
+                  className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-body-sm text-terra-700 transition-colors hover:bg-terra-500/10"
                 >
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-                Voltar como cliente
-              </button>
+                  <svg
+                    className="h-4 w-4 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.75}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                  Sair
+                </button>
+              </form>
             </div>
           </div>
         </details>

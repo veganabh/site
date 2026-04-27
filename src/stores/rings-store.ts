@@ -1,69 +1,61 @@
 "use client";
 
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { MOCK_DELIVERY_RINGS } from "@/lib/mock-delivery-rings";
 import { STORE_LOCATION } from "@/lib/store-location";
 import { distanceMeters } from "@/lib/haversine";
 import type { DeliveryRing } from "@/types/delivery-ring";
 
-// ─── Tipos ───────────────────────────────────────────────────────────────────
+/**
+ * Cache em memória dos anéis de entrega. Fonte da verdade vive na tabela
+ * `public.delivery_rings` do Supabase — este store é hidratado pelo
+ * `RingsStoreHydrator` no root layout a partir de `listAllRings()` server.
+ *
+ * Mutações: server actions em `src/server/actions/rings.ts` + optimistic
+ * update via `applyOptimistic*` chamado pelos componentes admin.
+ *
+ * `lookupByLatLng` é função pura sobre o array já hidratado — usado pelo
+ * checkout/CEP test sem round-trip ao server.
+ */
 
 type RingsState = {
   rings: DeliveryRing[];
-  updateRing: (id: string, patch: Partial<DeliveryRing>) => void;
-  setMaxActiveRadius: (meters: number) => void;
+  setRings: (rings: DeliveryRing[]) => void;
+  applyOptimisticUpdate: (id: string, patch: Partial<DeliveryRing>) => void;
+  applyOptimisticSetMaxRadius: (meters: number) => void;
   lookupByLatLng: (lat: number, lng: number) => DeliveryRing | null;
-  resetToDefaults: () => void;
 };
 
-// ─── Store ────────────────────────────────────────────────────────────────────
+export const useRingsStore = create<RingsState>()((set, get) => ({
+  rings: [],
 
-export const useRingsStore = create<RingsState>()(
-  persist(
-    (set, get) => ({
-      rings: [...MOCK_DELIVERY_RINGS],
+  setRings(rings) {
+    set({ rings });
+  },
 
-      updateRing(id, patch) {
-        set((state) => ({
-          rings: state.rings.map((r) => (r.id === id ? { ...r, ...patch } : r)),
-        }));
-      },
+  applyOptimisticUpdate(id, patch) {
+    set((state) => ({
+      rings: state.rings.map((r) => (r.id === id ? { ...r, ...patch } : r)),
+    }));
+  },
 
-      setMaxActiveRadius(meters) {
-        set((state) => ({
-          rings: state.rings.map((r) => ({
-            ...r,
-            active: r.outerRadiusM <= meters,
-          })),
-        }));
-      },
+  applyOptimisticSetMaxRadius(meters) {
+    set((state) => ({
+      rings: state.rings.map((r) => ({
+        ...r,
+        active: r.outerRadiusM <= meters,
+      })),
+    }));
+  },
 
-      lookupByLatLng(lat, lng) {
-        const dist = distanceMeters(
-          { lat, lng },
-          { lat: STORE_LOCATION.lat, lng: STORE_LOCATION.lng },
-        );
+  lookupByLatLng(lat, lng) {
+    const dist = distanceMeters(
+      { lat, lng },
+      { lat: STORE_LOCATION.lat, lng: STORE_LOCATION.lng },
+    );
 
-        const sorted = [...get().rings].sort((a, b) => a.order - b.order);
-        return (
-          sorted.find((r) => r.active && dist >= r.innerRadiusM && dist < r.outerRadiusM) ?? null
-        );
-      },
-
-      resetToDefaults() {
-        set({ rings: [...MOCK_DELIVERY_RINGS] });
-      },
-    }),
-    {
-      name: "vegana-rings-v1",
-      storage: createJSONStorage(() => localStorage),
-      version: 1,
-      migrate(state, fromVersion) {
-        // Se shape mudar no futuro, resetar para defaults ao invés de crashar
-        void fromVersion;
-        return { rings: [...MOCK_DELIVERY_RINGS] };
-      },
-    },
-  ),
-);
+    const sorted = [...get().rings].sort((a, b) => a.order - b.order);
+    return (
+      sorted.find((r) => r.active && dist >= r.innerRadiusM && dist < r.outerRadiusM) ?? null
+    );
+  },
+}));

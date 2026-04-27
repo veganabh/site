@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import type { CartItem } from "./cart-store";
 import type { KitCartItem, GiftKitRecipient } from "@/types/gift-kit";
-import { findKitById } from "@/lib/mock-gift-kits";
-import { mockProducts } from "@/lib/mock-products";
+import { useMenuStore } from "@/stores/menu-store";
+import { useGiftKitsStore, giftKitsById } from "@/stores/gift-kits-store";
 import { kitLinePrice } from "./cart-store";
 import { ORDER_CHANNEL_NAME } from "@/stores/admin-orders-store";
 import type { OrderChannelMessage } from "@/stores/admin-orders-store";
@@ -84,13 +84,17 @@ export const useOrdersStore = create<OrdersStore>((set) => ({
   placeGifts: (kits, orderId) =>
     set((state) => {
       if (kits.length === 0) return state;
+      // Snapshot do que está hidratado no momento da compra — Menu/GiftKits
+      // stores já populados via root layout quando esta action dispara.
+      const products = useMenuStore.getState().products;
+      const templatesById = giftKitsById(useGiftKitsStore.getState().kits);
       const placedGifts: PlacedGift[] = kits.map((kit, idx) => {
-        const template = findKitById(kit.templateId);
+        const template = templatesById.get(kit.templateId);
         const picks: PlacedGiftPick[] = template
           ? template.slots.map((slot) => {
               const pick = kit.picks.find((p) => p.slotId === slot.id);
               const names = (pick?.productIds ?? [])
-                .map((id) => mockProducts.find((p) => p.id === id)?.name)
+                .map((id) => products.find((p) => p.id === id)?.name)
                 .filter((n): n is string => Boolean(n));
               return { slotLabel: slot.label, productNames: names };
             })
@@ -108,7 +112,7 @@ export const useOrdersStore = create<OrdersStore>((set) => ({
           packaging: kit.packaging,
           cardMessage: kit.cardMessage,
           recipient: kit.recipient,
-          total: kitLinePrice(kit),
+          total: kitLinePrice(kit, template),
         };
       });
       return { gifts: [...placedGifts, ...state.gifts] };

@@ -3,7 +3,7 @@
 import { Check, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Order, OrderStatus } from "@/types/order";
-import { MOCK_DELIVERY_PERSONS } from "@/lib/mock-delivery-persons";
+import { useDeliveryPersonsStore } from "@/stores/delivery-persons-store";
 
 // ── Label afetiva por status ───────────────────────────────────────────────────
 
@@ -82,10 +82,9 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
   const isCancelled = order.status === "CANCELADO";
   const currentIdx = statusIndex(order.status);
 
-  // Entregador — busca pelo deliveryCallId no pool mock
-  const deliveryPerson = order.deliveryCallId
-    ? MOCK_DELIVERY_PERSONS.find((p) => p.id === order.deliveryCallId)
-    : undefined;
+  // Entregador — busca pelo deliveryCallId na store (hidratada do Supabase)
+  const findDeliveryPerson = useDeliveryPersonsStore((s) => s.findById);
+  const deliveryPerson = findDeliveryPerson(order.deliveryCallId) ?? undefined;
 
   return (
     <div className="flex flex-col gap-4">

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { findKitBySlug } from "@/lib/mock-gift-kits";
+import { getGiftKitBySlug } from "@/server/gift-kits";
 import { KitBuilder } from "@/components/gift/kit-builder";
 
 type PageProps = {
@@ -10,7 +10,7 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const kit = findKitBySlug(slug);
+  const kit = await getGiftKitBySlug(slug);
   if (!kit) return { title: "Montar kit — Veg.ana" };
   return {
     title: `Montar ${kit.name} — Veg.ana`,
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function KitBuilderPage({ params }: PageProps) {
   const { slug } = await params;
-  const kit = findKitBySlug(slug);
+  const kit = await getGiftKitBySlug(slug);
   if (!kit) notFound();
 
   return (

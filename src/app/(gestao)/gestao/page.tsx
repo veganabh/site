@@ -15,11 +15,11 @@
  */
 
 import type { Metadata } from "next";
-import { mockOrders } from "@/lib/mock-orders";
 import { calcDayMetrics, calcTopSkus, greetingFor } from "@/lib/dashboard-metrics";
-import { YESTERDAY_METRICS } from "@/lib/mock-dashboard-deltas";
+import { listAllOrders } from "@/server/orders";
+import { listProducts } from "@/server/products";
 import { DayStatsGrid } from "@/components/admin/dashboard/day-stats-grid";
-import { TopSkusList } from "@/components/admin/dashboard/top-skus-list";
+import { TopSkusList, type ProductThumb } from "@/components/admin/dashboard/top-skus-list";
 // Seções client reativas (Zustand) — import direto; Next 16 hidrata OK porque
 // cada arquivo declara "use client". `dynamic({ssr:false})` não é permitido
 // em Server Components nesta versão.
@@ -31,11 +31,24 @@ export const metadata: Metadata = {
   description: "Visão operacional do dia — pedidos, faturamento e produtos em destaque.",
 };
 
-export default function GestaoPage() {
+export default async function GestaoPage() {
   const today = new Date();
-  const todayMetrics = calcDayMetrics([...mockOrders], today);
-  const topSkus = calcTopSkus([...mockOrders], today, 5);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const [orders, products] = await Promise.all([
+    listAllOrders(),
+    listProducts({ onlyActive: false }),
+  ]);
+  const todayMetrics = calcDayMetrics(orders, today);
+  const yesterdayMetrics = calcDayMetrics(orders, yesterday);
+  const topSkus = calcTopSkus(orders, today, 5);
   const greeting = greetingFor(today);
+
+  // Pós-migração orders: `item.productId` é UUID real → Map keya por `p.id`.
+  const thumbs = new Map<string, ProductThumb>(
+    products.map((p) => [p.id, { url: p.photo.url, alt: p.photo.alt }]),
+  );
 
   return (
     <div className="flex flex-col gap-5">
@@ -67,7 +80,7 @@ export default function GestaoPage() {
         <h2 id="section-faturamento" className="sr-only">
           Faturamento do dia
         </h2>
-        <DayStatsGrid today={todayMetrics} yesterday={YESTERDAY_METRICS} />
+        <DayStatsGrid today={todayMetrics} yesterday={yesterdayMetrics} />
       </section>
 
       {/* Linha 3 — Top SKUs + Feed de pedidos recentes */}
@@ -81,7 +94,7 @@ export default function GestaoPage() {
 
         {/* Top SKUs — ocupa 2/3 em xl */}
         <div className="xl:col-span-2">
-          <TopSkusList skus={topSkus} />
+          <TopSkusList skus={topSkus} thumbs={thumbs} />
         </div>
 
         {/* Feed de pedidos recentes — ocupa 1/3 em xl */}

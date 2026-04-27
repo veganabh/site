@@ -32,7 +32,7 @@ export function RecentOrdersFeed() {
               style: "currency",
               currency: "BRL",
             });
-            const shortId = order.id.toUpperCase();
+            const shortId = String(order.orderNumber);
             const relativeTime = formatRelativeTime(order.createdAt);
 
             return (

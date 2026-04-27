@@ -3,21 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
-import {
-  MapPin,
-  Heart,
-  Gift as GiftIcon,
-  Check,
-  X,
-  Clock,
-  Loader2,
-  MessageCircle,
-  ArrowRight,
-} from "lucide-react";
+import { MapPin, Check, X, Clock, Loader2, MessageCircle, ShoppingBag, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
 import { useDeliveryStore } from "@/stores/delivery-store";
 import type { DeliveryQuote } from "@/stores/delivery-store";
+import { useCartStore } from "@/stores/cart-store";
 import type { GiftKitTemplate } from "@/types/gift-kit";
 
 type KitDeliveryGateProps = {
@@ -26,21 +17,15 @@ type KitDeliveryGateProps = {
   onClose: () => void;
 };
 
-type Mode = "choose" | "cep";
-
 function formatCepInput(raw: string): string {
   const digits = raw.replace(/\D/g, "").slice(0, 8);
   if (digits.length <= 5) return digits;
   return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }
 
-function buildBuilderUrl(
-  slug: string,
-  intent: "self" | "gift",
-  quote: DeliveryQuote,
-): string {
+function buildBuilderUrl(slug: string, quote: DeliveryQuote): string {
   const params = new URLSearchParams();
-  params.set("to", intent);
+  params.set("to", "gift");
   params.set("cep", quote.cep);
   if (quote.neighborhood) params.set("bairro", quote.neighborhood);
   if (quote.city) params.set("cidade", quote.city);
@@ -51,45 +36,32 @@ function buildBuilderUrl(
 
 export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
   const router = useRouter();
-  const ownQuote = useDeliveryStore((s) => s.quote);
-  const setCep = useDeliveryStore((s) => s.setCep);
   const lookupCep = useDeliveryStore((s) => s.lookupCep);
   const loading = useDeliveryStore((s) => s.loading);
+  const cartItems = useCartStore((s) => s.items);
+  const cartKits = useCartStore((s) => s.kits);
+  const clearCart = useCartStore((s) => s.clearCart);
   const [localLoading, setLocalLoading] = useState(false);
 
-  const [mode, setMode] = useState<Mode>("choose");
-  const [intent, setIntent] = useState<"self" | "gift">("gift");
   const [cepInput, setCepInput] = useState("");
   const [localQuote, setLocalQuote] = useState<DeliveryQuote | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const cartUnitCount =
+    cartItems.reduce((acc, i) => acc + i.quantity, 0) + cartKits.length;
+
   if (!kit) return null;
 
   function resetAndClose() {
-    setMode("choose");
     setCepInput("");
     setLocalQuote(null);
     setError(null);
     onClose();
   }
 
-  function proceedWithQuote(selectedIntent: "self" | "gift", quote: DeliveryQuote) {
-    router.push(buildBuilderUrl(kit!.slug, selectedIntent, quote));
+  function proceedWithQuote(quote: DeliveryQuote) {
+    router.push(buildBuilderUrl(kit!.slug, quote));
     resetAndClose();
-  }
-
-  function handleChooseSelf() {
-    if (ownQuote?.covered) {
-      proceedWithQuote("self", ownQuote);
-      return;
-    }
-    setIntent("self");
-    setMode("cep");
-  }
-
-  function handleChooseGift() {
-    setIntent("gift");
-    setMode("cep");
   }
 
   async function handleSubmitCep(e: React.FormEvent) {
@@ -102,16 +74,15 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
     }
     setLocalLoading(true);
     try {
-      // intent=self → persistir no store (é o CEP do cliente).
-      // intent=gift → só validar, não sobrescrever quote própria.
-      const result = intent === "self" ? await setCep(cepInput) : await lookupCep(cepInput);
+      // Presente sempre vai pra terceiro — só valida, não sobrescreve quote do cliente.
+      const result = await lookupCep(cepInput);
       if (!result) {
         setError("Não consegui validar esse CEP. Tente de novo.");
         return;
       }
       setLocalQuote(result);
       if (result.covered) {
-        proceedWithQuote(intent, result);
+        proceedWithQuote(result);
       }
     } finally {
       setLocalLoading(false);
@@ -134,14 +105,10 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
           <div className="mb-4 flex items-start justify-between gap-3">
             <div className="flex flex-col gap-0.5">
               <Dialog.Title className="text-[16px] font-bold text-olive-900">
-                {mode === "choose" ? "Pra onde vai esse kit?" : "Qual o CEP?"}
+                Pra onde vai esse kit?
               </Dialog.Title>
               <Dialog.Description className="text-[12px] text-olive-700">
-                {mode === "choose"
-                  ? "A gente confere se chega aí antes da montagem."
-                  : intent === "gift"
-                    ? "CEP de quem vai receber o presente."
-                    : "Seu CEP pra entrega."}
+                CEP de quem vai receber o presente.
               </Dialog.Description>
             </div>
             <button
@@ -154,58 +121,28 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
             </button>
           </div>
 
-          {mode === "choose" && (
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={handleChooseSelf}
-                className="flex items-center gap-3 rounded-xl border-2 border-divider bg-paper-50 p-3 text-left transition-colors hover:border-terra-500/50"
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-terra-500/15 text-terra-700">
-                  <Heart className="h-4 w-4" aria-hidden="true" />
-                </span>
-                <span className="flex-1">
-                  <span className="block text-[14px] font-bold text-olive-900">Pra mim</span>
-                  <span className="block text-[11px] text-olive-700">
-                    {ownQuote?.covered
-                      ? `${ownQuote.neighborhood} · ${
-                          ownQuote.shippingFee === 0
-                            ? "frete grátis"
-                            : `frete ${formatBRL(ownQuote.shippingFee)}`
-                        }`
-                      : "Usa seu endereço"}
-                  </span>
-                </span>
-                <ArrowRight className="h-4 w-4 text-olive-700" aria-hidden="true" />
-              </button>
+          <div className="flex flex-col gap-3">
+              {cartUnitCount > 0 && (
+                <div className="flex flex-col gap-2 rounded-xl border border-terra-500/30 bg-terra-500/5 p-3">
+                  <div className="flex items-center gap-2 text-[12px] font-bold text-terra-700">
+                    <ShoppingBag className="h-3.5 w-3.5" aria-hidden="true" />
+                    Você tem {cartUnitCount} {cartUnitCount === 1 ? "item" : "itens"} no carrinho
+                  </div>
+                  <p className="text-[11px] text-olive-700">
+                    Presente é contexto separado — vai pra outra pessoa, outro endereço. Esvaziar o
+                    carrinho ajuda a não misturar pedido seu com kit de presente.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={clearCart}
+                    className="inline-flex items-center gap-1.5 self-start rounded-pill bg-terra-500 px-3 py-1 text-[12px] font-semibold text-paper-50 transition hover:bg-terra-700"
+                  >
+                    <Trash2 className="h-3 w-3" aria-hidden="true" />
+                    Esvaziar carrinho
+                  </button>
+                </div>
+              )}
 
-              <button
-                type="button"
-                onClick={handleChooseGift}
-                className="flex items-center gap-3 rounded-xl border-2 border-divider bg-paper-50 p-3 text-left transition-colors hover:border-terra-500/50"
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-leaf-500/15 text-leaf-700">
-                  <GiftIcon className="h-4 w-4" aria-hidden="true" />
-                </span>
-                <span className="flex-1">
-                  <span className="block text-[14px] font-bold text-olive-900">
-                    Pra outra pessoa
-                  </span>
-                  <span className="block text-[11px] text-olive-700">
-                    Endereço de quem vai receber
-                  </span>
-                </span>
-                <ArrowRight className="h-4 w-4 text-olive-700" aria-hidden="true" />
-              </button>
-
-              <p className="mt-1 text-center text-[11px] text-olive-700">
-                Sem CEP válido, a gente não consegue garantir a entrega.
-              </p>
-            </div>
-          )}
-
-          {mode === "cep" && (
-            <div className="flex flex-col gap-3">
               <form onSubmit={handleSubmitCep} className="flex items-center gap-2">
                 <label htmlFor="kit-gate-cep" className="sr-only">
                   CEP
@@ -294,18 +231,12 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
 
               <button
                 type="button"
-                onClick={() => {
-                  setMode("choose");
-                  setLocalQuote(null);
-                  setError(null);
-                  setCepInput("");
-                }}
+                onClick={resetAndClose}
                 className="self-start text-[11.5px] font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900"
               >
-                voltar
+                cancelar
               </button>
-            </div>
-          )}
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

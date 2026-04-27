@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { LayoutGrid, Cookie, CakeSlice, Candy, ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { mockCollections } from "@/lib/mock-collections";
+import { resolveCollectionIcon } from "@/lib/collection-icons";
+import { useCollectionsStore } from "@/stores/collections-store";
 
 type CategoryCirclesProps = {
   /** Slug ativo — "all" | ProductCategory | collection slug */
@@ -37,20 +40,21 @@ const buildCategoryItems = (basePath: string): Item[] => [
 /**
  * Chip bar com três blocos separados por divider:
  *   1. Categorias reais (Todos + ProductCategory)
- *   2. Super-coleções customizadas (Para Presentear, etc.) — mockCollections
- *   3. Festa à vista? (rota /encomendas, tratamento destacado)
+ *   2. Super-coleções customizadas (Para Presentear, etc.) — `useCollectionsStore`
+ *   3. Festa à vista? (rota /encomendas, tratamento destacado — TODO)
  *
- * Super-coleções agregam produtos de múltiplas categorias-mãe sem duplicar estoque.
+ * Coleção com `routePath` aponta pra rota dedicada (ex: /presentear); demais
+ * filtram a vitrine via `?col=<slug>`.
  */
 export function CategoryCircles({ active = "all", basePath, className }: CategoryCirclesProps) {
+  const collections = useCollectionsStore((s) => s.collections);
+
   const categoryItems = buildCategoryItems(basePath);
-  const collectionItems: Item[] = mockCollections.map((c) => ({
+  const collectionItems: Item[] = collections.map((c) => ({
     slug: c.slug,
     label: c.name,
-    icon: c.icon,
-    // "presentear" virou rota própria (/presentear) com kits + curadoria.
-    // Outras collections seguem como filtro ?col=<slug> na vitrine principal.
-    href: c.slug === "presentear" ? "/presentear" : `${basePath}?col=${c.slug}`,
+    icon: resolveCollectionIcon(c.iconName),
+    href: c.routePath ?? `${basePath}?col=${c.slug}`,
   }));
 
   return (

@@ -1,17 +1,21 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { mockProducts } from "@/lib/mock-products";
+import { useMenuStore } from "@/stores/menu-store";
 import { GIFT_KIT_ICON_NAMES, resolveKitIcon } from "@/lib/kit-icons";
 import type { GiftKitIconName } from "@/lib/kit-icons";
-import { useAdminKitsStore } from "@/stores/admin-kits-store";
-import type { AdminKitTemplate } from "@/stores/admin-kits-store";
+import {
+  createGiftKitAction,
+  setGiftKitSlotsAction,
+  updateGiftKitAction,
+} from "@/server/actions/gift-kits";
+import type { GiftKitTemplate } from "@/types/gift-kit";
 
 // ── Schema Zod ─────────────────────────────────────────────────────────────────
 
@@ -62,7 +66,7 @@ type KitFormData = z.infer<typeof kitFormSchema>;
 type KitFormDialogProps = {
   open: boolean;
   /** Se passado = modo edição. Ausente = modo criação. */
-  kit?: AdminKitTemplate;
+  kit?: GiftKitTemplate;
   onClose: () => void;
 };
 
@@ -90,7 +94,7 @@ function slugify(name: string): string {
 
 // ── Helper: valores padrão de formulário ──────────────────────────────────────
 
-function kitToFormDefaults(kit: AdminKitTemplate): KitFormData {
+function kitToFormDefaults(kit: GiftKitTemplate): KitFormData {
   return {
     name: kit.name,
     slug: kit.slug,
@@ -136,7 +140,8 @@ const EMPTY_DEFAULTS: KitFormData = {
 
 export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
   const isEditing = !!kit;
-  const store = useAdminKitsStore();
+  const products = useMenuStore((s) => s.products);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -185,41 +190,68 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
 
   const KitIcon = resolveKitIcon(watchedIconName ?? "Gift");
 
-  function onSubmit(data: KitFormData) {
+  async function onSubmit(data: KitFormData) {
+    setSubmitError(null);
     const parsedPrice = parseFloat(data.price);
     const parsedAnchor = parseFloat(data.priceIfoodAnchor);
-
-    const payload: Omit<AdminKitTemplate, "id"> = {
-      name: data.name,
-      slug: data.slug,
-      tagline: data.tagline,
-      description: data.description,
-      iconName: data.iconName as GiftKitIconName,
-      coverPhoto: { url: data.coverPhotoUrl, alt: data.coverPhotoAlt },
-      price: parsedPrice,
-      priceIfoodAnchor: parsedAnchor,
-      slots: data.slots.map((s) => ({
-        id: s.id,
-        label: s.label,
-        helper: s.helper || undefined,
-        qty: parseInt(s.qty, 10),
-        eligibleProductIds: s.eligibleProductIds,
-      })),
-      active: isEditing ? kit.active : true,
-    };
+    const slotsPayload = data.slots.map((s) => ({
+      label: s.label,
+      helper: s.helper || undefined,
+      qty: parseInt(s.qty, 10),
+      eligibleProductIds: s.eligibleProductIds,
+    }));
 
     if (isEditing) {
-      store.update(kit.id, payload);
-      onClose();
-    } else {
-      const result = store.create(payload);
-      if (!result.success && result.error) {
-        // Erros de slug duplicado voltam pro campo slug
-        setError("slug", { message: result.error });
+      const updateResult = await updateGiftKitAction(kit.id, {
+        slug: data.slug,
+        name: data.name,
+        tagline: data.tagline,
+        description: data.description,
+        iconName: data.iconName as GiftKitIconName,
+        coverPhotoUrl: data.coverPhotoUrl,
+        coverPhotoAlt: data.coverPhotoAlt,
+        price: parsedPrice,
+        priceIfoodAnchor: parsedAnchor,
+      });
+      if (!updateResult.ok) {
+        if (updateResult.message.toLowerCase().includes("slug")) {
+          setError("slug", { message: updateResult.message });
+        } else {
+          setSubmitError(updateResult.message);
+        }
+        return;
+      }
+      const slotsResult = await setGiftKitSlotsAction(kit.id, slotsPayload);
+      if (!slotsResult.ok) {
+        setSubmitError(slotsResult.message);
         return;
       }
       onClose();
+      return;
     }
+
+    const createResult = await createGiftKitAction({
+      slug: data.slug,
+      name: data.name,
+      tagline: data.tagline,
+      description: data.description,
+      iconName: data.iconName as GiftKitIconName,
+      coverPhotoUrl: data.coverPhotoUrl,
+      coverPhotoAlt: data.coverPhotoAlt,
+      price: parsedPrice,
+      priceIfoodAnchor: parsedAnchor,
+      active: true,
+      slots: slotsPayload,
+    });
+    if (!createResult.ok) {
+      if (createResult.message.toLowerCase().includes("slug")) {
+        setError("slug", { message: createResult.message });
+      } else {
+        setSubmitError(createResult.message);
+      }
+      return;
+    }
+    onClose();
   }
 
   return (
@@ -674,7 +706,7 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
                               }
                               className="grid grid-cols-2 gap-1.5 sm:grid-cols-3"
                             >
-                              {mockProducts.map((product) => {
+                              {products.map((product) => {
                                 const checked = watchedIds.includes(product.id);
                                 return (
                                   <label
@@ -741,7 +773,13 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-3 border-t border-divider px-6 py-4">
+            <div className="flex flex-col gap-2 border-t border-divider px-6 py-4">
+              {submitError && (
+                <p role="alert" className="text-caption text-error">
+                  {submitError}
+                </p>
+              )}
+              <div className="flex justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}
@@ -756,6 +794,7 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
               >
                 {isEditing ? "Atualizar kit" : "Salvar kit"}
               </button>
+              </div>
             </div>
           </form>
         </Dialog.Content>

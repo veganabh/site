@@ -149,7 +149,7 @@ export function OrderCard({ order, onOpen, className }: OrderCardProps) {
 
       {/* Header: ID + badge status compacto */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[10px] font-bold tracking-tight text-olive-900">#{order.id}</span>
+        <span className="text-[10px] font-bold tracking-tight text-olive-900">#{order.orderNumber}</span>
         <span
           className={cn(
             "inline-flex items-center rounded-pill px-1.5 py-0 text-[10px] leading-4 font-semibold",

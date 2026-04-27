@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useTransition } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { useForm } from "react-hook-form";
@@ -9,13 +9,9 @@ import { z } from "zod";
 import { cn } from "@/lib/utils";
 import type { Coupon } from "@/types/coupon";
 import { useAdminCouponsStore } from "@/stores/admin-coupons-store";
+import { createCouponAction, updateCouponAction } from "@/server/actions/coupons";
 
 // ── Schema Zod ─────────────────────────────────────────────────────────────────
-//
-// Campos numéricos opcionais (minOrderValue, maxUses, value) são mantidos como
-// string no estado do form (RHF trabalha com strings em inputs HTML) e
-// parseados para número apenas no onSubmit. Isso evita conflito de tipos com
-// zodResolver quando o campo está vazio ("").
 
 const couponFormSchema = z
   .object({
@@ -23,7 +19,6 @@ const couponFormSchema = z
     label: z.string().optional(),
     hint: z.string().min(1, "Descrição obrigatória"),
     type: z.enum(["PERCENTUAL", "FIXO", "FRETE_GRATIS"]),
-    /** String para manter compatibilidade com input[type=number] vazio. */
     value: z.string().optional(),
     minOrderValue: z.string().optional(),
     maxUses: z.string().optional(),
@@ -50,27 +45,32 @@ const couponFormSchema = z
 
 type CouponFormData = z.infer<typeof couponFormSchema>;
 
-// ── Tipos ──────────────────────────────────────────────────────────────────────
-
 type CouponFormDialogProps = {
   open: boolean;
   /** Se passado = modo edição. Ausente = modo criação. */
   coupon?: Coupon;
   onClose: () => void;
+  onSuccess: (message: string) => void;
+  onError: (message: string) => void;
 };
-
-// ── Helpers de estilo ─────────────────────────────────────────────────────────
 
 const inputClass =
   "h-9 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus:border-olive-500 focus:outline-none";
 
 const labelClass = "text-body-sm font-medium text-olive-900";
 
-// ── Componente ────────────────────────────────────────────────────────────────
-
-export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProps) {
+export function CouponFormDialog({
+  open,
+  coupon,
+  onClose,
+  onSuccess,
+  onError,
+}: CouponFormDialogProps) {
   const isEditing = !!coupon;
-  const store = useAdminCouponsStore();
+  const applyOptimisticUpdate = useAdminCouponsStore((s) => s.applyOptimisticUpdate);
+  const setCoupons = useAdminCouponsStore((s) => s.setCoupons);
+  const [pending, startTransition] = useTransition();
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
@@ -79,7 +79,7 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
     setValue,
     setError,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<CouponFormData>({
     resolver: zodResolver(couponFormSchema),
     defaultValues: isEditing
@@ -109,9 +109,9 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
         },
   });
 
-  // Re-popular form quando o cupom muda (troca de edição) ou ao abrir em criação
   useEffect(() => {
     if (open) {
+      setServerError(null);
       reset(
         isEditing
           ? {
@@ -146,6 +146,7 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
   const watchedStatus = watch("status");
 
   function onSubmit(data: CouponFormData) {
+    setServerError(null);
     const normalizedCode = data.code.toUpperCase().trim();
     const parsedValue = data.type === "FRETE_GRATIS" ? 0 : parseFloat(data.value ?? "0");
     const parsedMin =
@@ -166,15 +167,56 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
     } as const;
 
     if (isEditing) {
-      store.update(coupon.id, payload);
-      onClose();
+      const snapshot = useAdminCouponsStore.getState().coupons;
+      applyOptimisticUpdate(coupon.id, {
+        code: normalizedCode,
+        label: payload.label,
+        hint: payload.hint,
+        type: payload.type,
+        value: payload.value,
+        minOrderValue: payload.minOrderValue,
+        maxUses: payload.maxUses,
+        validFrom: payload.validFrom,
+        validUntil: payload.validUntil,
+        status: payload.status,
+      });
+
+      startTransition(async () => {
+        const result = await updateCouponAction(coupon.id, payload);
+        if (!result.ok) {
+          setCoupons(snapshot);
+          if (result.fieldErrors) {
+            for (const [field, msgs] of Object.entries(result.fieldErrors)) {
+              if (msgs && msgs[0]) {
+                setError(field as keyof CouponFormData, { message: msgs[0] });
+              }
+            }
+          }
+          setServerError(result.message);
+          onError(result.message);
+          return;
+        }
+        onSuccess(`Cupom ${normalizedCode} atualizado.`);
+        onClose();
+      });
     } else {
-      const result = store.create(payload);
-      if (!result.success && result.error) {
-        setError("code", { message: result.error });
-        return;
-      }
-      onClose();
+      startTransition(async () => {
+        const result = await createCouponAction(payload);
+        if (!result.ok) {
+          if (result.fieldErrors) {
+            for (const [field, msgs] of Object.entries(result.fieldErrors)) {
+              if (msgs && msgs[0]) {
+                setError(field as keyof CouponFormData, { message: msgs[0] });
+              }
+            }
+          }
+          setServerError(result.message);
+          onError(result.message);
+          return;
+        }
+        onSuccess(`Cupom ${normalizedCode} criado.`);
+        onClose();
+      });
     }
   }
 
@@ -192,15 +234,12 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
       }}
     >
       <Dialog.Portal>
-        {/* Overlay */}
         <Dialog.Overlay className="fixed inset-0 z-40 bg-olive-900/40 backdrop-blur-sm" />
 
-        {/* Painel */}
         <Dialog.Content
           className="fixed top-1/2 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg bg-paper-50 shadow-lg focus:outline-none"
           aria-describedby="form-description"
         >
-          {/* Header */}
           <div className="border-b border-divider px-6 py-4">
             <Dialog.Title className="text-h3 font-bold text-olive-900">
               {isEditing ? "Editar cupom" : "Novo cupom"}
@@ -213,10 +252,8 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
             </Dialog.Description>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="flex max-h-[65vh] flex-col gap-4 overflow-y-auto px-6 py-5">
-              {/* Código */}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="code" className={labelClass}>
                   Código do cupom
@@ -241,7 +278,6 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
                 )}
               </div>
 
-              {/* Rótulo */}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="label" className={labelClass}>
                   Rótulo (exibido no chip)
@@ -255,7 +291,6 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
                 />
               </div>
 
-              {/* Descrição */}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="hint" className={labelClass}>
                   Descrição do desconto
@@ -276,7 +311,6 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
                 )}
               </div>
 
-              {/* Tipo */}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="type" className={labelClass}>
                   Tipo de desconto
@@ -294,7 +328,6 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
                 </select>
               </div>
 
-              {/* Valor — oculto se FRETE_GRATIS */}
               {watchedType !== "FRETE_GRATIS" && (
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="value" className={labelClass}>
@@ -320,7 +353,6 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
                 </div>
               )}
 
-              {/* Valor mínimo do pedido */}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="minOrderValue" className={labelClass}>
                   Valor mínimo do pedido (R$)
@@ -336,7 +368,6 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
                 />
               </div>
 
-              {/* Limite de usos */}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="maxUses" className={labelClass}>
                   Limite de usos
@@ -352,7 +383,6 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
                 />
               </div>
 
-              {/* Datas — linha com 2 colunas */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="validFrom" className={labelClass}>
@@ -387,7 +417,6 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
                 </div>
               </div>
 
-              {/* Status — só no modo criação */}
               {!isEditing && (
                 <div className="flex flex-col gap-2">
                   <span className={cn(labelClass, "block")} id="status-label">
@@ -418,23 +447,36 @@ export function CouponFormDialog({ open, coupon, onClose }: CouponFormDialogProp
                   </RadioGroup.Root>
                 </div>
               )}
+
+              {serverError && (
+                <p
+                  role="alert"
+                  className="rounded-sm border border-terra-500 bg-terra-500/10 px-3 py-2 text-body-sm text-terra-700"
+                >
+                  {serverError}
+                </p>
+              )}
             </div>
 
-            {/* Footer */}
             <div className="flex justify-end gap-3 border-t border-divider px-6 py-4">
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-9 items-center rounded-md border border-divider bg-paper-50 px-4 text-body-sm font-semibold text-olive-900 transition hover:bg-paper-100"
+                disabled={pending}
+                className="inline-flex h-9 items-center rounded-md border border-divider bg-paper-50 px-4 text-body-sm font-semibold text-olive-900 transition hover:bg-paper-100 disabled:opacity-60"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={pending}
                 className="inline-flex h-9 items-center rounded-md bg-olive-900 px-4 text-body-sm font-semibold text-paper-50 transition hover:bg-olive-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isEditing ? "Atualizar cupom" : "Salvar cupom"}
+                {pending
+                  ? "Salvando..."
+                  : isEditing
+                    ? "Atualizar cupom"
+                    : "Salvar cupom"}
               </button>
             </div>
           </form>

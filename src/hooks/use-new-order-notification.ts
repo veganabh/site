@@ -77,7 +77,7 @@ export function useNewOrderNotification() {
       ) {
         try {
           new Notification("Novo pedido!", {
-            body: `Pedido #${event.data.order.id} de ${event.data.order.customerName}`,
+            body: `Pedido #${event.data.order.orderNumber} de ${event.data.order.customerName}`,
             icon: "/icons/logo-192.png",
           });
         } catch {
