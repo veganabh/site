@@ -1,5 +1,5 @@
 import type { Address } from "@/stores/address-store";
-import { inferAddressType } from "@/stores/address-store";
+import { inferAddressType } from "@/lib/address";
 import type { Collection } from "@/types/collection";
 import type { Coupon } from "@/types/coupon";
 import type { DeliveryPerson } from "@/types/delivery-person";

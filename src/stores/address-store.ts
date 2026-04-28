@@ -2,7 +2,9 @@
 
 import { create } from "zustand";
 
-export type AddressType = "casa" | "trabalho" | "outro";
+import type { AddressType } from "@/lib/address";
+
+export { inferAddressType, type AddressType } from "@/lib/address";
 
 export type Address = {
   id: string;
@@ -93,28 +95,3 @@ export function selectCurrentAddress(state: AddressStore) {
   return state.addresses.find((a) => a.id === state.selectedId) ?? null;
 }
 
-/**
- * Heurística pra classificar o tipo do endereço a partir do label/nickname.
- * Persistimos só `label` no DB (`user_addresses.label`). Type é derivado pra UI
- * (chip + ícone). Heurística simples: matches case-insensitive em palavras-chave.
- */
-export function inferAddressType(label: string): AddressType {
-  const normalized = label.toLowerCase().trim();
-  if (
-    normalized === "casa" ||
-    normalized.startsWith("casa ") ||
-    normalized.includes(" casa")
-  ) {
-    return "casa";
-  }
-  if (
-    normalized === "trabalho" ||
-    normalized.startsWith("trabalho") ||
-    normalized.includes("escritório") ||
-    normalized.includes("escritorio") ||
-    normalized.includes("empresa")
-  ) {
-    return "trabalho";
-  }
-  return "outro";
-}
