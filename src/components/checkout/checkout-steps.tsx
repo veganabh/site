@@ -39,6 +39,7 @@ import { ProductPhoto } from "@/components/features/product-photo";
 import { EmptyCartAnimation } from "@/components/features/empty-cart-animation";
 import { cn } from "@/lib/utils";
 import { formatBRL, formatCEP } from "@/lib/format";
+import { lookupCEP } from "@/lib/cep";
 import { computeCouponDiscount } from "@/lib/coupons";
 import { getCrossSellSuggestions } from "@/lib/cross-sell";
 import { getPhrasesForSavings } from "@/lib/savings-phrases";
@@ -817,6 +818,7 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
 
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [cepLoading, setCepLoading] = useState(false);
 
   const isEditing = !!initialData;
 
@@ -827,6 +829,28 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
+
+  useEffect(() => {
+    const digits = cep.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+
+    const controller = new AbortController();
+    setCepLoading(true);
+
+    lookupCEP(cep, controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted || !result) return;
+        setStreet(result.street);
+        setNeighborhood(result.neighborhood);
+        setCity(result.city);
+        setState(result.state);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCepLoading(false);
+      });
+
+    return () => controller.abort();
+  }, [cep]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
