@@ -3,8 +3,9 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, LogIn, LogOut, UserCog } from "lucide-react";
+import { LogIn, LogOut, UserCog } from "lucide-react";
 import { ActiveOrderChip } from "@/components/dashboard/active-order-chip";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { SearchBar } from "@/components/dashboard/search-bar";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth/use-session";
@@ -75,14 +76,7 @@ export function TopBar({ className }: TopBarProps) {
           </div>
         )}
 
-        <button
-          type="button"
-          aria-label="Notificações"
-          className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-divider bg-paper-50 text-olive-900 transition-colors hover:bg-paper-100"
-        >
-          <Bell className="h-3.5 w-3.5" aria-hidden="true" />
-          <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-terra-500" />
-        </button>
+        <NotificationBell />
 
         {isAuthed ? (
           <details className="group relative ml-0.5">

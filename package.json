@@ -20,7 +20,8 @@
     "seed:orders": "tsx scripts/seed-orders.ts",
     "seed:delivery-persons": "tsx scripts/seed-delivery-persons.ts",
     "abacatepay:simulate": "node --env-file=.env.local --import tsx scripts/simulate-pix-payment.ts",
-    "abacatepay:health": "node --env-file=.env.local --import tsx scripts/abacatepay-health.ts"
+    "abacatepay:health": "node --env-file=.env.local --import tsx scripts/abacatepay-health.ts",
+    "abacatepay:sync-products": "node --env-file=.env.local --import tsx scripts/abacatepay-sync-products.ts"
   },
   "prettier": {
     "plugins": [

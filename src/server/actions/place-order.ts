@@ -6,7 +6,11 @@ import { z } from "zod";
 import { createSupabaseServerClient } from "@/server/supabase/server";
 import { createSupabaseServiceClient } from "@/server/supabase/service";
 import { reaisToCents } from "@/server/supabase/mappers";
-import { createPixCharge, mapPixStatusToPaymentStatus } from "@/server/payments/abacatepay";
+import {
+  createCheckout,
+  createPixCharge,
+  mapPixStatusToPaymentStatus,
+} from "@/server/payments/abacatepay";
 import type { ShippingAddress } from "@/types/order";
 
 /**
@@ -53,6 +57,11 @@ const inputSchema = z.object({
   shippingAddress: shippingAddressSchema,
   shippingFee: z.number().nonnegative().default(0),
   couponCode: z.string().trim().max(80).optional(),
+  /**
+   * Método de pagamento. PIX = transparente (QR no site, ADR 0009 D1).
+   * Card = checkout hospedado AbacatePay (redirect, parcelamento até 3x).
+   */
+  paymentMethod: z.enum(["pix", "card"]).default("pix"),
 });
 
 export type PlaceOrderInput = z.infer<typeof inputSchema>;
@@ -63,11 +72,17 @@ export type PlaceOrderResult =
       orderId: string;
       orderNumber: number;
       /**
-       * `true` quando a cobrança PIX no AbacatePay falhou e o pedido caiu em
+       * `true` quando a cobrança AbacatePay falhou e o pedido caiu em
        * fallback manual (ADR 0009 D6). UI deve avisar o cliente que a Veg.ana
        * vai chamar no WhatsApp.
        */
       paymentFallback: boolean;
+      /**
+       * URL pra redirecionar o cliente pro checkout hospedado AbacatePay.
+       * Preenchido apenas quando `paymentMethod === "card"` e a criação foi
+       * bem-sucedida. PIX nunca redireciona (QR fica em `/obrigado/<id>`).
+       */
+      redirectUrl?: string;
     }
   | { ok: false; message: string };
 
@@ -114,7 +129,7 @@ export async function placeOrderAction(input: PlaceOrderInput): Promise<PlaceOrd
   const { data: productRows, error: productsError } = await supabase
     .from("products")
     .select(
-      "id, name, category, price_site_cents, price_ifood_cents, active, deleted_at, stock",
+      "id, name, category, price_site_cents, price_ifood_cents, active, deleted_at, stock, abacatepay_product_id",
     )
     .in("id", productIds);
 
@@ -241,57 +256,119 @@ export async function placeOrderAction(input: PlaceOrderInput): Promise<PlaceOrd
     return { ok: false, message: "Não foi possível salvar os itens do pedido. Tente de novo." };
   }
 
-  // PIX via AbacatePay (ADR 0009 D1). Falha cai em fallback manual (D6).
-  const pixResult = await createPixCharge({
-    amountCents: totalCents,
-    description: `Veg.ana - Pedido #${orderNumber}`,
-    customer: {
-      name: customerName || profile.first_name || "Cliente Veg.ana",
-      email: user.email ?? "no-reply@veg.ana",
-      cellphone: profile.phone,
-      taxId: profile.cpf,
-    },
-  });
-
+  // Branch payment: PIX transparente vs Cartão hospedado (ADR 0009 D1).
+  // Falha em qualquer cai em fallback manual (D6) — pedido fica `pending`,
+  // mãe combina pagamento no WhatsApp.
   let paymentFallback = false;
+  let redirectUrl: string | undefined;
 
-  if (pixResult.ok) {
-    const { error: paymentError } = await service.from("payments").insert({
-      order_id: orderId,
-      provider: "abacatepay",
-      method: "pix",
-      status: mapPixStatusToPaymentStatus(pixResult.charge.status),
-      amount_cents: totalCents,
-      provider_charge_id: pixResult.charge.id,
-      raw_payload: {
-        brCode: pixResult.charge.brCode,
-        brCodeBase64: pixResult.charge.brCodeBase64,
-        expiresAt: pixResult.charge.expiresAt,
-        devMode: pixResult.charge.devMode,
-        status: pixResult.charge.status,
-      },
+  const customerPayload = {
+    name: customerName || profile.first_name || "Cliente Veg.ana",
+    email: user.email ?? "no-reply@veg.ana",
+    cellphone: profile.phone,
+    taxId: profile.cpf,
+  };
+
+  const description = `Veg.ana - Pedido #${orderNumber}`;
+
+  if (parsed.data.paymentMethod === "card") {
+    // Checkout hospedado exige produtos pré-cadastrados. Se algum item não
+    // tem `abacatepay_product_id`, cai em fallback (admin roda sync).
+    const missingSync = parsed.data.items.find((item) => {
+      const product = productById.get(item.productId);
+      return !product?.abacatepay_product_id;
     });
 
-    if (paymentError) {
-      console.error("[place-order] payments insert (abacatepay):", paymentError.message);
-      // Cobrança existe no gateway mas BD não persistiu. Admin precisa reconciliar
-      // pelo dashboard AbacatePay. Não cancelamos o pedido — kanban mostra como pendente.
+    if (missingSync) {
+      paymentFallback = true;
+      console.error(
+        "[place-order] missing abacatepay_product_id for product:",
+        missingSync.productId,
+      );
+      await insertManualPayment(
+        service,
+        orderId,
+        totalCents,
+        "Catálogo do cartão fora de sincronia. Rode `npm run abacatepay:sync-products`.",
+      );
+    } else {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3100";
+
+      const checkoutResult = await createCheckout({
+        items: parsed.data.items.map((item) => ({
+          id: productById.get(item.productId)!.abacatepay_product_id!,
+          quantity: item.qty,
+        })),
+        externalId: orderId,
+        customer: customerPayload,
+        returnUrl: `${baseUrl}/carrinho`,
+        completionUrl: `${baseUrl}/obrigado/${orderId}`,
+        methods: ["CARD"],
+        maxInstallments: 3,
+        metadata: { orderId, orderNumber },
+      });
+
+      if (checkoutResult.ok) {
+        redirectUrl = checkoutResult.checkout.url;
+        const { error: paymentError } = await service.from("payments").insert({
+          order_id: orderId,
+          provider: "abacatepay",
+          method: "credit_card",
+          status: mapPixStatusToPaymentStatus(checkoutResult.checkout.status),
+          amount_cents: totalCents,
+          provider_charge_id: checkoutResult.checkout.id,
+          raw_payload: {
+            url: checkoutResult.checkout.url,
+            status: checkoutResult.checkout.status,
+            externalId: checkoutResult.checkout.externalId,
+          },
+        });
+
+        if (paymentError) {
+          console.error(
+            "[place-order] payments insert (checkout):",
+            paymentError.message,
+          );
+        }
+      } else {
+        paymentFallback = true;
+        console.error("[place-order] AbacatePay createCheckout:", checkoutResult.error);
+        await insertManualPayment(service, orderId, totalCents, checkoutResult.error);
+      }
     }
   } else {
-    paymentFallback = true;
-    console.error("[place-order] AbacatePay createPix:", pixResult.error);
-
-    const { error: paymentError } = await service.from("payments").insert({
-      order_id: orderId,
-      provider: "manual",
-      method: null,
-      status: "failed",
-      amount_cents: totalCents,
-      raw_payload: { error: pixResult.error },
+    // PIX transparente — caminho default.
+    const pixResult = await createPixCharge({
+      amountCents: totalCents,
+      description,
+      customer: customerPayload,
     });
 
-    if (paymentError) {
-      console.error("[place-order] payments insert (fallback):", paymentError.message);
+    if (pixResult.ok) {
+      const { error: paymentError } = await service.from("payments").insert({
+        order_id: orderId,
+        provider: "abacatepay",
+        method: "pix",
+        status: mapPixStatusToPaymentStatus(pixResult.charge.status),
+        amount_cents: totalCents,
+        provider_charge_id: pixResult.charge.id,
+        raw_payload: {
+          brCode: pixResult.charge.brCode,
+          brCodeBase64: pixResult.charge.brCodeBase64,
+          expiresAt: pixResult.charge.expiresAt,
+          devMode: pixResult.charge.devMode,
+          status: pixResult.charge.status,
+        },
+      });
+
+      if (paymentError) {
+        console.error("[place-order] payments insert (abacatepay):", paymentError.message);
+      }
+    } else {
+      paymentFallback = true;
+      console.error("[place-order] AbacatePay createPix:", pixResult.error);
+      await insertManualPayment(service, orderId, totalCents, pixResult.error);
     }
   }
 
@@ -300,5 +377,29 @@ export async function placeOrderAction(input: PlaceOrderInput): Promise<PlaceOrd
   // segmento, não o layout pai — então o pedido novo não aparece em /conta.
   revalidatePath("/", "layout");
 
-  return { ok: true, orderId, orderNumber, paymentFallback };
+  return { ok: true, orderId, orderNumber, paymentFallback, redirectUrl };
+}
+
+/**
+ * Insere payment row em fallback manual (ADR 0009 D6) — usado quando a
+ * cobrança no AbacatePay falha por qualquer motivo. Mãe trata no WhatsApp.
+ */
+async function insertManualPayment(
+  service: ReturnType<typeof createSupabaseServiceClient>,
+  orderId: string,
+  amountCents: number,
+  error: string,
+): Promise<void> {
+  const { error: paymentError } = await service.from("payments").insert({
+    order_id: orderId,
+    provider: "manual",
+    method: null,
+    status: "failed",
+    amount_cents: amountCents,
+    raw_payload: { error },
+  });
+
+  if (paymentError) {
+    console.error("[place-order] payments insert (fallback):", paymentError.message);
+  }
 }

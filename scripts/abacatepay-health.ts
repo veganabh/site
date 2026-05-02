@@ -240,3 +240,5 @@ main()
   .finally(() => {
     if (failed) process.exitCode = 1;
   });
+
+export {};

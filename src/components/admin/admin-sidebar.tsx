@@ -12,6 +12,7 @@ import {
   BarChart2,
   Sparkles,
   Gift,
+  Bell,
   SlidersHorizontal,
   ExternalLink,
   X,
@@ -79,6 +80,11 @@ const NAV_MODULES: NavModule[] = [
     href: "/gestao/kits",
     label: "Kits de presente",
     icon: Gift,
+  },
+  {
+    href: "/gestao/notificacoes",
+    label: "Notificações",
+    icon: Bell,
   },
   {
     href: "/gestao/configuracoes",

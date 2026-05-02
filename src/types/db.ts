@@ -537,6 +537,7 @@ export type Database = {
       };
       products: {
         Row: {
+          abacatepay_product_id: string | null;
           active: boolean;
           attributes: string[];
           category: string;
@@ -564,6 +565,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          abacatepay_product_id?: string | null;
           active?: boolean;
           attributes?: string[];
           category: string;
@@ -591,6 +593,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          abacatepay_product_id?: string | null;
           active?: boolean;
           attributes?: string[];
           category?: string;

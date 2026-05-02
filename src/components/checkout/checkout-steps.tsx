@@ -1249,10 +1249,22 @@ function StepPagamento() {
         },
         shippingFee: selectedAddress.shippingFee,
         couponCode: appliedCoupon?.code,
+        paymentMethod: tab === "cartao" ? "card" : "pix",
       });
 
       if (!result.ok) {
         setError(result.message);
+        return;
+      }
+
+      // Cartão = redirect pro checkout hospedado AbacatePay (URL externa).
+      // Quando o cliente termina de pagar, AbacatePay devolve em
+      // `completionUrl` que aponta pra `/obrigado/<id>`.
+      if (result.redirectUrl) {
+        clearCart();
+        setStep("confirmado");
+        setOrderId(result.orderId);
+        window.location.href = result.redirectUrl;
         return;
       }
 

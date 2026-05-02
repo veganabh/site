@@ -34,24 +34,28 @@ import {
  * ainda fora de escopo do Sprint 1 — caem no branch `default` e ignoram.
  */
 
+const chargeShape = z
+  .object({
+    id: z.string(),
+    status: z.enum(["PENDING", "EXPIRED", "CANCELLED", "PAID", "REFUNDED"]),
+    amount: z.number().nullish(),
+    paidAmount: z.number().nullish(),
+    updatedAt: z.string(),
+    externalId: z.string().nullish(),
+    devMode: z.boolean().nullish(),
+  })
+  .passthrough();
+
 const webhookSchema = z.object({
   event: z.string(),
   apiVersion: z.union([z.number(), z.string()]).optional(),
   devMode: z.boolean().optional(),
   data: z
     .object({
-      transparent: z
-        .object({
-          id: z.string(),
-          status: z.enum(["PENDING", "EXPIRED", "CANCELLED", "PAID", "REFUNDED"]),
-          amount: z.number().nullish(),
-          paidAmount: z.number().nullish(),
-          updatedAt: z.string(),
-          externalId: z.string().nullish(),
-          devMode: z.boolean().nullish(),
-        })
-        .passthrough()
-        .optional(),
+      // PIX transparente — `transparent.completed`, etc.
+      transparent: chargeShape.optional(),
+      // Checkout hospedado — `checkout.completed`, etc.
+      checkout: chargeShape.optional(),
     })
     .passthrough(),
 });
@@ -107,21 +111,24 @@ export async function POST(request: Request) {
   }
 
   const { event, data } = parsed.data;
-  const transparent = data.transparent;
+  // Aceita tanto `data.transparent` (PIX) quanto `data.checkout` (cartão).
+  // Se ambos vierem (improvável), `transparent` ganha — eventos PIX são mais
+  // sensíveis no nosso fluxo.
+  const charge = data.transparent ?? data.checkout;
 
-  // Eventos sem `data.transparent` (ex: payout/subscription) são ignorados em
-  // Sprint 1. Retornamos 200 pra não disparar retry.
-  if (!transparent) {
+  // Eventos sem charge (ex: payout/subscription) são ignorados em Sprint 1.
+  // Retornamos 200 pra não disparar retry.
+  if (!charge) {
     return NextResponse.json({ status: "ignored", event });
   }
 
-  const idempotencyKey = `${event}:${transparent.id}:${transparent.updatedAt}`;
+  const idempotencyKey = `${event}:${charge.id}:${charge.updatedAt}`;
   const service = createSupabaseServiceClient();
 
   const { data: payment, error: lookupError } = await service
     .from("payments")
     .select("id, order_id, status, idempotency_key, raw_payload")
-    .eq("provider_charge_id", transparent.id)
+    .eq("provider_charge_id", charge.id)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -137,25 +144,24 @@ export async function POST(request: Request) {
     // Retorna 200 pra não retry — mãe pode reconciliar manualmente se relevante.
     console.warn(
       "[abacatepay-webhook] payment não encontrado para provider_charge_id:",
-      transparent.id,
+      charge.id,
     );
-    return NextResponse.json({ status: "not_tracked", chargeId: transparent.id });
+    return NextResponse.json({ status: "not_tracked", chargeId: charge.id });
   }
 
   // Replay detection — webhook AbacatePay re-entrega em timeout/5xx.
   if (payment.idempotency_key === idempotencyKey) {
-    return NextResponse.json({ status: "replay", chargeId: transparent.id });
+    return NextResponse.json({ status: "replay", chargeId: charge.id });
   }
 
-  const nextStatus = mapPixStatusToPaymentStatus(transparent.status);
+  const nextStatus = mapPixStatusToPaymentStatus(charge.status);
 
   const previousPayload =
     payment.raw_payload && typeof payment.raw_payload === "object"
       ? (payment.raw_payload as Record<string, unknown>)
       : {};
 
-  const paidAt =
-    nextStatus === "paid" ? transparent.updatedAt || new Date().toISOString() : null;
+  const paidAt = nextStatus === "paid" ? charge.updatedAt || new Date().toISOString() : null;
 
   const { error: updateError } = await service
     .from("payments")
@@ -166,9 +172,9 @@ export async function POST(request: Request) {
       raw_payload: {
         ...previousPayload,
         lastEvent: event,
-        status: transparent.status,
-        updatedAt: transparent.updatedAt,
-        paidAmount: transparent.paidAmount,
+        status: charge.status,
+        updatedAt: charge.updatedAt,
+        paidAmount: charge.paidAmount,
       },
     })
     .eq("id", payment.id);
@@ -198,7 +204,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     status: "applied",
     event,
-    chargeId: transparent.id,
+    chargeId: charge.id,
     paymentStatus: nextStatus,
   });
 }

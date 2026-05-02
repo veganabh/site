@@ -199,6 +199,129 @@ function toPixQrCharge(data: CreateResponse): PixQrCharge {
   };
 }
 
+// ── Produto AbacatePay (cadastro pra checkout hospedado) ─────────────────────
+
+export type AbacatePayProduct = {
+  id: string;
+  externalId: string;
+  name: string;
+  price: number;
+  currency: string;
+  status: "ACTIVE" | "INACTIVE";
+};
+
+type CreateProductResponse = AbacatePayProduct;
+
+export type CreateProductInput = {
+  /** ID interno único — usamos `products.id` (UUID Supabase). */
+  externalId: string;
+  name: string;
+  /** Preço em centavos. */
+  priceCents: number;
+  description?: string;
+};
+
+/**
+ * Cadastra um produto na AbacatePay. Idempotência via `externalId` UNIQUE
+ * — a API rejeita duplicado, então o caller (script de sync) deve checar
+ * antes via `listAbacatePayProducts` ou simplesmente confiar no `409`.
+ */
+export async function createAbacatePayProduct(
+  input: CreateProductInput,
+): Promise<{ ok: true; product: AbacatePayProduct } | { ok: false; error: string }> {
+  const result = await abacateFetch<CreateProductResponse>("/products/create", {
+    method: "POST",
+    body: JSON.stringify({
+      externalId: input.externalId,
+      name: input.name,
+      price: input.priceCents,
+      currency: "BRL",
+      description: input.description,
+    }),
+  });
+
+  if (!result.ok) return result;
+  return { ok: true, product: result.data };
+}
+
+// ── Checkout hospedado (cartão + PIX redirect) ───────────────────────────────
+
+export type HostedCheckoutMethod = "PIX" | "CARD";
+
+export type HostedCheckout = {
+  id: string;
+  externalId?: string;
+  url: string;
+  amount: number;
+  status: "PENDING" | "EXPIRED" | "CANCELLED" | "PAID" | "REFUNDED";
+};
+
+export type CreateCheckoutInput = {
+  /** Itens já cadastrados na AbacatePay. `id` = `products.abacatepay_product_id`. */
+  items: Array<{ id: string; quantity: number }>;
+  /** Nosso `orders.id` — webhook devolve em `data.checkout.externalId`. */
+  externalId: string;
+  /** Cliente — passamos dados inline. AbacatePay cria customer interno. */
+  customer: {
+    name: string;
+    email: string;
+    cellphone?: string;
+    taxId: string;
+  };
+  /** URLs de retorno. AbacatePay redireciona o cliente após pagamento. */
+  returnUrl: string;
+  completionUrl: string;
+  /** Métodos aceitos. Default `["PIX", "CARD"]`. */
+  methods?: HostedCheckoutMethod[];
+  /** Parcelamento máximo no cartão (ADR 0009 D8: 1x–3x). */
+  maxInstallments?: number;
+  metadata?: Record<string, unknown>;
+};
+
+type CreateCheckoutResponse = {
+  id: string;
+  externalId?: string;
+  url: string;
+  amount: number;
+  status: HostedCheckout["status"];
+};
+
+/**
+ * Cria checkout hospedado AbacatePay (ADR 0009 D1 — cartão sempre hospedado).
+ * Cliente é redirecionado pra `response.url` pra completar o pagamento; volta
+ * pra `completionUrl` em sucesso ou `returnUrl` em cancel/back.
+ */
+export async function createCheckout(
+  input: CreateCheckoutInput,
+): Promise<{ ok: true; checkout: HostedCheckout } | { ok: false; error: string }> {
+  const result = await abacateFetch<CreateCheckoutResponse>("/checkouts/create", {
+    method: "POST",
+    body: JSON.stringify({
+      items: input.items,
+      externalId: input.externalId,
+      customer: input.customer,
+      returnUrl: input.returnUrl,
+      completionUrl: input.completionUrl,
+      methods: input.methods ?? ["PIX", "CARD"],
+      card: { maxInstallments: input.maxInstallments ?? 3 },
+      metadata: input.metadata,
+    }),
+  });
+
+  if (!result.ok) return result;
+  return { ok: true, checkout: result.data };
+}
+
+/**
+ * Mapeia status checkout (AbacatePay) → status interno `payments.status`.
+ * Mesmo enum do PIX — reusa `mapPixStatusToPaymentStatus`.
+ */
+export function mapCheckoutStatusToPaymentStatus(
+  status: HostedCheckout["status"],
+): "pending" | "paid" | "failed" | "refunded" {
+  return mapPixStatusToPaymentStatus(status);
+}
+
 /**
  * Mapeia status PIX → status interno de `payments.status`.
  * Tabela `payments` aceita: pending | paid | failed | refunded.
