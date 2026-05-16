@@ -9,6 +9,7 @@ import { CollectionsStoreHydrator } from "@/components/providers/collections-sto
 import { DeliveryPersonsStoreHydrator } from "@/components/providers/delivery-persons-store-hydrator";
 import { GiftKitsStoreHydrator } from "@/components/providers/gift-kits-store-hydrator";
 import { MenuStoreHydrator } from "@/components/providers/menu-store-hydrator";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { RingsStoreHydrator } from "@/components/providers/rings-store-hydrator";
 import { listMyAddresses } from "@/server/addresses";
 import { listCollections } from "@/server/collections";
@@ -58,7 +59,9 @@ export default async function RootLayout({
         <AdminOrdersStoreHydrator orders={orders} />
         <DeliveryPersonsStoreHydrator persons={deliveryPersons} />
         <AddressesStoreHydrator addresses={addresses} />
-        <AuthProvider>{children}</AuthProvider>
+        <QueryProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );
