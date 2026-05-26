@@ -14,7 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { cn } from "@/lib/utils";
 import { notificationInputSchema, NOTIFICATION_TYPES, NOTIFICATION_AUDIENCES } from "@/lib/notifications/schema";
-import type { NotificationInputSchema } from "@/lib/notifications/schema";
+import type { NotificationInputSchema, NotificationFormInput } from "@/lib/notifications/schema";
 import {
   createNotificationAction,
   updateNotificationAction,
@@ -109,7 +109,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<NotificationInputSchema>({
+  } = useForm<NotificationFormInput, unknown, NotificationInputSchema>({
     resolver: zodResolver(notificationInputSchema),
     defaultValues: notification
       ? {
