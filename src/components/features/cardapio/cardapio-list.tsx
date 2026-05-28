@@ -4,13 +4,14 @@ import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Pencil, Eye, EyeOff, Minus, Plus, Search, X, SlidersHorizontal } from "lucide-react";
+import { Pencil, Eye, EyeOff, Minus, Plus, Search, X, SlidersHorizontal, ListChecks } from "lucide-react";
 import { useMenuStore } from "@/stores/menu-store";
 import { formatBRL } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { CATEGORY_LABELS } from "@/components/features/cardapio/category-labels";
-import { PRODUCT_CATEGORIES, type Product, type ProductCategory } from "@/types/product";
+import type { Product } from "@/types/product";
+import { useActiveCategories } from "@/stores/categories-store";
 import { CardapioStatsStrip } from "@/components/admin/cardapio/cardapio-stats-strip";
+import { BulkEditBar } from "@/components/admin/cardapio/bulk-edit-bar";
 import {
   setStockAction,
   toggleActiveProductAction,
@@ -31,6 +32,7 @@ type StatusFilter = "todos" | "ativos" | "inativos";
  */
 export function CardapioList() {
   const { products, toggleActive, adjustStock } = useMenuStore();
+  const categories = useActiveCategories();
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -66,10 +68,39 @@ export function CardapioList() {
   };
 
   const [query, setQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<"todas" | ProductCategory>("todas");
+  const [categoryFilter, setCategoryFilter] = useState<string>("todas");
   const [stockFilter, setStockFilter] = useState<StockFilter>("todos");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("todos");
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // ── Modo de seleção em massa ───────────────────────────────────────────
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelect = (id: string) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const setManySelected = (ids: string[], checked: boolean) =>
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const id of ids) {
+        if (checked) next.add(id);
+        else next.delete(id);
+      }
+      return next;
+    });
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const exitSelectionMode = () => {
+    setSelectionMode(false);
+    clearSelection();
+  };
 
   // ── Métricas globais (para contagens em chips) ─────────────────────────
   const ativos = products.filter((p) => p.active).length;
@@ -94,14 +125,23 @@ export function CardapioList() {
     });
   }, [products, query, categoryFilter, stockFilter, statusFilter]);
 
-  // ── Agrupamento por categoria ──────────────────────────────────────────
+  // ── Agrupamento por categoria (dinâmico) ───────────────────────────────
+  // Ordem = categorias ativas do store. Produtos cujo slug não bate em
+  // nenhuma categoria (órfãos — categoria deletada) caem no bucket "Outros".
   const grouped = useMemo(() => {
-    const map = new Map<ProductCategory, Product[]>();
-    for (const cat of PRODUCT_CATEGORIES) map.set(cat, []);
-    for (const p of filtered) map.get(p.category)?.push(p);
+    const order = categories.map((c) => c.slug);
+    const labelBySlug = new Map(categories.map((c) => [c.slug, c.name]));
+    const map = new Map<string, Product[]>();
+    for (const slug of order) map.set(slug, []);
+    const orphan: Product[] = [];
+    for (const p of filtered) {
+      if (map.has(p.category)) map.get(p.category)!.push(p);
+      else orphan.push(p);
+    }
     for (const list of map.values()) list.sort((a, b) => a.name.localeCompare(b.name));
-    return map;
-  }, [filtered]);
+    orphan.sort((a, b) => a.name.localeCompare(b.name));
+    return { map, order, labelBySlug, orphan };
+  }, [filtered, categories]);
 
   const activeFiltersCount =
     (categoryFilter !== "todas" ? 1 : 0) +
@@ -169,6 +209,21 @@ export function CardapioList() {
             )}
           </button>
 
+          <button
+            type="button"
+            onClick={() => (selectionMode ? exitSelectionMode() : setSelectionMode(true))}
+            aria-pressed={selectionMode}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1.5 rounded-sm border px-3 py-1.5 text-body-sm font-semibold transition-colors",
+              selectionMode
+                ? "border-olive-900 bg-olive-900 text-paper-50 hover:bg-olive-700"
+                : "border-divider bg-paper-50 text-olive-700 hover:bg-paper-100",
+            )}
+          >
+            <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
+            {selectionMode ? "Sair da seleção" : "Editar em massa"}
+          </button>
+
           <span className="shrink-0 text-caption text-olive-700">
             <span className="font-semibold text-olive-900">{filtered.length}</span> de{" "}
             {products.length}
@@ -188,13 +243,13 @@ export function CardapioList() {
               >
                 Todas
               </FilterChip>
-              {PRODUCT_CATEGORIES.map((cat) => (
+              {categories.map((cat) => (
                 <FilterChip
-                  key={cat}
-                  active={categoryFilter === cat}
-                  onClick={() => setCategoryFilter(cat)}
+                  key={cat.slug}
+                  active={categoryFilter === cat.slug}
+                  onClick={() => setCategoryFilter(cat.slug)}
                 >
-                  {CATEGORY_LABELS[cat]}
+                  {cat.name}
                 </FilterChip>
               ))}
             </FilterGroup>
@@ -292,14 +347,18 @@ export function CardapioList() {
               {actionError}
             </p>
           )}
-          {PRODUCT_CATEGORIES.map((cat) => {
-            const list = grouped.get(cat) ?? [];
+          {grouped.order.map((slug) => {
+            const list = grouped.map.get(slug) ?? [];
             if (list.length === 0) return null;
             return (
               <CategorySection
-                key={cat}
-                category={cat}
+                key={slug}
+                categoryLabel={grouped.labelBySlug.get(slug) ?? slug}
                 products={list}
+                selectionMode={selectionMode}
+                selectedIds={selectedIds}
+                onToggleSelect={toggleSelect}
+                onToggleSelectAll={setManySelected}
                 onToggleActive={(id) => {
                   const product = list.find((p) => p.id === id);
                   if (product) persistToggleActive(id, !product.active);
@@ -311,7 +370,32 @@ export function CardapioList() {
               />
             );
           })}
+
+          {/* Bucket de produtos órfãos (categoria deletada) */}
+          {grouped.orphan.length > 0 && (
+            <CategorySection
+              key="__orphan__"
+              categoryLabel="Sem categoria"
+              products={grouped.orphan}
+              selectionMode={selectionMode}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+              onToggleSelectAll={setManySelected}
+              onToggleActive={(id) => {
+                const product = grouped.orphan.find((p) => p.id === id);
+                if (product) persistToggleActive(id, !product.active);
+              }}
+              onAdjustStock={(id, delta) => {
+                const product = grouped.orphan.find((p) => p.id === id);
+                if (product) persistAdjustStock(id, delta, product.stock);
+              }}
+            />
+          )}
         </div>
+      )}
+
+      {selectionMode && selectedIds.size > 0 && (
+        <BulkEditBar selectedIds={[...selectedIds]} onClearSelection={clearSelection} />
       )}
     </div>
   );
@@ -363,13 +447,21 @@ function FilterChip({
 }
 
 function CategorySection({
-  category,
+  categoryLabel,
   products,
+  selectionMode,
+  selectedIds,
+  onToggleSelect,
+  onToggleSelectAll,
   onToggleActive,
   onAdjustStock,
 }: {
-  category: ProductCategory;
+  categoryLabel: string;
   products: Product[];
+  selectionMode: boolean;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
+  onToggleSelectAll: (ids: string[], checked: boolean) => void;
   onToggleActive: (id: string) => void;
   onAdjustStock: (id: string, delta: number) => void;
 }) {
@@ -377,12 +469,15 @@ function CategorySection({
   const esgotados = products.filter((p) => p.stock === 0).length;
   const baixos = products.filter((p) => p.stock > 0 && p.stock <= p.lowStockThreshold).length;
 
+  const categoryIds = products.map((p) => p.id);
+  const allSelected = categoryIds.length > 0 && categoryIds.every((id) => selectedIds.has(id));
+
   return (
     <section className="overflow-hidden rounded-lg border border-divider bg-paper-50">
       {/* Cabeçalho da categoria */}
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-divider bg-paper-100 px-4 py-2">
         <div className="flex items-center gap-2">
-          <h2 className="text-body-sm font-bold text-olive-900">{CATEGORY_LABELS[category]}</h2>
+          <h2 className="text-body-sm font-bold text-olive-900">{categoryLabel}</h2>
           <span className="rounded-pill bg-paper-50 px-2 py-0 text-[10px] leading-4 font-semibold text-olive-700">
             {products.length} {products.length === 1 ? "produto" : "produtos"}
           </span>
@@ -406,6 +501,7 @@ function CategorySection({
       <div className="overflow-x-auto">
         <table className="w-full min-w-[780px] table-fixed border-collapse text-left">
           <colgroup>
+            {selectionMode && <col className="w-[44px]" />}
             <col className="w-[80px]" />
             <col />
             <col className="w-[104px]" />
@@ -415,6 +511,17 @@ function CategorySection({
           </colgroup>
           <thead>
             <tr className="border-b border-divider bg-paper-50">
+              {selectionMode && (
+                <th className="px-3 py-1.5">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={(e) => onToggleSelectAll(categoryIds, e.target.checked)}
+                    aria-label={`Selecionar todos de ${categoryLabel}`}
+                    className="h-4 w-4 cursor-pointer accent-olive-900"
+                  />
+                </th>
+              )}
               <th className="px-3 py-1.5 text-[10px] font-semibold tracking-wide text-olive-700 uppercase">
                 Foto
               </th>
@@ -442,8 +549,20 @@ function CategorySection({
                 className={cn(
                   "border-b border-divider transition-colors last:border-0 hover:bg-paper-100/50",
                   !product.active && "opacity-50",
+                  selectionMode && selectedIds.has(product.id) && "bg-olive-900/5",
                 )}
               >
+                {selectionMode && (
+                  <td className="px-3 py-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(product.id)}
+                      onChange={() => onToggleSelect(product.id)}
+                      aria-label={`Selecionar ${product.name}`}
+                      className="h-4 w-4 cursor-pointer accent-olive-900"
+                    />
+                  </td>
+                )}
                 <td className="px-3 py-2">
                   <div className="relative h-12 w-12 overflow-hidden rounded-md bg-paper-100">
                     {product.photo.url ? (

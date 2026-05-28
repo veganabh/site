@@ -7,10 +7,10 @@ import { requireAdmin } from "@/server/auth/require-admin";
 import type { Database } from "@/types/db";
 import {
   PRODUCT_ATTRIBUTES,
-  PRODUCT_CATEGORIES,
   PRODUCT_CONTAINS,
   PRODUCT_TAGS,
 } from "@/types/product";
+import { PRICE_BULK_MODES, type PriceBulkMode, type BulkActionResult } from "@/lib/products-bulk";
 
 type ProductUpdate = Database["public"]["Tables"]["products"]["Update"];
 
@@ -41,7 +41,7 @@ function toSlug(name: string): string {
 const baseProductSchema = z.object({
   name: z.string().trim().min(2, "Nome precisa ter pelo menos 2 caracteres.").max(120),
   description: z.string().trim().min(10, "Descrição muito curta.").max(2000),
-  category: z.enum(PRODUCT_CATEGORIES),
+  category: z.string().min(1, "Selecione a categoria."),
   gramatura_g: z.coerce.number().int().positive("Informe a gramatura."),
   price_site: z.coerce.number().positive("Preço site inválido."),
   price_ifood: z.coerce.number().positive("Preço iFood inválido."),
@@ -253,4 +253,206 @@ export async function setStockAction(input: {
 
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+// ── Bulk (edição em massa) ────────────────────────────────────────────────────
+//
+// Operam sobre N produtos selecionados no painel. Toda ação valida ids,
+// exige role=admin e revalida o layout. Quando o valor é igual pra todos,
+// usa UPDATE único com `.in("id", ids)`. Preço percentual/relativo varia
+// por produto, então lê os preços atuais e atualiza cada um.
+
+const idsSchema = z
+  .array(z.string().min(1))
+  .min(1, "Selecione ao menos um produto.")
+  .max(200, "Seleção grande demais.");
+
+export async function bulkDeleteProductsAction(ids: string[]): Promise<BulkActionResult> {
+  const parsed = idsSchema.safeParse(ids);
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
+
+  const { supabase, error: authError } = await requireAdmin();
+  if (authError) return { ok: false, message: authError };
+
+  const { error } = await supabase
+    .from("products")
+    .update({ deleted_at: new Date().toISOString(), active: false })
+    .in("id", parsed.data);
+
+  if (error) {
+    console.error("[products/bulkDelete]", error.message);
+    return { ok: false, message: "Não foi possível excluir os selecionados." };
+  }
+
+  revalidatePath("/", "layout");
+  return { ok: true, affected: parsed.data.length };
+}
+
+export async function bulkSetActiveProductsAction(
+  ids: string[],
+  active: boolean,
+): Promise<BulkActionResult> {
+  const parsed = idsSchema.safeParse(ids);
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
+
+  const { supabase, error: authError } = await requireAdmin();
+  if (authError) return { ok: false, message: authError };
+
+  const { error } = await supabase
+    .from("products")
+    .update({ active })
+    .in("id", parsed.data);
+
+  if (error) {
+    console.error("[products/bulkSetActive]", error.message);
+    return { ok: false, message: "Não foi possível alterar a visibilidade." };
+  }
+
+  revalidatePath("/", "layout");
+  return { ok: true, affected: parsed.data.length };
+}
+
+const bulkStockSchema = z.object({
+  ids: idsSchema,
+  value: z.coerce.number().int().nonnegative("Estoque mínimo é 0."),
+});
+
+export async function bulkSetStockProductsAction(input: {
+  ids: string[];
+  value: number;
+}): Promise<BulkActionResult> {
+  const parsed = bulkStockSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
+
+  const { supabase, error: authError } = await requireAdmin();
+  if (authError) return { ok: false, message: authError };
+
+  const { error } = await supabase
+    .from("products")
+    .update({ stock: parsed.data.value })
+    .in("id", parsed.data.ids);
+
+  if (error) {
+    console.error("[products/bulkSetStock]", error.message);
+    return { ok: false, message: "Não foi possível atualizar o estoque." };
+  }
+
+  revalidatePath("/", "layout");
+  return { ok: true, affected: parsed.data.ids.length };
+}
+
+const bulkCategorySchema = z.object({
+  ids: idsSchema,
+  category: z.string().min(1, "Categoria inválida."),
+});
+
+export async function bulkSetCategoryProductsAction(input: {
+  ids: string[];
+  category: string;
+}): Promise<BulkActionResult> {
+  const parsed = bulkCategorySchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
+
+  const { supabase, error: authError } = await requireAdmin();
+  if (authError) return { ok: false, message: authError };
+
+  const { error } = await supabase
+    .from("products")
+    .update({ category: parsed.data.category })
+    .in("id", parsed.data.ids);
+
+  if (error) {
+    console.error("[products/bulkSetCategory]", error.message);
+    return { ok: false, message: "Não foi possível mudar a categoria." };
+  }
+
+  revalidatePath("/", "layout");
+  return { ok: true, affected: parsed.data.ids.length };
+}
+
+const bulkPriceSchema = z.object({
+  ids: idsSchema,
+  mode: z.enum(PRICE_BULK_MODES),
+  /** Reais (modos set/abs) ou percentual 0–100 (modos pct). */
+  value: z.coerce.number().positive("Valor deve ser positivo."),
+});
+
+/**
+ * Reajuste de preço de site em massa.
+ * - `set`: define preço fixo (reais) para todos.
+ * - `inc_pct` / `dec_pct`: aumenta/reduz por percentual.
+ * - `inc_abs` / `dec_abs`: aumenta/reduz por valor fixo (reais).
+ *
+ * Modos relativos leem o preço atual de cada produto e calculam individualmente.
+ * Preço final nunca fica abaixo de 1 centavo.
+ */
+export async function bulkUpdatePriceProductsAction(input: {
+  ids: string[];
+  mode: PriceBulkMode;
+  value: number;
+}): Promise<BulkActionResult> {
+  const parsed = bulkPriceSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0].message };
+
+  const { ids, mode, value } = parsed.data;
+
+  const { supabase, error: authError } = await requireAdmin();
+  if (authError) return { ok: false, message: authError };
+
+  // Modo "set" — mesmo valor pra todos: UPDATE único.
+  if (mode === "set") {
+    const { error } = await supabase
+      .from("products")
+      .update({ price_site_cents: reaisToCents(value) })
+      .in("id", ids);
+    if (error) {
+      console.error("[products/bulkPrice/set]", error.message);
+      return { ok: false, message: "Não foi possível aplicar o preço." };
+    }
+    revalidatePath("/", "layout");
+    return { ok: true, affected: ids.length };
+  }
+
+  // Modos relativos — lê preços atuais e calcula por produto.
+  const { data: rows, error: readError } = await supabase
+    .from("products")
+    .select("id, price_site_cents")
+    .in("id", ids);
+
+  if (readError || !rows) {
+    console.error("[products/bulkPrice/read]", readError?.message);
+    return { ok: false, message: "Não foi possível ler os preços atuais." };
+  }
+
+  const computeNext = (currentCents: number): number => {
+    switch (mode) {
+      case "inc_pct":
+        return Math.round(currentCents * (1 + value / 100));
+      case "dec_pct":
+        return Math.round(currentCents * (1 - value / 100));
+      case "inc_abs":
+        return currentCents + reaisToCents(value);
+      case "dec_abs":
+        return currentCents - reaisToCents(value);
+      default:
+        return currentCents;
+    }
+  };
+
+  const updates = rows.map((row) =>
+    supabase
+      .from("products")
+      .update({ price_site_cents: Math.max(1, computeNext(row.price_site_cents)) })
+      .eq("id", row.id),
+  );
+
+  const results = await Promise.all(updates);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) {
+    console.error("[products/bulkPrice/relative]", failed.error.message);
+    return { ok: false, message: "Falha ao reajustar alguns preços." };
+  }
+
+  revalidatePath("/", "layout");
+  return { ok: true, affected: rows.length };
 }

@@ -10,9 +10,7 @@ export const NOTIFICATION_AUDIENCES = ["all", "authed"] as const;
 
 export const notificationInputSchema = z
   .object({
-    type: z.enum(NOTIFICATION_TYPES, {
-      errorMap: () => ({ message: "Tipo inválido." }),
-    }),
+    type: z.enum(NOTIFICATION_TYPES, { message: "Tipo inválido." }),
 
     title: z
       .string()
@@ -37,9 +35,7 @@ export const notificationInputSchema = z
       .nullish()
       .transform((v) => v ?? null),
 
-    audience: z.enum(NOTIFICATION_AUDIENCES, {
-      errorMap: () => ({ message: "Público inválido." }),
-    }),
+    audience: z.enum(NOTIFICATION_AUDIENCES, { message: "Público inválido." }),
 
     publishedAt: z.string().datetime({ message: "Data de publicação inválida." }),
 
@@ -65,4 +61,14 @@ export const notificationInputSchema = z
     },
   );
 
-export type NotificationInputSchema = z.infer<typeof notificationInputSchema>;
+/**
+ * Tipo do PAYLOAD final (após transform `?? null`). Usado em server actions
+ * (recebem dado já normalizado) e em `handleSubmit` do RHF.
+ */
+export type NotificationInputSchema = z.output<typeof notificationInputSchema>;
+
+/**
+ * Tipo do FORM INPUT (antes do transform). Inclui `undefined` em campos
+ * opcionais. RHF precisa deste tipo para `useForm<...>` e `defaultValues`.
+ */
+export type NotificationFormInput = z.input<typeof notificationInputSchema>;

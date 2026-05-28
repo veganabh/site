@@ -3,7 +3,7 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, FolderCog } from "lucide-react";
 import { CardapioList } from "@/components/features/cardapio/cardapio-list";
 
 export const metadata: Metadata = {
@@ -23,13 +23,22 @@ export default function CardapioPage() {
             Adicione, edite ou desative produtos a qualquer momento.
           </p>
         </div>
-        <Link
-          href="/gestao/cardapio/novo"
-          className="inline-flex items-center gap-2 rounded-sm bg-olive-900 px-4 py-2 text-cta text-paper-50 transition hover:bg-olive-700"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          Novo produto
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/gestao/cardapio/categorias"
+            className="inline-flex items-center gap-2 rounded-sm border border-divider bg-paper-50 px-4 py-2 text-cta text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+          >
+            <FolderCog className="h-4 w-4" aria-hidden="true" />
+            Categorias
+          </Link>
+          <Link
+            href="/gestao/cardapio/novo"
+            className="inline-flex items-center gap-2 rounded-sm bg-olive-900 px-4 py-2 text-cta text-paper-50 transition hover:bg-olive-700"
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            Novo produto
+          </Link>
+        </div>
       </div>
 
       <CardapioList />
