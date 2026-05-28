@@ -8,6 +8,15 @@ import { z } from "zod";
 export const NOTIFICATION_TYPES = ["promo", "launch", "operational", "content"] as const;
 export const NOTIFICATION_AUDIENCES = ["all", "authed"] as const;
 
+/**
+ * Valida string de data parseável. Aceita tanto `datetime-local`
+ * ("2026-05-28T18:56", o que o input HTML envia) quanto ISO 8601 com TZ
+ * ("2026-05-28T18:56:00Z", o que o onSubmit normaliza pro server).
+ * `z.string().datetime()` rejeitava o formato do input → "Data inválida".
+ */
+const parseableDate = (message: string) =>
+  z.string().min(1, message).refine((v) => !Number.isNaN(new Date(v).getTime()), { message });
+
 export const notificationInputSchema = z
   .object({
     type: z.enum(NOTIFICATION_TYPES, { message: "Tipo inválido." }),
@@ -37,9 +46,9 @@ export const notificationInputSchema = z
 
     audience: z.enum(NOTIFICATION_AUDIENCES, { message: "Público inválido." }),
 
-    publishedAt: z.string().datetime({ message: "Data de publicação inválida." }),
+    publishedAt: parseableDate("Data de publicação inválida."),
 
-    expiresAt: z.string().datetime({ message: "Data de expiração inválida." }),
+    expiresAt: parseableDate("Data de expiração inválida."),
   })
   .refine(
     (data) => {

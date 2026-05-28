@@ -69,7 +69,7 @@ export function TopSkusList({ skus, thumbs }: TopSkusListProps) {
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] text-olive-700">
+                <span className="text-caption text-olive-700">
                   {sku.qtySold}x vendidos · {revenue}
                 </span>
               </div>

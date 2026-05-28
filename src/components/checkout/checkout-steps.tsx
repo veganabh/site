@@ -43,6 +43,7 @@ import { lookupCEP } from "@/lib/cep";
 import { computeCouponDiscount } from "@/lib/coupons";
 import { getCrossSellSuggestions } from "@/lib/cross-sell";
 import { getPhrasesForSavings } from "@/lib/savings-phrases";
+import { captureEvent } from "@/lib/analytics";
 import { kitLinePrice, kitLinePriceIfoodAnchor, useCartStore } from "@/stores/cart-store";
 import { useMenuStore } from "@/stores/menu-store";
 import { useCheckoutStore } from "@/stores/checkout-store";
@@ -1256,6 +1257,12 @@ function StepPagamento() {
         setError(result.message);
         return;
       }
+
+      captureEvent("order_placed", {
+        orderId: result.orderId,
+        method: tab === "cartao" ? "card" : "pix",
+        items: items.length,
+      });
 
       // Cartão = redirect pro checkout hospedado AbacatePay (URL externa).
       // Quando o cliente termina de pagar, AbacatePay devolve em

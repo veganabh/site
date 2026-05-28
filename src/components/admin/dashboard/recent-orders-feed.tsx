@@ -45,18 +45,18 @@ export function RecentOrdersFeed() {
                   {/* ID + cliente */}
                   <div className="flex min-w-0 flex-1 flex-col gap-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold text-olive-700">#{shortId}</span>
+                      <span className="text-caption font-bold text-olive-700">#{shortId}</span>
                       <span className="truncate text-caption font-semibold text-olive-900">
                         {order.customerName}
                       </span>
                     </div>
-                    <span className="text-[10px] text-olive-700">{relativeTime}</span>
+                    <span className="text-caption text-olive-700">{relativeTime}</span>
                   </div>
 
                   {/* Status + valor */}
                   <div className="flex shrink-0 flex-col items-end gap-0.5">
                     <OrderStatusBadge status={order.status} />
-                    <span className="text-[10px] font-bold text-olive-900">{total}</span>
+                    <span className="text-caption font-bold text-olive-900">{total}</span>
                   </div>
                 </Link>
               </li>

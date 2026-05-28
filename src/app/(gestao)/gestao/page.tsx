@@ -15,9 +15,10 @@
  */
 
 import type { Metadata } from "next";
-import { calcDayMetrics, calcTopSkus, greetingFor } from "@/lib/dashboard-metrics";
+import { calcDayMetrics, calcTopSkus } from "@/lib/dashboard-metrics";
 import { listAllOrders } from "@/server/orders";
 import { listProducts } from "@/server/products";
+import { DashboardGreeting } from "@/components/admin/dashboard/dashboard-greeting";
 import { DayStatsGrid } from "@/components/admin/dashboard/day-stats-grid";
 import { TopSkusList, type ProductThumb } from "@/components/admin/dashboard/top-skus-list";
 // Seções client reativas (Zustand) — import direto; Next 16 hidrata OK porque
@@ -43,7 +44,6 @@ export default async function GestaoPage() {
   const todayMetrics = calcDayMetrics(orders, today);
   const yesterdayMetrics = calcDayMetrics(orders, yesterday);
   const topSkus = calcTopSkus(orders, today, 5);
-  const greeting = greetingFor(today);
 
   // Pós-migração orders: `item.productId` é UUID real → Map keya por `p.id`.
   const thumbs = new Map<string, ProductThumb>(
@@ -54,10 +54,7 @@ export default async function GestaoPage() {
     <div className="flex flex-col gap-5">
       {/* Header com saudação dinâmica + pill pré-migração discreta */}
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex flex-col gap-0.5">
-          <h1 className="text-h2 font-bold text-olive-900">{greeting}, Ana.</h1>
-          <p className="text-body-sm text-olive-700 italic">Aqui está o resumo de hoje.</p>
-        </div>
+        <DashboardGreeting />
         <span
           role="note"
           className="inline-flex items-center rounded-pill border border-divider bg-paper-100 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-olive-700 uppercase"

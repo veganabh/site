@@ -14,8 +14,14 @@
 
 import { useAdminSettingsStore } from "@/stores/admin-settings-store";
 import type { WeekHours } from "@/stores/admin-settings-store";
+import { updateStoreSettingsAction } from "@/server/actions/store-settings";
 import { Toggle } from "@/components/ui/toggle";
 import { cn } from "@/lib/utils";
+
+// Persiste o estado atual do store (após setter otimista) no Supabase.
+function persistHours() {
+  void updateStoreSettingsAction({ hours: useAdminSettingsStore.getState().hours });
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -87,9 +93,11 @@ function StoreStatusBlock() {
 
         <Toggle
           checked={isAtivo}
-          onCheckedChange={(checked) =>
-            setStoreStatus(checked ? "ATIVO" : "PAUSADO")
-          }
+          onCheckedChange={(checked) => {
+            const next = checked ? "ATIVO" : "PAUSADO";
+            setStoreStatus(next);
+            void updateStoreSettingsAction({ storeStatus: next });
+          }}
           size="lg"
           aria-labelledby="cfg-status-label"
         />
@@ -167,7 +175,10 @@ function HoursBlock() {
                 <Toggle
                   id={toggleId}
                   checked={dayData.open}
-                  onCheckedChange={() => toggleDayOpen(day)}
+                  onCheckedChange={() => {
+                    toggleDayOpen(day);
+                    persistHours();
+                  }}
                   size="md"
                   aria-labelledby={labelId}
                 />
@@ -193,9 +204,8 @@ function HoursBlock() {
                       id={fromId}
                       type="time"
                       value={dayData.from}
-                      onChange={(e) =>
-                        updateDayHours(day, { from: e.target.value })
-                      }
+                      onChange={(e) => updateDayHours(day, { from: e.target.value })}
+                      onBlur={persistHours}
                       aria-label={`${DAY_LABELS[day]} — abre`}
                       className={cn(
                         "rounded-sm border px-1.5 py-0.5 text-caption text-olive-900",
@@ -220,9 +230,8 @@ function HoursBlock() {
                       id={toId}
                       type="time"
                       value={dayData.to}
-                      onChange={(e) =>
-                        updateDayHours(day, { to: e.target.value })
-                      }
+                      onChange={(e) => updateDayHours(day, { to: e.target.value })}
+                      onBlur={persistHours}
                       aria-label={`${DAY_LABELS[day]} — fecha`}
                       className={cn(
                         "rounded-sm border px-1.5 py-0.5 text-caption text-olive-900",
@@ -292,7 +301,10 @@ function PrinterBlock() {
 
         <Toggle
           checked={printerEnabled}
-          onCheckedChange={setPrinterEnabled}
+          onCheckedChange={(v) => {
+            setPrinterEnabled(v);
+            void updateStoreSettingsAction({ printerEnabled: v });
+          }}
           size="md"
           aria-labelledby="cfg-printer-label"
         />
@@ -312,6 +324,11 @@ function PrinterBlock() {
             type="text"
             value={printerName}
             onChange={(e) => setPrinterName(e.target.value)}
+            onBlur={() =>
+              void updateStoreSettingsAction({
+                printerName: useAdminSettingsStore.getState().printerName,
+              })
+            }
             placeholder="Ex.: Epson TM-T20"
             className={cn(
               "w-full max-w-sm rounded-md border border-divider bg-paper-50 px-3 py-2",

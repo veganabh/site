@@ -66,15 +66,6 @@ export function HeroPromo({ className }: HeroPromoProps) {
             feito à mão, todo dia
           </li>
         </ul>
-
-        <div className="mt-2 flex items-center gap-3">
-          <a
-            href="#cardapio"
-            className="inline-flex h-10 items-center rounded-pill bg-paper-50 px-5 text-body-sm font-semibold text-olive-900 transition-colors hover:bg-terra-500 hover:text-paper-50"
-          >
-            Ver cardápio
-          </a>
-        </div>
       </div>
     </section>
   );

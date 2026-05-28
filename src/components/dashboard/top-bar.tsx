@@ -9,10 +9,9 @@ import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { SearchBar } from "@/components/dashboard/search-bar";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth/use-session";
+import { useAdminSettingsStore } from "@/stores/admin-settings-store";
+import { isStoreOpen } from "@/types/store-settings";
 import { signOutAction } from "@/server/auth/actions";
-
-const OPEN_HOUR = 10;
-const CLOSE_HOUR = 20;
 
 type TopBarProps = {
   className?: string;
@@ -21,6 +20,8 @@ type TopBarProps = {
 export function TopBar({ className }: TopBarProps) {
   const pathname = usePathname() ?? "/";
   const { isAuthed, user } = useSession();
+  const storeStatus = useAdminSettingsStore((s) => s.storeStatus);
+  const hours = useAdminSettingsStore((s) => s.hours);
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -33,8 +34,8 @@ export function TopBar({ className }: TopBarProps) {
     };
   }, []);
 
-  const hour = now?.getHours() ?? -1;
-  const isOpen = hour >= OPEN_HOUR && hour < CLOSE_HOUR;
+  // Aberta = status ATIVO E dentro do horário do dia. PAUSADO fecha sempre.
+  const isOpen = now ? isStoreOpen({ storeStatus, hours }, now) : false;
 
   const initial = user?.firstName.charAt(0).toUpperCase() ?? "A";
 

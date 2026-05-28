@@ -221,7 +221,7 @@ export default function PedidosPage() {
           const colOrders = filteredOrders.filter((o) => o.status === col.status);
 
           return (
-            <div key={col.status} className="flex w-60 shrink-0 flex-col gap-2 md:w-64 xl:flex-1">
+            <div key={col.status} className="flex min-w-[180px] flex-1 flex-col gap-2">
               {/* Header da coluna */}
               <div className="flex items-center justify-between rounded-md bg-paper-100 px-2.5 py-1.5">
                 <p className="text-[10px] font-bold tracking-wide text-olive-700 uppercase">

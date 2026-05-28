@@ -316,6 +316,42 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_clicks: {
+        Row: {
+          clicked_at: string
+          id: string
+          notification_id: string
+          profile_id: string | null
+        }
+        Insert: {
+          clicked_at?: string
+          id?: string
+          notification_id: string
+          profile_id?: string | null
+        }
+        Update: {
+          clicked_at?: string
+          id?: string
+          notification_id?: string
+          profile_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_clicks_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_clicks_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_reads: {
         Row: {
           notification_id: string
@@ -767,6 +803,33 @@ export type Database = {
           last_name?: string | null
           phone?: string | null
           role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      store_settings: {
+        Row: {
+          hours: Json
+          id: string
+          printer_enabled: boolean
+          printer_name: string
+          store_status: string
+          updated_at: string
+        }
+        Insert: {
+          hours?: Json
+          id?: string
+          printer_enabled?: boolean
+          printer_name?: string
+          store_status?: string
+          updated_at?: string
+        }
+        Update: {
+          hours?: Json
+          id?: string
+          printer_enabled?: boolean
+          printer_name?: string
+          store_status?: string
           updated_at?: string
         }
         Relationships: []

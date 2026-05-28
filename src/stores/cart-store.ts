@@ -4,6 +4,7 @@ import type { Product } from "@/types/product";
 import type { GiftKitPick, GiftKitRecipient, GiftKitTemplate, KitCartItem } from "@/types/gift-kit";
 import { GIFT_PACKAGING_PRICE } from "@/types/gift-kit";
 import { applyCouponAction } from "@/server/actions/apply-coupon";
+import { captureEvent } from "@/lib/analytics";
 import type { CouponType } from "@/types/coupon";
 
 export type CartItem = {
@@ -101,7 +102,12 @@ export const useCartStore = create<CartStore>()(
       appliedCoupon: null,
       crossSellAccepted: false,
 
-      addItem: (product) =>
+      addItem: (product) => {
+        captureEvent("add_to_cart", {
+          productId: product.id,
+          name: product.name,
+          price: product.price_site,
+        });
         set((state) => {
           const existing = state.items.find((i) => i.product.id === product.id);
           if (existing) {
@@ -112,7 +118,8 @@ export const useCartStore = create<CartStore>()(
             };
           }
           return { items: [...state.items, { product, quantity: 1 }] };
-        }),
+        });
+      },
 
       removeItem: (productId) =>
         set((state) => ({ items: state.items.filter((i) => i.product.id !== productId) })),

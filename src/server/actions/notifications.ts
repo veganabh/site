@@ -180,3 +180,29 @@ export async function markAllNotificationsReadAction(
 
   return { ok: true };
 }
+
+// ── Track CTA click (métrica) ──────────────────────────────────────────────
+//
+// Chamado pelo sino quando o cliente clica no CTA. Fire-and-forget: falha não
+// bloqueia a navegação. Anônimo → profile_id NULL (RLS permite). Logado →
+// seu próprio uid. Não exige admin (qualquer visitante registra o próprio).
+
+export async function trackNotificationClickAction(notificationId: string): Promise<void> {
+  if (!notificationId) return;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    // upsert ignore: 1 clique por (notification_id, profile_id). Anon (NULL)
+    // nunca conflita (NULL distinto no UNIQUE) → cada clique anônimo conta.
+    await supabase
+      .from("notification_clicks")
+      .upsert(
+        { notification_id: notificationId, profile_id: user?.id ?? null },
+        { onConflict: "notification_id,profile_id", ignoreDuplicates: true },
+      );
+  } catch (err) {
+    console.error("[notifications/trackClick]", err);
+  }
+}
