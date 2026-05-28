@@ -1,70 +1,37 @@
 /**
- * Store de configurações operacionais da loja — pré-migração Supabase.
+ * Store de configurações operacionais da loja.
  *
- * Referência: ADR 0005 (Zustand + persist para admin-side data pré-migração).
- * Ao migrar: substituir persist por leitura/escrita na tabela `store_settings`.
+ * Fonte da verdade agora é a tabela `store_settings` (Supabase). Este store é
+ * cache client hidratado via AdminSettingsStoreHydrator (no layout). Setters
+ * são otimistas (UI instantânea); a persistência real acontece via
+ * `updateStoreSettingsAction` chamado na página de configurações.
  *
- * Contém:
- *  - storeStatus: ATIVO | PAUSADO (liga/desliga aceite de pedidos)
- *  - hours: horário de funcionamento por dia da semana (informativo por ora)
- *  - printerEnabled / printerName: stub de impressora térmica (Fase 5)
+ * Sem `persist` — o localStorage não é mais fonte (causava o bug do status
+ * não refletir pro cliente em outro device).
  */
 
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import {
+  SEED_SETTINGS,
+  type AdminSettings,
+  type DayHours,
+  type StoreStatus,
+  type WeekHours,
+} from "@/types/store-settings";
 
-// ── Tipos públicos ─────────────────────────────────────────────────────────────
-
-export type DayHours = {
-  open: boolean;
-  /** Formato "HH:MM" */
-  from: string;
-  /** Formato "HH:MM" */
-  to: string;
-};
-
-export type WeekHours = Record<
-  "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun",
-  DayHours
->;
-
-export type StoreStatus = "ATIVO" | "PAUSADO";
-
-export type AdminSettings = {
-  storeStatus: StoreStatus;
-  hours: WeekHours;
-  printerEnabled: boolean;
-  printerName: string;
-};
-
-// ── Seed (valores iniciais) ────────────────────────────────────────────────────
-
-const SEED_HOURS: WeekHours = {
-  mon: { open: false, from: "09:00", to: "19:00" },
-  tue: { open: true, from: "09:00", to: "19:00" },
-  wed: { open: true, from: "09:00", to: "19:00" },
-  thu: { open: true, from: "09:00", to: "19:00" },
-  fri: { open: true, from: "09:00", to: "19:00" },
-  sat: { open: true, from: "10:00", to: "18:00" },
-  sun: { open: true, from: "11:00", to: "17:00" },
-};
-
-const SEED: AdminSettings = {
-  storeStatus: "ATIVO",
-  hours: SEED_HOURS,
-  printerEnabled: false,
-  printerName: "",
-};
+// Re-export para back-compat de quem importava os tipos deste módulo.
+export type { AdminSettings, DayHours, StoreStatus, WeekHours };
 
 // ── Ações ──────────────────────────────────────────────────────────────────────
 
 type AdminSettingsActions = {
+  /** Sincroniza o store com o estado vindo do servidor (hydrator). */
+  hydrate: (settings: AdminSettings) => void;
   setStoreStatus: (status: StoreStatus) => void;
   updateDayHours: (day: keyof WeekHours, patch: Partial<DayHours>) => void;
   toggleDayOpen: (day: keyof WeekHours) => void;
   setPrinterEnabled: (enabled: boolean) => void;
   setPrinterName: (name: string) => void;
-  /** Restaura todos os valores ao seed inicial. */
   reset: () => void;
 };
 
@@ -72,44 +39,26 @@ export type AdminSettingsStore = AdminSettings & AdminSettingsActions;
 
 // ── Store ──────────────────────────────────────────────────────────────────────
 
-export const useAdminSettingsStore = create<AdminSettingsStore>()(
-  persist(
-    (set) => ({
-      ...SEED,
+export const useAdminSettingsStore = create<AdminSettingsStore>()((set) => ({
+  ...SEED_SETTINGS,
 
-      setStoreStatus: (status) => set({ storeStatus: status }),
+  hydrate: (settings) => set({ ...settings }),
 
-      updateDayHours: (day, patch) =>
-        set((s) => ({
-          hours: {
-            ...s.hours,
-            [day]: { ...s.hours[day], ...patch },
-          },
-        })),
+  setStoreStatus: (status) => set({ storeStatus: status }),
 
-      toggleDayOpen: (day) =>
-        set((s) => ({
-          hours: {
-            ...s.hours,
-            [day]: { ...s.hours[day], open: !s.hours[day].open },
-          },
-        })),
+  updateDayHours: (day, patch) =>
+    set((s) => ({
+      hours: { ...s.hours, [day]: { ...s.hours[day], ...patch } },
+    })),
 
-      setPrinterEnabled: (enabled) => set({ printerEnabled: enabled }),
+  toggleDayOpen: (day) =>
+    set((s) => ({
+      hours: { ...s.hours, [day]: { ...s.hours[day], open: !s.hours[day].open } },
+    })),
 
-      setPrinterName: (name) => set({ printerName: name }),
+  setPrinterEnabled: (enabled) => set({ printerEnabled: enabled }),
 
-      reset: () => set({ ...SEED }),
-    }),
-    {
-      name: "vegana.admin-settings",
-      storage: createJSONStorage(() => localStorage),
-      onRehydrateStorage: () => (state) => {
-        // Garante que campos ausentes (schema evolution) voltem ao seed
-        if (state && !state.hours) {
-          state.hours = { ...SEED_HOURS };
-        }
-      },
-    },
-  ),
-);
+  setPrinterName: (name) => set({ printerName: name }),
+
+  reset: () => set({ ...SEED_SETTINGS }),
+}));

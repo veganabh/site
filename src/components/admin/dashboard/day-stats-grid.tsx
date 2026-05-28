@@ -37,36 +37,17 @@ function StatCard({
   const isPrimary = emphasis === "primary";
 
   return (
-    <div
-      className={cn(
-        "relative flex flex-col gap-1 overflow-hidden rounded-lg border shadow-sm",
-        isPrimary
-          ? "border-olive-900/25 bg-olive-900/[0.04] px-5 py-4"
-          : "border-divider bg-paper-50 p-4",
-      )}
-    >
+    <div className="relative flex flex-col gap-2 overflow-hidden rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
       {isPrimary && (
         <span
           aria-hidden="true"
           className="absolute top-0 bottom-0 left-0 w-1 bg-leaf-500"
         />
       )}
-      <span
-        className={cn(
-          "text-caption font-semibold tracking-wide uppercase",
-          isPrimary ? "text-olive-900" : "text-olive-700",
-        )}
-      >
+      <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">
         {label}
       </span>
-      <span
-        className={cn(
-          "font-bold text-olive-900",
-          isPrimary ? "text-price-big" : "text-h4",
-        )}
-      >
-        {value}
-      </span>
+      <span className="text-h4 font-bold text-olive-900">{value}</span>
       {delta && delta !== "—" ? (
         <span
           className={cn(
@@ -95,7 +76,7 @@ function formatBRL(value: number): string {
 
 export function DayStatsGrid({ today, yesterday }: DayStatsGridProps) {
   return (
-    <div aria-label="Resumo financeiro do dia" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+    <div aria-label="Resumo financeiro do dia" className="grid grid-cols-2 gap-4 xl:grid-cols-4">
       <StatCard
         label="Receita hoje"
         value={formatBRL(today.revenue)}

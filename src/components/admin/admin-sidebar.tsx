@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   ClipboardList,
+  Users,
   Package,
   Tag,
   MapPin,
@@ -37,59 +38,43 @@ type NavModule = {
   disabled?: boolean;
 };
 
-const NAV_MODULES: NavModule[] = [
+type NavSection = {
+  /** Rótulo da seção (oculto no modo rail colapsado). */
+  label: string;
+  items: NavModule[];
+};
+
+const NAV_SECTIONS: NavSection[] = [
   {
-    href: "/gestao",
-    label: "Painel",
-    icon: LayoutDashboard,
+    label: "Operação",
+    items: [
+      { href: "/gestao", label: "Painel", icon: LayoutDashboard },
+      { href: "/gestao/pedidos", label: "Pedidos", icon: ClipboardList, showOrderBadge: true },
+      { href: "/gestao/clientes", label: "Clientes", icon: Users },
+    ],
   },
   {
-    href: "/gestao/pedidos",
-    label: "Pedidos",
-    icon: ClipboardList,
-    showOrderBadge: true,
+    label: "Catálogo",
+    items: [
+      { href: "/gestao/cardapio", label: "Cardápio", icon: Package },
+      { href: "/gestao/kits", label: "Kits de presente", icon: Gift },
+      { href: "/gestao/edicoes", label: "Edições Especiais", icon: Sparkles, disabled: true },
+    ],
   },
   {
-    href: "/gestao/cardapio",
-    label: "Cardápio",
-    icon: Package,
+    label: "Marketing",
+    items: [
+      { href: "/gestao/cupons", label: "Cupons", icon: Tag },
+      { href: "/gestao/notificacoes", label: "Notificações", icon: Bell },
+    ],
   },
   {
-    href: "/gestao/cupons",
-    label: "Cupons",
-    icon: Tag,
-  },
-  {
-    href: "/gestao/zonas",
-    label: "Zonas",
-    icon: MapPin,
-  },
-  {
-    href: "/gestao/relatorios",
-    label: "Relatórios",
-    icon: BarChart2,
-    disabled: true,
-  },
-  {
-    href: "/gestao/edicoes",
-    label: "Edições Especiais",
-    icon: Sparkles,
-    disabled: true,
-  },
-  {
-    href: "/gestao/kits",
-    label: "Kits de presente",
-    icon: Gift,
-  },
-  {
-    href: "/gestao/notificacoes",
-    label: "Notificações",
-    icon: Bell,
-  },
-  {
-    href: "/gestao/configuracoes",
-    label: "Configurações",
-    icon: SlidersHorizontal,
+    label: "Sistema",
+    items: [
+      { href: "/gestao/zonas", label: "Zonas", icon: MapPin },
+      { href: "/gestao/relatorios", label: "Relatórios", icon: BarChart2, disabled: true },
+      { href: "/gestao/configuracoes", label: "Configurações", icon: SlidersHorizontal },
+    ],
   },
 ];
 
@@ -105,9 +90,16 @@ type SidebarContentProps = {
 
 function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: SidebarContentProps) {
   const pathname = usePathname() ?? "/gestao";
-  const newOrderCount = useAdminOrdersStore(
-    (s) => s.orders.filter((o) => o.status === "NOVO").length,
-  );
+  // Conta NOVO do DIA — alinha com o kanban /gestao/pedidos (escopo "do dia").
+  // Sem o filtro de data, pedidos-teste antigos inflavam o badge enquanto o
+  // kanban ficava vazio (createdAt < hoje).
+  const newOrderCount = useAdminOrdersStore((s) => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    return s.orders.filter(
+      (o) => o.status === "NOVO" && new Date(o.createdAt) >= start,
+    ).length;
+  });
 
   return (
     <div className="flex h-full flex-col">
@@ -163,34 +155,56 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
         )}
       </div>
 
-      {/* Nav principal */}
+      {/* Nav principal — agrupada por seção */}
       <nav
         aria-label="Módulos da gestão"
         className={cn(
-          "flex flex-1 flex-col gap-1 overflow-y-auto py-4",
-          collapsed ? "items-center px-2" : "px-3",
+          "flex flex-1 flex-col overflow-y-auto py-4",
+          collapsed ? "items-center gap-2 px-2" : "gap-1 px-3",
         )}
       >
-        {NAV_MODULES.map((mod) => {
-          const isActive =
-            mod.href === "/gestao" ? pathname === "/gestao" : pathname.startsWith(mod.href);
+        {NAV_SECTIONS.map((section, sectionIndex) => (
+          <div
+            key={section.label}
+            className={cn(
+              "flex flex-col gap-1",
+              collapsed ? "w-full items-center" : "",
+              // Separação entre grupos
+              !collapsed && sectionIndex > 0 && "mt-3",
+            )}
+          >
+            {collapsed ? (
+              // Rail: divisor no lugar do rótulo (exceto antes do 1º grupo)
+              sectionIndex > 0 && (
+                <span aria-hidden="true" className="my-1 h-px w-7 bg-divider" />
+              )
+            ) : (
+              <span className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-olive-700/60 uppercase">
+                {section.label}
+              </span>
+            )}
 
-          const badge = mod.showOrderBadge ? newOrderCount : 0;
+            {section.items.map((mod) => {
+              const isActive =
+                mod.href === "/gestao" ? pathname === "/gestao" : pathname.startsWith(mod.href);
+              const badge = mod.showOrderBadge ? newOrderCount : 0;
 
-          return (
-            <AdminNavItem
-              key={mod.href}
-              href={mod.href}
-              label={mod.label}
-              icon={mod.icon}
-              active={isActive}
-              badge={badge}
-              disabled={mod.disabled}
-              collapsed={collapsed}
-              onClick={onClose}
-            />
-          );
-        })}
+              return (
+                <AdminNavItem
+                  key={mod.href}
+                  href={mod.href}
+                  label={mod.label}
+                  icon={mod.icon}
+                  active={isActive}
+                  badge={badge}
+                  disabled={mod.disabled}
+                  collapsed={collapsed}
+                  onClick={onClose}
+                />
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* Rodapé */}

@@ -10,11 +10,14 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, Megaphone, Rocket, AlertCircle, BookOpen } from "lucide-react";
+import { Plus, Pencil, Trash2, Megaphone, Rocket, AlertCircle, BookOpen, Eye, MousePointerClick } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { deleteNotificationAction } from "@/server/actions/notifications";
 import type { Notification, NotificationType } from "@/types/notification";
+
+/** Stats por notificação (espelha NotificationStats do server — type inline evita import server-only). */
+type NotifStats = { reads: number; clicks: number; ctr: number | null };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -105,9 +108,10 @@ function DeleteButton({ id, title }: { id: string; title: string }) {
 
 type Props = {
   notifications: Notification[];
+  statsById: Record<string, NotifStats>;
 };
 
-export function NotificacoesListClient({ notifications }: Props) {
+export function NotificacoesListClient({ notifications, statsById }: Props) {
   if (notifications.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-lg border border-divider bg-paper-50 py-16 text-center">
@@ -133,6 +137,8 @@ export function NotificacoesListClient({ notifications }: Props) {
       {notifications.map((n) => {
         const Icon = TYPE_ICONS[n.type];
         const active = isActive(n);
+        const stats = statsById[n.id] ?? { reads: 0, clicks: 0, ctr: null };
+        const ctrLabel = stats.ctr === null ? "—" : `${Math.round(stats.ctr * 100)}%`;
 
         return (
           <div
@@ -180,6 +186,19 @@ export function NotificacoesListClient({ notifications }: Props) {
               <p className="mt-1 text-[10px] text-olive-700/50">
                 {formatDate(n.publishedAt)} → {formatDate(n.expiresAt)}
               </p>
+
+              {/* Métricas por notificação */}
+              <div className="mt-1.5 flex flex-wrap items-center gap-3 text-caption text-olive-700">
+                <span className="inline-flex items-center gap-1">
+                  <Eye className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
+                  {stats.reads} {stats.reads === 1 ? "leitura" : "leituras"}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <MousePointerClick className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
+                  {stats.clicks} {stats.clicks === 1 ? "clique" : "cliques"}
+                </span>
+                <span className="font-semibold text-olive-900">CTR {ctrLabel}</span>
+              </div>
             </div>
 
             {/* Ações */}

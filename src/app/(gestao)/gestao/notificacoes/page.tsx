@@ -3,10 +3,14 @@ import { Plus } from "lucide-react";
 
 import { AdminGate } from "@/components/features/admin-gate";
 import { NotificacoesListClient } from "@/components/admin/notifications/notificacoes-list-client";
-import { listAdminNotifications } from "@/server/notifications";
+import { NotificationMetricsCards } from "@/components/admin/notifications/notification-metrics-cards";
+import { listAdminNotifications, getNotificationMetrics } from "@/server/notifications";
 
 export default async function NotificacoesPage() {
-  const notifications = await listAdminNotifications();
+  const [notifications, metrics] = await Promise.all([
+    listAdminNotifications(),
+    getNotificationMetrics(),
+  ]);
 
   return (
     <AdminGate>
@@ -28,8 +32,11 @@ export default async function NotificacoesPage() {
           </Link>
         </div>
 
+        {/* Métricas */}
+        <NotificationMetricsCards metrics={metrics} />
+
         {/* Lista */}
-        <NotificacoesListClient notifications={notifications} />
+        <NotificacoesListClient notifications={notifications} statsById={metrics.byId} />
       </div>
     </AdminGate>
   );

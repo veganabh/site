@@ -37,7 +37,7 @@ export function AttentionHero() {
       <div
         role="status"
         aria-label="Situação operacional: tudo certo"
-        className="rounded-lg border border-leaf-500/30 bg-leaf-500/8 px-4 py-3 text-body-sm text-leaf-700"
+        className="rounded-lg border border-leaf-500/30 bg-leaf-500/8 p-4 text-body-sm text-leaf-700 shadow-sm"
       >
         <span className="font-semibold">Tudo certo por aqui.</span> Aproveita para revisar o
         cardápio ou preparar o cupom da semana.
@@ -48,11 +48,11 @@ export function AttentionHero() {
   return (
     <div
       aria-label="Alertas operacionais"
-      className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3"
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
     >
       {/* Card: pedidos novos */}
       {newCount > 0 && (
-        <div className="flex flex-col gap-2 rounded-lg border border-terra-500/40 bg-terra-500/8 p-3">
+        <div className="flex flex-col gap-2 rounded-lg border border-terra-500/40 bg-terra-500/8 p-4 shadow-sm">
           <div className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4 shrink-0 text-terra-700" strokeWidth={1.75} />
             <span className="text-body-sm font-semibold text-terra-700">
@@ -75,7 +75,7 @@ export function AttentionHero() {
 
       {/* Card: preparo atrasado */}
       {delayedCount > 0 && (
-        <div className="flex flex-col gap-2 rounded-lg border border-warning/40 bg-warning/8 p-3">
+        <div className="flex flex-col gap-2 rounded-lg border border-warning/40 bg-warning/8 p-4 shadow-sm">
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 shrink-0 text-warning" strokeWidth={1.75} aria-hidden="true" />
             <span className="text-body-sm font-semibold text-olive-900">
@@ -98,7 +98,7 @@ export function AttentionHero() {
 
       {/* Card: estoque crítico */}
       {lowStockCount > 0 && (
-        <div className="flex flex-col gap-2 rounded-lg border border-terra-700/40 bg-terra-700/8 p-3">
+        <div className="flex flex-col gap-2 rounded-lg border border-terra-700/40 bg-terra-700/8 p-4 shadow-sm">
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 shrink-0 text-terra-700" strokeWidth={1.75} />
             <span className="text-body-sm font-semibold text-terra-700">

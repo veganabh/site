@@ -15,12 +15,15 @@
  * P0: sem realtime — dados via TanStack Query (stale 5 min).
  */
 
-import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import * as Popover from "@radix-ui/react-popover";
 import { Bell, BellOff, Megaphone, Rocket, AlertCircle, BookOpen, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/use-notifications";
+import { trackNotificationClickAction } from "@/server/actions/notifications";
+import { captureEvent } from "@/lib/analytics";
 import type { Notification, NotificationType } from "@/types/notification";
 
 // ── Helpers de tipo ───────────────────────────────────────────────────────────
@@ -59,9 +62,11 @@ const TYPE_CONFIG: Record<NotificationType, TypeConfig> = {
 type NotificationItemProps = {
   notification: Notification;
   onRead: (id: string) => void;
+  /** Clique no CTA: registra clique + fecha popover + navega (no parent). */
+  onCtaClick: (notification: Notification) => void;
 };
 
-function NotificationItem({ notification, onRead }: NotificationItemProps) {
+function NotificationItem({ notification, onRead, onCtaClick }: NotificationItemProps) {
   const cfg = TYPE_CONFIG[notification.type];
   const { Icon, label, iconClass } = cfg;
 
@@ -111,13 +116,13 @@ function NotificationItem({ notification, onRead }: NotificationItemProps) {
         </p>
 
         {notification.ctaHref && notification.ctaLabel && (
-          <Link
-            href={notification.ctaHref}
-            onClick={() => onRead(notification.id)}
-            className="mt-1.5 inline-flex h-7 items-center rounded-pill bg-olive-900 px-3 text-[11px] font-semibold text-paper-50 transition-colors hover:bg-olive-700"
+          <button
+            type="button"
+            onClick={() => onCtaClick(notification)}
+            className="mt-1.5 inline-flex h-7 items-center rounded-pill bg-terra-700 px-3 text-[11px] font-semibold text-paper-50 transition-colors hover:bg-terra-500"
           >
             {notification.ctaLabel}
-          </Link>
+          </button>
         )}
       </div>
     </article>
@@ -128,13 +133,34 @@ function NotificationItem({ notification, onRead }: NotificationItemProps) {
 
 export function NotificationBell() {
   const { notifications, unreadCount, isLoading, markRead, markAllRead } = useNotifications();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
 
   const hasNotifications = notifications.length > 0;
   const badgeCount = Math.min(unreadCount, 9);
   const badgeLabel = unreadCount > 9 ? "9+" : unreadCount > 0 ? String(unreadCount) : null;
 
+  // Abrir o sino = leitura (impressão). Marca as visíveis como lidas (dedup
+  // por PK no server). É o único gatilho de "leitura" — clicar no CTA é clique.
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next && unreadCount > 0) markAllRead();
+  };
+
+  // Clique no CTA: registra clique (dedup por usuário) + fecha + navega
+  // programaticamente (Link dentro do popover era cancelado ao desmontar).
+  const handleCtaClick = (notification: Notification) => {
+    void trackNotificationClickAction(notification.id);
+    captureEvent("notification_cta_clicked", {
+      notificationId: notification.id,
+      type: notification.type,
+    });
+    setOpen(false);
+    if (notification.ctaHref) router.push(notification.ctaHref);
+  };
+
   return (
-    <Popover.Root>
+    <Popover.Root open={open} onOpenChange={handleOpenChange}>
       <Popover.Trigger asChild>
         <button
           type="button"
@@ -199,7 +225,7 @@ export function NotificationBell() {
           <div
             role="list"
             aria-label="Lista de notificações"
-            className="max-h-[400px] overflow-y-auto py-1"
+            className="flex max-h-[400px] flex-col gap-1 overflow-y-auto p-2"
           >
             {isLoading && (
               <p
@@ -225,7 +251,7 @@ export function NotificationBell() {
             {!isLoading &&
               notifications.map((n) => (
                 <div role="listitem" key={n.id}>
-                  <NotificationItem notification={n} onRead={markRead} />
+                  <NotificationItem notification={n} onRead={markRead} onCtaClick={handleCtaClick} />
                 </div>
               ))}
           </div>
