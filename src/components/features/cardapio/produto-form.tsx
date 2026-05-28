@@ -2,13 +2,19 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { z } from "zod";
 import Image from "next/image";
-import { PRODUCT_CATEGORIES } from "@/types/product";
 import type { Product } from "@/types/product";
-import { CATEGORY_LABELS } from "@/components/features/cardapio/category-labels";
+import { useActiveCategories } from "@/stores/categories-store";
 import { cn } from "@/lib/utils";
 import {
   createProductAction,
@@ -36,7 +42,7 @@ const nonNegativeNum = (msg: string) =>
 const produtoSchema = z.object({
   name: z.string().min(2, "Nome precisa ter pelo menos 2 caracteres."),
   description: z.string().min(10, "Descrição muito curta."),
-  category: z.enum(PRODUCT_CATEGORIES),
+  category: z.string().min(1, "Selecione a categoria."),
   gramatura_g: positiveNum("Informe a gramatura.", 0),
   price_site: positiveNum("Preço inválido."),
   price_ifood: positiveNum("Preço iFood inválido."),
@@ -80,7 +86,7 @@ export function ProdutoForm(props: ProdutoFormProps) {
       : {
           name: "",
           description: "",
-          category: "bolo-no-pote",
+          category: "",
           gramatura_g: "230",
           price_site: "",
           price_ifood: "",
@@ -96,12 +102,14 @@ export function ProdutoForm(props: ProdutoFormProps) {
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ProdutoFormValues>({
     resolver: zodResolver(produtoSchema),
     defaultValues,
   });
 
+  const categories = useActiveCategories();
   const previewUrl = watch("photo_url");
 
   async function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -199,13 +207,24 @@ export function ProdutoForm(props: ProdutoFormProps) {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Categoria" error={errors.category?.message}>
-          <select {...register("category")} className={inputClass(!!errors.category)}>
-            {PRODUCT_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {CATEGORY_LABELS[cat]}
-              </option>
-            ))}
-          </select>
+          <Controller
+            control={control}
+            name="category"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger hasError={!!errors.category}>
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.slug} value={cat.slug}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
         </Field>
 
         <Field label="Gramatura (g)" error={errors.gramatura_g?.message}>

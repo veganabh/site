@@ -1,6 +1,16 @@
+/**
+ * Slugs das categorias originais (seed). NÃO é mais a fonte da verdade —
+ * categorias agora vivem na tabela `categories` (gerenciáveis pela dona).
+ * Mantido como fallback de labels e default em formulários.
+ */
 export const PRODUCT_CATEGORIES = ["bolo-no-pote", "bolo", "docinho", "edicao-especial"] as const;
 
-export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
+/**
+ * Categoria de produto = slug (string). Antes era union fechado; agora é
+ * dinâmico (tabela `categories`). Validação de existência acontece via
+ * categories-store (client) ou listCategories (server), não no tipo.
+ */
+export type ProductCategory = string;
 
 export const PRODUCT_ATTRIBUTES = ["sem-lactose", "vegano", "sem-gluten", "sem-ovo"] as const;
 

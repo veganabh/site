@@ -5,6 +5,7 @@ import "./globals.css";
 import { AddressesStoreHydrator } from "@/components/providers/addresses-store-hydrator";
 import { AdminOrdersStoreHydrator } from "@/components/providers/admin-orders-store-hydrator";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { CategoriesStoreHydrator } from "@/components/providers/categories-store-hydrator";
 import { CollectionsStoreHydrator } from "@/components/providers/collections-store-hydrator";
 import { DeliveryPersonsStoreHydrator } from "@/components/providers/delivery-persons-store-hydrator";
 import { GiftKitsStoreHydrator } from "@/components/providers/gift-kits-store-hydrator";
@@ -12,6 +13,7 @@ import { MenuStoreHydrator } from "@/components/providers/menu-store-hydrator";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { RingsStoreHydrator } from "@/components/providers/rings-store-hydrator";
 import { listMyAddresses } from "@/server/addresses";
+import { listCategories } from "@/server/categories";
 import { listCollections } from "@/server/collections";
 import { listActiveDeliveryPersons } from "@/server/delivery-persons";
 import { listGiftKitTemplates } from "@/server/gift-kits";
@@ -38,7 +40,7 @@ export default async function RootLayout({
 }>) {
   // Hidrata stores client. RLS já filtra produtos/coleções/kits inativos para
   // não-admin; delivery_rings tem SELECT público (cliente precisa para frete).
-  const [products, rings, collections, kits, orders, deliveryPersons, addresses] =
+  const [products, rings, collections, kits, orders, deliveryPersons, addresses, categories] =
     await Promise.all([
       listProducts({ onlyActive: false }),
       listAllRings(),
@@ -47,12 +49,14 @@ export default async function RootLayout({
       listAllOrders(),
       listActiveDeliveryPersons(),
       listMyAddresses(),
+      listCategories({ onlyActive: false }),
     ]);
 
   return (
     <html lang="pt-BR" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full">
         <MenuStoreHydrator products={products} />
+        <CategoriesStoreHydrator categories={categories} />
         <RingsStoreHydrator rings={rings} />
         <CollectionsStoreHydrator collections={collections} />
         <GiftKitsStoreHydrator kits={kits} />

@@ -1,6 +1,8 @@
 import type { Address } from "@/stores/address-store";
 import { inferAddressType } from "@/lib/address";
+import type { Category } from "@/types/category";
 import type { Collection } from "@/types/collection";
+import type { Database } from "@/types/db";
 import type { Coupon } from "@/types/coupon";
 import type { DeliveryPerson } from "@/types/delivery-person";
 import type { DeliveryRing } from "@/types/delivery-ring";
@@ -139,6 +141,20 @@ type CollectionRow = {
   sort_order: number;
   active: boolean;
 };
+
+// ── Category ─────────────────────────────────────────────────────────────────
+
+type CategoryRow = Database["public"]["Tables"]["categories"]["Row"];
+
+export function categoryFromRow(row: CategoryRow): Category {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    sortOrder: row.sort_order,
+    active: row.active,
+  };
+}
 
 export function collectionFromRow(row: CollectionRow): Collection {
   const iconName: CollectionIconName = isCollectionIconName(row.icon_name) ? row.icon_name : "Gift";

@@ -26,7 +26,7 @@ export function RecentOrdersFeed() {
       {recent.length === 0 ? (
         <p className="text-caption text-olive-700">Nenhum pedido ainda hoje.</p>
       ) : (
-        <ol className="flex flex-col divide-y divide-divider">
+        <ol className="flex flex-col gap-0.5">
           {recent.map((order) => {
             const total = order.total.toLocaleString("pt-BR", {
               style: "currency",
@@ -39,7 +39,7 @@ export function RecentOrdersFeed() {
               <li key={order.id}>
                 <Link
                   href={`/gestao/pedidos?open=${order.id}`}
-                  className="flex items-center gap-2 py-2 transition hover:bg-paper-100/60"
+                  className="flex items-center gap-2 rounded-md px-2 py-2 transition-colors hover:bg-paper-100"
                   aria-label={`Pedido ${shortId} — ${order.customerName} — ${total}`}
                 >
                   {/* ID + cliente */}
