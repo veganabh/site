@@ -6,6 +6,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { MapPin, Check, X, Clock, Loader2, MessageCircle, ShoppingBag, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
+import { STORE_LOCATION } from "@/lib/store-location";
 import { useDeliveryStore } from "@/stores/delivery-store";
 import type { DeliveryQuote } from "@/stores/delivery-store";
 import { useCartStore } from "@/stores/cart-store";
@@ -197,7 +198,7 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
                     quando chegar aí.
                   </p>
                   <a
-                    href="https://wa.me/5531999999999?text=Oi!%20Meu%20CEP%20não%20é%20atendido%20ainda,%20quero%20ser%20avisada%20quando%20chegar%20aí."
+                    href={`https://wa.me/${STORE_LOCATION.whatsappNumber}?text=Oi!%20Meu%20CEP%20não%20é%20atendido%20ainda,%20quero%20ser%20avisada%20quando%20chegar%20aí.`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1.5 rounded-pill bg-leaf-700 px-3 py-1 text-[12px] font-semibold text-paper-50 self-start"

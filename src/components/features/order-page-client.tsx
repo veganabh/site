@@ -9,6 +9,7 @@ import { useAdminOrdersStore } from "@/stores/admin-orders-store";
 import { OrderTimeline } from "@/components/features/order-timeline";
 import { OrderStatusBadge } from "@/components/features/order-status-badge";
 import { formatBRL } from "@/lib/format";
+import { STORE_LOCATION } from "@/lib/store-location";
 import type { Order } from "@/types/order";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -112,7 +113,7 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
   // Por enquanto: qualquer usuário logado pode ver qualquer pedido (mock simplificado).
 
   const eta = estimateEta(order);
-  const waUrl = `https://wa.me/5531999999999?text=Olá,%20preciso%20de%20ajuda%20com%20o%20pedido%20${order.id}`;
+  const waUrl = `https://wa.me/${STORE_LOCATION.whatsappNumber}?text=Olá,%20preciso%20de%20ajuda%20com%20o%20pedido%20${order.id}`;
 
   return (
     <main className="mx-auto max-w-lg px-4 py-6">
