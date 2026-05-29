@@ -53,6 +53,10 @@
   --text-body-sm--line-height: 1.5;
   --text-caption: 0.75rem;
   --text-caption--line-height: 1.4;
+  /* text-micro: único token abaixo de 12px — só para metadado fino (ETA,
+   * contador, riscado iFood, chip-overlay). Proibido para texto de leitura. */
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.35;
   --text-cta: 1rem;
   --text-cta--line-height: 1;
   --text-price: 1.25rem;
@@ -61,17 +65,26 @@
   --text-price-big--line-height: 1;
 
   /* === RADIUS ===
+   * Vocabulário ativo (DS §3): rounded-xs · rounded-sm · rounded-full.
    * Padronizado: todo card usa o raio sutil (0.5rem), igual ao CTA "Novo
    * produto". md/lg/xl/2xl/3xl colapsam pro mesmo valor — hierarquia de raio
    * abandonada de propósito (decisão UX). xs (detalhe fino) e pill (full)
    * ficam de fora. */
   --radius-xs: 0.25rem;
   --radius-sm: 0.5rem;
+  /* DEPRECADO — remover em F4 após migrar todos os rounded-md/lg/xl/2xl/3xl para rounded-sm */
   --radius-md: 0.5rem;
+  /* DEPRECADO — remover em F4 */
   --radius-lg: 0.5rem;
+  /* DEPRECADO — remover em F4 */
   --radius-xl: 0.5rem;
+  /* DEPRECADO — remover em F4 */
   --radius-2xl: 0.5rem;
+  /* DEPRECADO — remover em F4 */
   --radius-3xl: 0.5rem;
+  /* --radius-full é o nome canônico (DS §3). --radius-pill mantido como alias
+   * por compatibilidade com classes existentes — removido em F4. */
+  --radius-full: 9999px;
   --radius-pill: 9999px;
 
   /* === SHADOWS === */
