@@ -544,8 +544,8 @@ function StepEndereco() {
 
   const currentAddress = useAddressStore(selectCurrentAddress);
 
-  const [removing, startRemoving] = useTransition();
-  const [removeError, setRemoveError] = useState<string | null>(null);
+  const [, startRemoving] = useTransition();
+  const [, setRemoveError] = useState<string | null>(null);
 
   const items = useCartStore((s) => s.items);
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
@@ -819,7 +819,6 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
 
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [cepLoading, setCepLoading] = useState(false);
 
   const isEditing = !!initialData;
 
@@ -836,19 +835,14 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
     if (digits.length !== 8) return;
 
     const controller = new AbortController();
-    setCepLoading(true);
 
-    lookupCEP(cep, controller.signal)
-      .then((result) => {
-        if (controller.signal.aborted || !result) return;
-        setStreet(result.street);
-        setNeighborhood(result.neighborhood);
-        setCity(result.city);
-        setState(result.state);
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setCepLoading(false);
-      });
+    lookupCEP(cep, controller.signal).then((result) => {
+      if (controller.signal.aborted || !result) return;
+      setStreet(result.street);
+      setNeighborhood(result.neighborhood);
+      setCity(result.city);
+      setState(result.state);
+    });
 
     return () => controller.abort();
   }, [cep]);

@@ -1,7 +1,5 @@
 "use client";
 
-import { useRef } from "react";
-
 import type { Order } from "@/types/order";
 import { useAdminOrdersStore } from "@/stores/admin-orders-store";
 
@@ -15,11 +13,8 @@ import { useAdminOrdersStore } from "@/stores/admin-orders-store";
  * estado UI (newOrderCount, unacknowledgedIds).
  */
 export function AdminOrdersStoreHydrator({ orders }: { orders: Order[] }) {
-  const lastRef = useRef<Order[] | null>(null);
-
-  if (lastRef.current !== orders) {
+  if (useAdminOrdersStore.getState().orders !== orders) {
     useAdminOrdersStore.setState({ orders });
-    lastRef.current = orders;
   }
 
   return null;

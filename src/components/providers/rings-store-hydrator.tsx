@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 import type { DeliveryRing } from "@/types/delivery-ring";
 import { useRingsStore } from "@/stores/rings-store";
@@ -19,11 +19,8 @@ const CLEANUP_FLAG_KEY = "vegana-rings-cleanup-v1";
  * única vez por browser para evitar divergência durante hidratação inicial.
  */
 export function RingsStoreHydrator({ rings }: { rings: DeliveryRing[] }) {
-  const lastRef = useRef<DeliveryRing[] | null>(null);
-
-  if (lastRef.current !== rings) {
+  if (useRingsStore.getState().rings !== rings) {
     useRingsStore.setState({ rings });
-    lastRef.current = rings;
   }
 
   useEffect(() => {

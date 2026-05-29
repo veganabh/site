@@ -1,7 +1,5 @@
 "use client";
 
-import { useRef } from "react";
-
 import type { GiftKitTemplate } from "@/types/gift-kit";
 import { useGiftKitsStore } from "@/stores/gift-kits-store";
 
@@ -11,11 +9,8 @@ import { useGiftKitsStore } from "@/stores/gift-kits-store";
  * layout re-busca kits e empurra a lista atualizada pro store.
  */
 export function GiftKitsStoreHydrator({ kits }: { kits: GiftKitTemplate[] }) {
-  const lastRef = useRef<GiftKitTemplate[] | null>(null);
-
-  if (lastRef.current !== kits) {
+  if (useGiftKitsStore.getState().kits !== kits) {
     useGiftKitsStore.setState({ kits });
-    lastRef.current = kits;
   }
 
   return null;

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import type { DeliveryPerson } from "@/types/delivery-person";
 import { useDeliveryPersonsStore } from "@/stores/delivery-persons-store";
 
@@ -11,11 +10,8 @@ import { useDeliveryPersonsStore } from "@/stores/delivery-persons-store";
  * empurra a lista atualizada sem flash.
  */
 export function DeliveryPersonsStoreHydrator({ persons }: { persons: DeliveryPerson[] }) {
-  const lastRef = useRef<DeliveryPerson[] | null>(null);
-
-  if (lastRef.current !== persons) {
+  if (useDeliveryPersonsStore.getState().persons !== persons) {
     useDeliveryPersonsStore.setState({ persons });
-    lastRef.current = persons;
   }
 
   return null;

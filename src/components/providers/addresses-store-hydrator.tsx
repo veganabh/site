@@ -1,9 +1,15 @@
 "use client";
 
-import { useRef } from "react";
-
 import type { Address } from "@/stores/address-store";
 import { useAddressStore } from "@/stores/address-store";
+
+/**
+ * Última prop sincronizada. Guard de identidade fora do render (não pode ser
+ * `useRef` — viola react-hooks/refs). `setAddresses` normaliza a lista, então
+ * comparar contra `getState().addresses` não serve; comparamos a prop crua.
+ * Hydrator é singleton no root client — módulo global é seguro aqui.
+ */
+let lastAddresses: Address[] | null = null;
 
 /**
  * Hydrator do `useAddressStore`.
@@ -17,11 +23,9 @@ import { useAddressStore } from "@/stores/address-store";
  * Anon = lista vazia. Login → revalidação puxa endereços do user.
  */
 export function AddressesStoreHydrator({ addresses }: { addresses: Address[] }) {
-  const lastRef = useRef<Address[] | null>(null);
-
-  if (lastRef.current !== addresses) {
+  if (lastAddresses !== addresses) {
     useAddressStore.getState().setAddresses(addresses);
-    lastRef.current = addresses;
+    lastAddresses = addresses;
   }
 
   return null;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 import type { Coupon } from "@/types/coupon";
 import { useAdminCouponsStore } from "@/stores/admin-coupons-store";
@@ -17,11 +17,8 @@ const CLEANUP_FLAG_KEY = "vegana.admin-coupons-cleanup-v1";
  * fonte é o DB — limpamos a chave legada uma vez por browser.
  */
 export function AdminCouponsStoreHydrator({ coupons }: { coupons: Coupon[] }) {
-  const lastRef = useRef<Coupon[] | null>(null);
-
-  if (lastRef.current !== coupons) {
+  if (useAdminCouponsStore.getState().coupons !== coupons) {
     useAdminCouponsStore.setState({ coupons });
-    lastRef.current = coupons;
   }
 
   useEffect(() => {
