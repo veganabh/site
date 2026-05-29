@@ -105,7 +105,7 @@ export default async function RelatoriosPage({
                 key={p}
                 href={`/gestao/relatorios?period=${p}`}
                 className={cn(
-                  "rounded-pill border px-2.5 py-0.5 text-[11px] font-semibold transition-colors",
+                  "rounded-full border px-2.5 py-0.5 text-micro font-semibold transition-colors",
                   period === p
                     ? "border-olive-900 bg-olive-900 text-paper-50"
                     : "border-divider bg-paper-50 text-olive-700 hover:bg-paper-100",
@@ -119,7 +119,7 @@ export default async function RelatoriosPage({
 
         {/* Alertas estratégicos */}
         {alerts.length > 0 && (
-          <div className="flex flex-col gap-1.5 rounded-lg border border-warning/40 bg-warning/8 p-4">
+          <div className="flex flex-col gap-1.5 rounded-sm border border-warning/40 bg-warning/8 p-4">
             <div className="flex items-center gap-1.5 text-olive-900">
               <AlertTriangle className="h-4 w-4 text-warning" aria-hidden="true" />
               <span className="text-body-sm font-bold">Atenção</span>
@@ -167,7 +167,7 @@ export default async function RelatoriosPage({
               <span className="text-h4 font-bold text-olive-900">
                 {sitePct === null ? "—" : `${sitePct}%`}
               </span>
-              <span className="text-caption text-olive-700/70">da receita total</span>
+              <span className="text-caption text-olive-700">da receita total</span>
             </Card>
             <Card padding="none" className="flex flex-col gap-2 p-4">
               <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">
@@ -176,7 +176,7 @@ export default async function RelatoriosPage({
               <span className="text-h4 font-bold text-olive-900">
                 {formatBRL(channel.totalRevenue)}
               </span>
-              <span className="text-caption text-olive-700/70">site + iFood</span>
+              <span className="text-caption text-olive-700">site + iFood</span>
             </Card>
           </div>
 
@@ -563,7 +563,7 @@ function SimpleStat({ label, value, hint }: { label: string; value: string; hint
         {label}
       </span>
       <span className="text-h4 font-bold text-olive-900">{value}</span>
-      <span className="text-caption text-olive-700/70">{hint}</span>
+      <span className="text-caption text-olive-700">{hint}</span>
     </Card>
   );
 }
@@ -593,7 +593,7 @@ function ChannelCard({
         <span className="text-caption font-semibold tracking-wide uppercase">{label}</span>
       </div>
       <span className="text-h4 font-bold text-olive-900">{value}</span>
-      <span className="text-caption text-olive-700/70">{hint}</span>
+      <span className="text-caption text-olive-700">{hint}</span>
     </Card>
   );
 }

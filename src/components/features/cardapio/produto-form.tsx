@@ -194,7 +194,7 @@ export function ProdutoForm(props: ProdutoFormProps) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-6 rounded-lg border border-divider bg-paper-50 p-5"
+      className="flex flex-col gap-6 rounded-sm border border-divider bg-paper-50 p-5"
       noValidate
     >
       <Field label="Nome do produto" error={errors.name?.message}>
@@ -347,7 +347,7 @@ export function ProdutoForm(props: ProdutoFormProps) {
             {isUploading ? "Enviando..." : previewUrl ? "Trocar imagem" : "Enviar imagem"}
           </Button>
           {previewUrl && (
-            <div className="relative h-24 w-24 overflow-hidden rounded-md border border-divider bg-paper-100">
+            <div className="relative h-24 w-24 overflow-hidden rounded-sm border border-divider bg-paper-100">
               <Image
                 src={previewUrl}
                 alt="Prévia da foto"

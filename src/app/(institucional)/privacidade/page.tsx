@@ -15,31 +15,28 @@ export default function PrivacidadePage() {
   return (
     <article className="flex flex-col gap-6">
       <header className="flex flex-col gap-2 border-b border-divider pb-5">
-        <h1 className="text-[24px] leading-tight font-bold text-olive-900 md:text-[30px]">
+        <h1 className="text-h2 leading-tight font-bold text-olive-900 md:text-h2">
           Política de Privacidade
         </h1>
         <p className="text-body-sm text-olive-700">
-          A gente coleta o mínimo pra entregar seu doce e cuidar do atendimento. Aqui está,
-          sem letra miúda, o que guardamos e o que você pode fazer com isso.
+          A gente coleta o mínimo pra entregar seu doce e cuidar do atendimento. Aqui está, sem
+          letra miúda, o que guardamos e o que você pode fazer com isso.
         </p>
-        <p className="text-caption text-olive-700/80">Última atualização: {updatedAt}</p>
+        <p className="text-caption text-olive-700">Última atualização: {updatedAt}</p>
       </header>
 
       <Section title="Quem é responsável">
         <p>
-          A Veg.ana é uma confeitaria vegana delivery em Belo Horizonte. Os dados tratados aqui
-          são de responsabilidade da Veg.ana. Para qualquer assunto sobre seus dados, fale com a
-          gente pelo WhatsApp{" "}
+          A Veg.ana é uma confeitaria vegana delivery em Belo Horizonte. Os dados tratados aqui são
+          de responsabilidade da Veg.ana. Para qualquer assunto sobre seus dados, fale com a gente
+          pelo WhatsApp{" "}
           <a
             href={waLink}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-terra-700 underline underline-offset-2"
           >
-            {STORE_LOCATION.whatsappNumber.replace(
-              /^55(\d{2})(\d{5})(\d{4})$/,
-              "($1) $2-$3",
-            )}
+            {STORE_LOCATION.whatsappNumber.replace(/^55(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3")}
           </a>
           .
         </p>
@@ -48,8 +45,8 @@ export default function PrivacidadePage() {
       <Section title="Quais dados a gente coleta">
         <ul className="ml-4 list-disc space-y-1.5">
           <li>
-            <strong className="font-semibold text-olive-900">Cadastro:</strong> seu nome e número
-            de WhatsApp, pra identificar o pedido e te avisar das novidades.
+            <strong className="font-semibold text-olive-900">Cadastro:</strong> seu nome e número de
+            WhatsApp, pra identificar o pedido e te avisar das novidades.
           </li>
           <li>
             <strong className="font-semibold text-olive-900">Entrega:</strong> endereço e CEP de
@@ -61,13 +58,12 @@ export default function PrivacidadePage() {
           </li>
           <li>
             <strong className="font-semibold text-olive-900">Pagamento:</strong> processado pela
-            AbacatePay. A gente não guarda número de cartão — isso fica com o provedor de
-            pagamento.
+            AbacatePay. A gente não guarda número de cartão — isso fica com o provedor de pagamento.
           </li>
           <li>
             <strong className="font-semibold text-olive-900">Navegação:</strong> como você usa o
-            site (páginas vistas, cliques) via PostHog, inclusive gravação de sessão para
-            entender e corrigir problemas de uso. Esses dados são pseudonimizados.
+            site (páginas vistas, cliques) via PostHog, inclusive gravação de sessão para entender e
+            corrigir problemas de uso. Esses dados são pseudonimizados.
           </li>
         </ul>
       </Section>
@@ -84,10 +80,10 @@ export default function PrivacidadePage() {
 
       <Section title="Com quem a gente compartilha">
         <p>A gente não vende seus dados. Compartilhamos só com quem ajuda a entregar o serviço:</p>
-        <ul className="ml-4 mt-2 list-disc space-y-1.5">
+        <ul className="mt-2 ml-4 list-disc space-y-1.5">
           <li>
-            <strong className="font-semibold text-olive-900">AbacatePay</strong> — para processar
-            o pagamento.
+            <strong className="font-semibold text-olive-900">AbacatePay</strong> — para processar o
+            pagamento.
           </li>
           <li>
             <strong className="font-semibold text-olive-900">Supabase</strong> — para armazenar os
@@ -106,7 +102,7 @@ export default function PrivacidadePage() {
 
       <Section title="Seus direitos (LGPD)">
         <p>A Lei Geral de Proteção de Dados garante que você pode, a qualquer momento:</p>
-        <ul className="ml-4 mt-2 list-disc space-y-1.5">
+        <ul className="mt-2 ml-4 list-disc space-y-1.5">
           <li>Saber quais dados a gente tem sobre você.</li>
           <li>Corrigir dados errados ou desatualizados.</li>
           <li>Pedir a exclusão dos seus dados, respeitadas as obrigações legais.</li>
@@ -154,7 +150,7 @@ export default function PrivacidadePage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-[16px] font-bold text-olive-900 md:text-[18px]">{title}</h2>
+      <h2 className="text-body font-bold text-olive-900 md:text-body-lg">{title}</h2>
       <div className="text-body-sm leading-relaxed text-olive-700">{children}</div>
     </section>
   );

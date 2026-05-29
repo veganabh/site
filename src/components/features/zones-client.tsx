@@ -16,17 +16,14 @@ const StoreMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[400px] w-full animate-pulse rounded-lg bg-paper-100 md:h-[500px]" />
+      <div className="h-[400px] w-full animate-pulse rounded-sm bg-paper-100 md:h-[500px]" />
     ),
   },
 );
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
-type ToastState =
-  | { kind: "idle" }
-  | { kind: "success" }
-  | { kind: "error"; message: string };
+type ToastState = { kind: "idle" } | { kind: "success" } | { kind: "error"; message: string };
 
 function useToast() {
   const [state, setState] = useState<ToastState>({ kind: "idle" });
@@ -101,10 +98,7 @@ export function ZonesClient() {
         <aside className="flex min-w-0 flex-col gap-6">
           <CepTester />
           <hr className="border-divider" />
-          <MaxRadiusSlider
-            onMutationSuccess={handleSuccess}
-            onMutationError={handleError}
-          />
+          <MaxRadiusSlider onMutationSuccess={handleSuccess} onMutationError={handleError} />
           <hr className="border-divider" />
           <RingsTable
             highlightedId={highlightedId}
@@ -119,10 +113,8 @@ export function ZonesClient() {
         role={toast.state.kind === "error" ? "alert" : "status"}
         aria-live="polite"
         aria-atomic="true"
-        className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-pill px-4 py-2 text-body-sm font-semibold shadow-md transition-all duration-300 ${
-          toast.state.kind === "error"
-            ? "bg-terra-700 text-paper-50"
-            : "bg-olive-900 text-paper-50"
+        className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full px-4 py-2 text-body-sm font-semibold shadow-md transition-all duration-300 ${
+          toast.state.kind === "error" ? "bg-terra-700 text-paper-50" : "bg-olive-900 text-paper-50"
         } ${toast.state.kind === "idle" ? "pointer-events-none translate-y-2 opacity-0" : "translate-y-0 opacity-100"}`}
       >
         {toast.state.kind === "error" ? toast.state.message : "Zonas atualizadas"}

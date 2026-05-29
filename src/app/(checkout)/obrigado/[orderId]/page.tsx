@@ -114,14 +114,14 @@ export default async function ObrigadoPage({ params }: { params: Promise<{ order
       {fallback ? (
         <section
           aria-label="Pagamento manual"
-          className="flex items-start gap-3 rounded-2xl border border-divider bg-paper-100 p-4"
+          className="flex items-start gap-3 rounded-sm border border-divider bg-paper-100 p-4"
         >
           <MessageCircle className="mt-0.5 h-5 w-5 shrink-0 text-terra-700" aria-hidden="true" />
           <div className="flex flex-col gap-1">
             <p className="text-body-sm font-semibold text-olive-900">
               Pagamento será combinado no WhatsApp
             </p>
-            <p className="text-[12px] text-olive-700">
+            <p className="text-caption text-olive-700">
               Não foi possível gerar o PIX automático. A Veg.ana vai te chamar no WhatsApp nos
               próximos minutos pra finalizar.
             </p>
@@ -155,7 +155,7 @@ export default async function ObrigadoPage({ params }: { params: Promise<{ order
           ))}
         </ul>
 
-        <dl className="flex flex-col gap-1 border-t border-divider pt-3 text-[12px]">
+        <dl className="flex flex-col gap-1 border-t border-divider pt-3 text-caption">
           <div className="flex justify-between">
             <dt className="text-olive-700">Subtotal</dt>
             <dd className="font-semibold text-olive-900 tabular-nums">
@@ -189,12 +189,12 @@ export default async function ObrigadoPage({ params }: { params: Promise<{ order
 
       <section
         aria-label="Próximo passo"
-        className="flex items-start gap-3 rounded-2xl border border-divider bg-leaf-500/5 p-4"
+        className="flex items-start gap-3 rounded-sm border border-divider bg-leaf-500/5 p-4"
       >
         <MessageCircle className="mt-0.5 h-5 w-5 shrink-0 text-leaf-700" aria-hidden="true" />
         <div className="flex flex-col gap-1">
           <p className="text-body-sm font-semibold text-olive-900">Próximo passo</p>
-          <p className="text-[12px] text-olive-700">
+          <p className="text-caption text-olive-700">
             Situação atual:{" "}
             <strong>
               {order.paymentStatus === "PAGO"
@@ -214,7 +214,7 @@ export default async function ObrigadoPage({ params }: { params: Promise<{ order
 
       <Link
         href="/"
-        className="inline-flex h-11 items-center justify-center rounded-pill bg-olive-900 px-5 text-body-sm font-semibold text-paper-50 hover:bg-olive-700"
+        className="inline-flex h-11 items-center justify-center rounded-full bg-olive-900 px-5 text-body-sm font-semibold text-paper-50 hover:bg-olive-700"
       >
         Voltar pro cardápio
       </Link>

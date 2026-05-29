@@ -34,7 +34,7 @@ export default async function KitDetailPage({ params }: PageProps) {
     <div className="flex flex-col gap-5">
       <Link
         href="/presentear"
-        className="inline-flex w-fit items-center gap-1 text-[12px] font-semibold text-olive-700 transition-colors hover:text-olive-900"
+        className="inline-flex w-fit items-center gap-1 text-caption font-semibold text-olive-700 transition-colors hover:text-olive-900"
       >
         <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
         Voltar pra presentear
@@ -42,9 +42,9 @@ export default async function KitDetailPage({ params }: PageProps) {
 
       <div className="grid gap-5 md:grid-cols-[5fr_4fr] md:items-start">
         <section aria-label="Foto do kit" className="flex flex-col gap-3">
-          <div className="relative aspect-[5/4] overflow-hidden rounded-2xl bg-paper-100 shadow-sm">
+          <div className="relative aspect-[5/4] overflow-hidden rounded-sm bg-paper-100 shadow-sm">
             <KitCoverPhoto photo={kit.coverPhoto} priority />
-            <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-pill bg-paper-50/95 px-2.5 py-1 text-[11px] font-bold text-olive-900 shadow-sm backdrop-blur-sm">
+            <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-paper-50/95 px-2.5 py-1 text-micro font-bold text-olive-900 shadow-sm backdrop-blur-sm">
               <KitIcon name={kit.iconName} className="h-3 w-3 text-terra-700" aria-hidden="true" />
               Kit de Presente
             </span>
@@ -55,30 +55,30 @@ export default async function KitDetailPage({ params }: PageProps) {
           <header className="flex flex-col gap-1.5">
             <h1
               id="kit-info-titulo"
-              className="text-[22px] leading-tight font-extrabold text-olive-900 md:text-[28px]"
+              className="text-h3 leading-tight font-extrabold text-olive-900 md:text-h2"
             >
               {kit.name}
             </h1>
             <p className="text-body-sm text-olive-700">{kit.tagline}</p>
           </header>
 
-          <p className="text-[13px] leading-relaxed text-olive-900">{kit.description}</p>
+          <p className="text-body-sm leading-relaxed text-olive-900">{kit.description}</p>
 
           <Card aria-label="Preço do kit" padding="none" className="flex items-end gap-3 p-4">
             <div className="flex flex-col leading-none">
-              <span className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
+              <span className="text-micro font-semibold tracking-wide text-olive-700 uppercase">
                 Kit montado
               </span>
-              <span className="mt-1 text-[28px] font-extrabold text-olive-900">
+              <span className="mt-1 text-h2 font-extrabold text-olive-900">
                 {formatBRL(kit.price)}
               </span>
             </div>
             {savingsVsIfood > 0 && (
               <div className="ml-auto flex flex-col items-end leading-none">
-                <span className="text-[10px] text-olive-700 line-through">
+                <span className="text-micro text-olive-700 line-through">
                   iFood {formatBRL(kit.priceIfoodAnchor)}
                 </span>
-                <span className="mt-1 inline-flex items-center gap-1 rounded-pill bg-leaf-500/10 px-2 py-0.5 text-[11px] font-semibold text-leaf-700">
+                <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-leaf-500/10 px-2 py-0.5 text-micro font-semibold text-leaf-700">
                   economize {formatBRL(savingsVsIfood)}
                 </span>
               </div>
@@ -91,30 +91,30 @@ export default async function KitDetailPage({ params }: PageProps) {
             padding="none"
             className="flex flex-col gap-2 p-4"
           >
-            <h2 id="kit-slots-titulo" className="text-[13px] font-bold text-olive-900">
+            <h2 id="kit-slots-titulo" className="text-body-sm font-bold text-olive-900">
               O que vem no kit
             </h2>
             <ul className="flex flex-col gap-1.5">
               {kit.slots.map((s) => (
-                <li key={s.id} className="flex items-start gap-2 text-[12px] text-olive-900">
-                  <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sage-300/40 text-[11px] font-bold text-olive-900">
+                <li key={s.id} className="flex items-start gap-2 text-caption text-olive-900">
+                  <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-sage-300/40 text-micro font-bold text-olive-900">
                     {s.qty}
                   </span>
                   <span className="leading-snug">
                     {s.label.replace(/^Escolha (\d+ )?/i, "").replace(/^/, (c) => c.toUpperCase())}
                     {s.helper && (
-                      <span className="block text-[11px] text-olive-700">{s.helper}</span>
+                      <span className="block text-micro text-olive-700">{s.helper}</span>
                     )}
                   </span>
                 </li>
               ))}
             </ul>
-            <p className="mt-1 text-[11px] text-olive-700">
+            <p className="mt-1 text-micro text-olive-700">
               Total: {totalItems} itens · você escolhe cada sabor no próximo passo.
             </p>
           </Card>
 
-          <ul className="flex flex-wrap gap-x-4 gap-y-2 text-[11px] text-olive-700">
+          <ul className="flex flex-wrap gap-x-4 gap-y-2 text-micro text-olive-700">
             <li className="inline-flex items-center gap-1.5">
               <Package className="h-3.5 w-3.5 text-terra-500" aria-hidden="true" />
               embalagem opcional
@@ -131,7 +131,7 @@ export default async function KitDetailPage({ params }: PageProps) {
 
           <Link
             href={`/presentear/${kit.slug}/montar`}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-[14px] font-bold text-paper-50 shadow-sm transition-transform active:scale-[0.98]"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-terra-500 px-6 text-body-sm font-bold text-paper-50 shadow-sm transition-transform active:scale-[0.98]"
           >
             Montar esse kit
             <ArrowRight className="h-4 w-4" aria-hidden="true" />

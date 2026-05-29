@@ -23,13 +23,13 @@ export default function Error({ error, reset }: ErrorProps) {
         <button
           type="button"
           onClick={reset}
-          className="rounded-pill bg-olive-900 px-6 py-2.5 text-[13px] font-semibold text-paper-50 transition hover:bg-olive-700"
+          className="rounded-full bg-olive-900 px-6 py-2.5 text-body-sm font-semibold text-paper-50 transition hover:bg-olive-700"
         >
           Tentar de novo
         </button>
         <Link
           href="/conta"
-          className="rounded-pill border border-divider px-6 py-2.5 text-[13px] font-semibold text-olive-900 transition hover:bg-paper-100"
+          className="rounded-full border border-divider px-6 py-2.5 text-body-sm font-semibold text-olive-900 transition hover:bg-paper-100"
         >
           Voltar pra conta
         </Link>

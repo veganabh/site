@@ -44,11 +44,11 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
       <section
         aria-label="Consulta de entrega"
         className={cn(
-          "flex flex-col justify-center gap-1.5 rounded-lg border border-divider bg-paper-50 px-3 py-2.5",
+          "flex flex-col justify-center gap-1.5 rounded-sm border border-divider bg-paper-50 px-3 py-2.5",
           className,
         )}
       >
-        <div className="inline-flex items-center gap-1 text-[10.5px] font-semibold tracking-wide text-olive-700 uppercase">
+        <div className="inline-flex items-center gap-1 text-micro font-semibold tracking-wide text-olive-700 uppercase">
           <MapPin className="h-3 w-3 text-olive-700" aria-hidden="true" />
           Entregamos aí?
         </div>
@@ -66,11 +66,11 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               maxLength={9}
-              className="min-w-0 flex-1 rounded-sm border border-olive-900/15 bg-paper-50 px-2 py-1 text-[12px] text-olive-900 placeholder:text-olive-500 focus:border-olive-700/50 focus:outline-none"
+              className="min-w-0 flex-1 rounded-sm border border-olive-900/15 bg-paper-50 px-2 py-1 text-caption text-olive-900 placeholder:text-olive-500 focus:border-olive-700/50 focus:outline-none"
             />
             <button
               type="submit"
-              className="shrink-0 rounded-sm bg-olive-900 px-2.5 py-1 text-[11px] font-semibold text-paper-50 transition-colors hover:bg-olive-700"
+              className="shrink-0 rounded-sm bg-olive-900 px-2.5 py-1 text-micro font-semibold text-paper-50 transition-colors hover:bg-olive-700"
             >
               Consultar
             </button>
@@ -92,14 +92,14 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
 
         {!showForm && quote && quote.covered && (
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-leaf-700">
+            <span className="inline-flex items-center gap-1 text-caption font-semibold text-leaf-700">
               <Check className="h-3 w-3" aria-hidden="true" />
               {quote.neighborhood}
             </span>
-            <span className="inline-flex items-center gap-1 text-[11px] text-olive-700">
+            <span className="inline-flex items-center gap-1 text-micro text-olive-700">
               <Clock className="h-3 w-3" aria-hidden="true" />~{quote.eta}
             </span>
-            <span className="text-[11px] text-olive-700">
+            <span className="text-micro text-olive-700">
               ·{" "}
               {quote.shippingFee === 0 ? (
                 <span className="font-semibold text-leaf-700">frete grátis</span>
@@ -110,7 +110,7 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="ml-auto text-[10.5px] font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900"
+              className="ml-auto text-micro font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900"
             >
               trocar
             </button>
@@ -119,18 +119,18 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
 
         {!showForm && quote && !quote.covered && (
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-terra-700">
+            <span className="inline-flex items-center gap-1 text-caption font-semibold text-terra-700">
               <X className="h-3 w-3" aria-hidden="true" />
               Fora da área
             </span>
-            <span className="truncate text-[11px] text-olive-700">CEP {quote.cep}</span>
+            <span className="truncate text-micro text-olive-700">CEP {quote.cep}</span>
             <button
               type="button"
               onClick={() => {
                 clear();
                 setEditing(false);
               }}
-              className="ml-auto text-[10.5px] font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900"
+              className="ml-auto text-micro font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900"
             >
               tentar outro
             </button>
@@ -155,7 +155,7 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
           <label htmlFor="delivery-cep" className="sr-only">
             CEP de entrega
           </label>
-          <span className="shrink-0 text-[12px] font-medium text-olive-900">Entregamos aí?</span>
+          <span className="shrink-0 text-caption font-medium text-olive-900">Entregamos aí?</span>
           <input
             id="delivery-cep"
             type="text"
@@ -164,11 +164,11 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             maxLength={9}
-            className="max-w-[140px] min-w-0 flex-1 rounded-sm border border-olive-900/20 bg-paper-50 px-2 py-0.5 text-[12px] text-olive-900 placeholder:text-olive-500 focus:border-olive-500/50 focus:outline-none"
+            className="max-w-[140px] min-w-0 flex-1 rounded-sm border border-olive-900/20 bg-paper-50 px-2 py-0.5 text-caption text-olive-900 placeholder:text-olive-500 focus:border-olive-500/50 focus:outline-none"
           />
           <button
             type="submit"
-            className="shrink-0 rounded-sm bg-olive-900 px-2.5 py-0.5 text-[12px] font-semibold text-paper-50 transition-colors hover:bg-olive-700"
+            className="shrink-0 rounded-sm bg-olive-900 px-2.5 py-0.5 text-caption font-semibold text-paper-50 transition-colors hover:bg-olive-700"
           >
             Consultar
           </button>
@@ -190,14 +190,14 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
 
       {!showForm && quote && quote.covered && (
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-leaf-700">
+          <span className="inline-flex items-center gap-1 text-caption font-semibold text-leaf-700">
             <Check className="h-3 w-3" aria-hidden="true" />
             {quote.neighborhood}
           </span>
-          <span className="inline-flex items-center gap-1 text-[12px] text-olive-900">
+          <span className="inline-flex items-center gap-1 text-caption text-olive-900">
             <Clock className="h-3 w-3 text-olive-700" aria-hidden="true" />~{quote.eta}
           </span>
-          <span className="text-[12px] text-olive-700">
+          <span className="text-caption text-olive-700">
             ·{" "}
             {quote.shippingFee === 0 ? (
               <span className="font-semibold text-leaf-700">frete grátis</span>
@@ -208,7 +208,7 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="ml-auto rounded-sm text-[11px] font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900"
+            className="ml-auto rounded-sm text-micro font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900"
           >
             trocar CEP
           </button>
@@ -217,11 +217,11 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
 
       {!showForm && quote && !quote.covered && (
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-terra-700">
+          <span className="inline-flex items-center gap-1 text-caption font-semibold text-terra-700">
             <X className="h-3 w-3" aria-hidden="true" />
             Fora da área ainda
           </span>
-          <span className="truncate text-[12px] text-olive-700">
+          <span className="truncate text-caption text-olive-700">
             CEP {quote.cep} — avise pra receber aviso quando chegarmos aí.
           </span>
           <button
@@ -230,7 +230,7 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
               clear();
               setEditing(false);
             }}
-            className="ml-auto rounded-sm text-[11px] font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900"
+            className="ml-auto rounded-sm text-micro font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900"
           >
             tentar outro
           </button>

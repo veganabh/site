@@ -96,9 +96,7 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
   const newOrderCount = useAdminOrdersStore((s) => {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-    return s.orders.filter(
-      (o) => o.status === "NOVO" && new Date(o.createdAt) >= start,
-    ).length;
+    return s.orders.filter((o) => o.status === "NOVO" && new Date(o.createdAt) >= start).length;
   });
 
   return (
@@ -113,12 +111,12 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
         <Link
           href="/gestao"
           aria-label="Veg.ana Gestão — ir para o Painel"
-          className="flex items-center rounded-md p-1 transition-colors hover:bg-paper-100"
+          className="flex items-center rounded-sm p-1 transition-colors hover:bg-paper-100"
           onClick={onClose}
         >
           {collapsed ? (
             <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-olive-900 text-paper-50"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-olive-900 text-paper-50"
               aria-hidden="true"
             >
               <LeafMark className="h-5 w-5" />
@@ -136,7 +134,7 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
             onClick={onToggleCollapse}
             aria-label="Recolher menu"
             title="Recolher menu"
-            className="hidden h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 md:flex"
+            className="hidden h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 md:flex"
           >
             <ChevronsLeft className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -148,7 +146,7 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
             type="button"
             onClick={onClose}
             aria-label="Fechar menu"
-            className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 md:hidden"
+            className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 md:hidden"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -175,11 +173,9 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
           >
             {collapsed ? (
               // Rail: divisor no lugar do rótulo (exceto antes do 1º grupo)
-              sectionIndex > 0 && (
-                <span aria-hidden="true" className="my-1 h-px w-7 bg-divider" />
-              )
+              sectionIndex > 0 && <span aria-hidden="true" className="my-1 h-px w-7 bg-divider" />
             ) : (
-              <span className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-olive-700/60 uppercase">
+              <span className="px-3 pb-1 text-micro font-semibold tracking-wide text-olive-700 uppercase">
                 {section.label}
               </span>
             )}
@@ -221,7 +217,7 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
           aria-label="Abrir loja pública em nova aba"
           title={collapsed ? "Ver loja pública" : undefined}
           className={cn(
-            "flex items-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900",
+            "flex items-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900",
             collapsed ? "h-10 w-10 justify-center" : "w-full gap-3 px-3 py-2",
           )}
           onClick={onClose}
@@ -241,11 +237,11 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
             aria-label="Sair do painel admin"
             title={collapsed ? "Sair" : undefined}
             className={cn(
-              "flex items-center rounded-md text-terra-700 transition-colors hover:bg-terra-500/10 hover:text-terra-700",
+              "flex items-center rounded-sm text-terra-700 transition-colors hover:bg-terra-500/10 hover:text-terra-700",
               collapsed ? "h-10 w-10 justify-center" : "w-full gap-3 px-3 py-2",
             )}
           >
-              <svg
+            <svg
               className="h-[18px] w-[18px] shrink-0"
               viewBox="0 0 24 24"
               fill="none"
@@ -270,7 +266,7 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
             onClick={onToggleCollapse}
             aria-label="Expandir menu"
             title="Expandir menu"
-            className="mt-1 hidden h-8 w-8 items-center justify-center self-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 md:flex"
+            className="mt-1 hidden h-8 w-8 items-center justify-center self-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 md:flex"
           >
             <ChevronsRight className="h-4 w-4" aria-hidden="true" />
           </button>

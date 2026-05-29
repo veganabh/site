@@ -14,7 +14,7 @@ const ZonesClient = dynamic(
     })),
   {
     ssr: false,
-    loading: () => <div className="h-[500px] animate-pulse rounded-lg bg-paper-100" />,
+    loading: () => <div className="h-[500px] animate-pulse rounded-sm bg-paper-100" />,
   },
 );
 

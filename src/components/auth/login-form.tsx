@@ -21,7 +21,7 @@ export function LoginForm({ next }: { next?: string }) {
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-4 rounded-2xl border border-divider bg-paper-50 p-5 md:p-6"
+      className="flex flex-col gap-4 rounded-sm border border-divider bg-paper-50 p-5 md:p-6"
       aria-labelledby="login-titulo"
     >
       {next ? <input type="hidden" name="next" value={next} /> : null}
@@ -57,7 +57,7 @@ export function LoginForm({ next }: { next?: string }) {
       {state && !state.ok ? (
         <p
           role="alert"
-          className="rounded-md bg-terra-500/10 px-3 py-2 text-[12px] font-semibold text-terra-700"
+          className="rounded-sm bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
         >
           {state.message}
         </p>
@@ -67,7 +67,7 @@ export function LoginForm({ next }: { next?: string }) {
         {pending ? "Entrando…" : "Entrar"}
       </Button>
 
-      <p className="text-center text-[12px] text-olive-700">
+      <p className="text-center text-caption text-olive-700">
         Ainda não tem conta?{" "}
         <Link href="/cadastro" className="font-semibold text-terra-700 hover:text-terra-500">
           Cadastrar
@@ -102,12 +102,12 @@ function Field({
 }: FieldProps) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
+      <span className="text-micro font-semibold tracking-wide text-olive-700 uppercase">
         {label}
       </span>
       <div className="relative">
         <Icon
-          className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700/60"
+          className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700"
           aria-hidden="true"
         />
         <Input
@@ -123,7 +123,7 @@ function Field({
         />
       </div>
       {errors?.length ? (
-        <span role="alert" className="text-[11px] font-semibold text-terra-700">
+        <span role="alert" className="text-micro font-semibold text-terra-700">
           {errors[0]}
         </span>
       ) : null}

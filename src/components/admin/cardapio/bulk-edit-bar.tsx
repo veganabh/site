@@ -33,7 +33,7 @@ const PRICE_MODE_LABELS: Record<PriceBulkMode, string> = {
 };
 
 const inputClass =
-  "h-9 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus:border-olive-500 focus:outline-none";
+  "h-9 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700 focus:border-olive-500 focus:outline-none";
 
 type BulkEditBarProps = {
   selectedIds: string[];
@@ -83,7 +83,7 @@ export function BulkEditBar({ selectedIds, onClearSelection }: BulkEditBarProps)
 
   return (
     <div className="sticky bottom-3 z-30 mx-auto w-full max-w-3xl">
-      <div className="flex flex-col gap-2 rounded-lg border border-olive-900/15 bg-paper-50 p-3 shadow-lg">
+      <div className="flex flex-col gap-2 rounded-sm border border-olive-900/15 bg-paper-50 p-3 shadow-lg">
         {/* Linha principal */}
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex h-8 items-center rounded-full bg-olive-900 px-3 text-caption font-bold text-paper-50">
@@ -305,7 +305,7 @@ function BarButton({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-caption font-semibold transition-colors",
+        "inline-flex h-8 items-center gap-1.5 rounded-sm border px-2.5 text-caption font-semibold transition-colors",
         tone === "terra"
           ? active
             ? "border-terra-500 bg-terra-500 text-paper-50"

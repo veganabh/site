@@ -26,7 +26,7 @@ function Pill({ label, value, hint, emphasis = "default" }: PillProps) {
   return (
     <div
       className={cn(
-        "relative flex min-w-0 shrink-0 flex-col items-start gap-0 overflow-hidden rounded-md border text-left",
+        "relative flex min-w-0 shrink-0 flex-col items-start gap-0 overflow-hidden rounded-sm border text-left",
         isPrimary
           ? "border-olive-900/25 bg-olive-900/[0.04] px-4 py-2 shadow-sm"
           : "border-divider bg-paper-50 px-3 py-1.5",
@@ -37,7 +37,7 @@ function Pill({ label, value, hint, emphasis = "default" }: PillProps) {
       )}
       <span
         className={cn(
-          "text-[10px] font-semibold tracking-wide uppercase",
+          "text-micro font-semibold tracking-wide uppercase",
           isPrimary ? "text-olive-900" : "text-olive-700",
         )}
       >
@@ -45,7 +45,7 @@ function Pill({ label, value, hint, emphasis = "default" }: PillProps) {
       </span>
       <span
         className={cn(
-          "font-bold leading-tight text-olive-900",
+          "leading-tight font-bold text-olive-900",
           isPrimary ? "text-h4" : "text-caption",
         )}
       >
@@ -55,7 +55,7 @@ function Pill({ label, value, hint, emphasis = "default" }: PillProps) {
         <span
           className={cn(
             "leading-tight",
-            isPrimary ? "text-caption text-olive-700" : "text-[10px] text-olive-700/70",
+            isPrimary ? "text-caption text-olive-700" : "text-micro text-olive-700",
           )}
         >
           {hint}
@@ -75,7 +75,11 @@ export function CouponsStatsStrip({ coupons }: CouponsStatsStripProps) {
   const metrics = calcCouponsMetrics(coupons);
 
   return (
-    <div role="region" aria-label="Métricas de cupons" className="flex flex-wrap items-stretch gap-2">
+    <div
+      role="region"
+      aria-label="Métricas de cupons"
+      className="flex flex-wrap items-stretch gap-2"
+    >
       <Pill
         label="Cupons ativos"
         value={String(metrics.activeCount)}

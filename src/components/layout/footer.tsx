@@ -77,7 +77,7 @@ export function Footer() {
           </a>
         </div>
 
-        <p className="text-caption text-olive-700/80">© {year} Veg.ana · Belo Horizonte</p>
+        <p className="text-caption text-olive-700">© {year} Veg.ana · Belo Horizonte</p>
       </div>
     </footer>
   );

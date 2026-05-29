@@ -89,7 +89,7 @@ function FormField({ label, htmlFor, error, hint, required, children }: FormFiel
         )}
       </label>
       {children}
-      {hint && !error && <p className="text-caption text-olive-700/70">{hint}</p>}
+      {hint && !error && <p className="text-caption text-olive-700">{hint}</p>}
       {error && (
         <p role="alert" className="text-caption text-terra-700">
           {error}
@@ -175,7 +175,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
     <form
       onSubmit={handleSubmit(onSubmit)}
       noValidate
-      className="flex flex-col gap-6 rounded-lg border border-divider bg-paper-50 p-6"
+      className="flex flex-col gap-6 rounded-sm border border-divider bg-paper-50 p-6"
     >
       {/* Linha 1: tipo + audiência */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -184,7 +184,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
             id="type"
             {...register("type")}
             className={cn(
-              "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 transition-colors",
+              "h-10 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 transition-colors",
               "focus:border-olive-500 focus:ring-2 focus:ring-olive-500/20 focus:outline-none",
               errors.type && "border-terra-500",
             )}
@@ -202,7 +202,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
             id="audience"
             {...register("audience")}
             className={cn(
-              "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 transition-colors",
+              "h-10 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 transition-colors",
               "focus:border-olive-500 focus:ring-2 focus:ring-olive-500/20 focus:outline-none",
               errors.audience && "border-terra-500",
             )}
@@ -254,9 +254,9 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
       </FormField>
 
       {/* CTA opcional */}
-      <div className="rounded-md border border-divider p-4">
+      <div className="rounded-sm border border-divider p-4">
         <p className="mb-3 text-body-sm font-semibold text-olive-900">
-          Botão de ação <span className="font-normal text-olive-700/70">(opcional)</span>
+          Botão de ação <span className="font-normal text-olive-700">(opcional)</span>
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField
@@ -303,7 +303,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
               id="couponCode"
               {...register("couponCode")}
               className={cn(
-                "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900",
+                "h-10 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900",
                 "focus:border-olive-500 focus:ring-2 focus:ring-olive-500/20 focus:outline-none",
               )}
             >
@@ -353,7 +353,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
       {serverError && (
         <div
           role="alert"
-          className="rounded-md border border-terra-500/40 bg-terra-500/10 px-4 py-3 text-body-sm text-terra-700"
+          className="rounded-sm border border-terra-500/40 bg-terra-500/10 px-4 py-3 text-body-sm text-terra-700"
         >
           {serverError}
         </div>

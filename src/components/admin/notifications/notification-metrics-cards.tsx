@@ -1,7 +1,7 @@
 /**
  * Cards de métricas das notificações. Presentational — recebe o agregado
  * pronto de getNotificationMetrics. Estilo alinhado ao DS do painel
- * (card p-4 rounded-lg shadow-sm, valor text-h4).
+ * (card p-4 rounded-sm shadow-sm, valor text-h4).
  */
 
 import { Send, Eye, MousePointerClick, Percent } from "lucide-react";
@@ -23,7 +23,7 @@ function MetricCard({ label, value, hint, icon: Icon }: MetricCardProps) {
         <span className="text-caption font-semibold tracking-wide uppercase">{label}</span>
       </div>
       <span className="text-h4 font-bold text-olive-900">{value}</span>
-      <span className="text-caption text-olive-700/70">{hint ?? " "}</span>
+      <span className="text-caption text-olive-700">{hint ?? " "}</span>
     </Card>
   );
 }

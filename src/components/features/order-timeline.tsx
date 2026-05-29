@@ -91,10 +91,10 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
     <div className="flex flex-col gap-4">
       {/* Cancelamento: card de alerta vermelho */}
       {isCancelled && (
-        <div role="alert" className="rounded-xl bg-terra-700 px-4 py-3 text-paper-50">
-          <p className="text-[13px] font-bold">Pedido cancelado</p>
+        <div role="alert" className="rounded-sm bg-terra-700 px-4 py-3 text-paper-50">
+          <p className="text-body-sm font-bold">Pedido cancelado</p>
           {order.cancelReason && (
-            <p className="mt-0.5 text-[12px] text-paper-50/85">{order.cancelReason}</p>
+            <p className="mt-0.5 text-caption text-paper-50">{order.cancelReason}</p>
           )}
         </div>
       )}
@@ -133,8 +133,8 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
               <div className="pt-0.5 pb-4">
                 <p
                   className={cn(
-                    "text-[13px] leading-snug font-semibold",
-                    isActive ? "text-terra-700" : isDone ? "text-olive-900" : "text-olive-700/50",
+                    "text-body-sm leading-snug font-semibold",
+                    isActive ? "text-terra-700" : isDone ? "text-olive-900" : "text-olive-700",
                   )}
                 >
                   {STATUS_LABEL[step]}
@@ -143,14 +143,14 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                 {historyEntry ? (
                   <p
                     className={cn(
-                      "mt-0.5 text-[11.5px] tabular-nums",
-                      isDone || isActive ? "text-olive-700" : "text-olive-700/40",
+                      "mt-0.5 text-caption tabular-nums",
+                      isDone || isActive ? "text-olive-700" : "text-olive-700",
                     )}
                   >
                     {formatTime(historyEntry.at)}
                   </p>
                 ) : (
-                  <p className="mt-0.5 text-[11.5px] text-olive-700/30">—</p>
+                  <p className="mt-0.5 text-caption text-olive-700">—</p>
                 )}
 
                 {/* Card entregador quando A_CAMINHO */}
@@ -159,12 +159,12 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                     {deliveryPerson ? (
                       <>
                         <div className="flex flex-col">
-                          <span className="text-[12px] font-semibold text-olive-900">
+                          <span className="text-caption font-semibold text-olive-900">
                             {deliveryPerson.name}
                           </span>
                           <a
                             href={`tel:${deliveryPerson.phone.replace(/\D/g, "")}`}
-                            className="mt-0.5 flex items-center gap-1 text-[11px] text-terra-700"
+                            className="mt-0.5 flex items-center gap-1 text-micro text-terra-700"
                           >
                             <Phone className="h-3 w-3" aria-hidden="true" />
                             {deliveryPerson.phone}
@@ -172,7 +172,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                         </div>
                       </>
                     ) : (
-                      <p className="text-[12px] text-olive-700">Motoqueiro a caminho</p>
+                      <p className="text-caption text-olive-700">Motoqueiro a caminho</p>
                     )}
                   </Card>
                 )}
@@ -182,7 +182,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                   <button
                     type="button"
                     disabled
-                    className="mt-2 cursor-not-allowed rounded-pill border border-divider bg-paper-100 px-3 py-1 text-[11px] font-semibold text-olive-700/50"
+                    className="mt-2 cursor-not-allowed rounded-full border border-divider bg-paper-100 px-3 py-1 text-micro font-semibold text-olive-700"
                     title="Em breve"
                   >
                     Avaliar pedido

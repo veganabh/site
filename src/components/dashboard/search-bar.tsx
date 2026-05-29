@@ -79,7 +79,7 @@ export function SearchBar({
         pushQuery(value.trim());
       }}
       className={cn(
-        "flex h-9 w-full items-center gap-2 rounded-pill border border-transparent bg-paper-100 px-3 text-[12px] text-olive-700 transition-colors focus-within:border-terra-500/30 focus-within:bg-paper-50",
+        "flex h-9 w-full items-center gap-2 rounded-full border border-transparent bg-paper-100 px-3 text-caption text-olive-700 transition-colors focus-within:border-terra-500/30 focus-within:bg-paper-50",
         className,
       )}
     >
@@ -91,7 +91,7 @@ export function SearchBar({
         aria-label="Buscar no cardápio"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="flex-1 bg-transparent text-olive-900 outline-none placeholder:text-olive-700 [&:focus-visible]:outline-none [&::-webkit-search-cancel-button]:hidden"
+        className="flex-1 bg-transparent text-olive-900 outline-none placeholder:text-olive-700 [&::-webkit-search-cancel-button]:hidden [&:focus-visible]:outline-none"
       />
       {value ? (
         <button
@@ -107,7 +107,7 @@ export function SearchBar({
           aria-hidden="true"
           className="hidden items-center gap-1 rounded-sm border border-divider bg-paper-50 px-2 py-0.5 text-caption text-olive-700 md:inline-flex"
         >
-          <span className="text-[11px]">⌘</span>K
+          <span className="text-micro">⌘</span>K
         </kbd>
       )}
     </form>

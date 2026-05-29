@@ -40,7 +40,7 @@ export function RecentOrdersFeed() {
               <li key={order.id}>
                 <Link
                   href={`/gestao/pedidos?open=${order.id}`}
-                  className="flex items-center gap-2 rounded-md px-2 py-2 transition-colors hover:bg-paper-100"
+                  className="flex items-center gap-2 rounded-sm px-2 py-2 transition-colors hover:bg-paper-100"
                   aria-label={`Pedido ${shortId} — ${order.customerName} — ${total}`}
                 >
                   {/* ID + cliente */}

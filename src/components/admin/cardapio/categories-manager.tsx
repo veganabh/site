@@ -17,7 +17,7 @@ import {
 } from "@/server/actions/categories";
 
 const inputClass =
-  "h-9 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus:border-olive-500 focus:outline-none";
+  "h-9 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700 focus:border-olive-500 focus:outline-none";
 
 /**
  * Gerenciador de categorias do cardápio. CRUD + reordenação. Lê a lista
@@ -219,7 +219,7 @@ function CategoryRow({
   return (
     <li
       className={cn(
-        "flex flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-3",
+        "flex flex-col gap-2 rounded-sm border border-divider bg-paper-50 p-3",
         !category.active && "opacity-60",
       )}
     >
@@ -231,7 +231,7 @@ function CategoryRow({
             onClick={onMoveUp}
             disabled={isPending || index === 0}
             aria-label="Mover para cima"
-            className="flex h-4 w-5 items-center justify-center rounded text-olive-700 hover:bg-paper-100 disabled:opacity-30"
+            className="flex h-4 w-5 items-center justify-center rounded-sm text-olive-700 hover:bg-paper-100 disabled:opacity-30"
           >
             <ArrowUp className="h-3 w-3" aria-hidden="true" />
           </button>
@@ -240,7 +240,7 @@ function CategoryRow({
             onClick={onMoveDown}
             disabled={isPending || index === total - 1}
             aria-label="Mover para baixo"
-            className="flex h-4 w-5 items-center justify-center rounded text-olive-700 hover:bg-paper-100 disabled:opacity-30"
+            className="flex h-4 w-5 items-center justify-center rounded-sm text-olive-700 hover:bg-paper-100 disabled:opacity-30"
           >
             <ArrowDown className="h-3 w-3" aria-hidden="true" />
           </button>
@@ -263,11 +263,11 @@ function CategoryRow({
             <span className="truncate text-body-sm font-semibold text-olive-900">
               {category.name}
             </span>
-            <span className="shrink-0 rounded-pill bg-paper-100 px-2 py-0 text-[10px] leading-4 font-semibold text-olive-700">
+            <span className="shrink-0 rounded-full bg-paper-100 px-2 py-0 text-micro leading-4 font-semibold text-olive-700">
               {productCount} {productCount === 1 ? "produto" : "produtos"}
             </span>
             {!category.active && (
-              <span className="shrink-0 rounded-pill bg-paper-100 px-2 py-0 text-[10px] leading-4 font-semibold text-olive-700">
+              <span className="shrink-0 rounded-full bg-paper-100 px-2 py-0 text-micro leading-4 font-semibold text-olive-700">
                 oculta
               </span>
             )}

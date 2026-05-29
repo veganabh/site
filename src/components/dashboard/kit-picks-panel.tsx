@@ -61,7 +61,7 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
     <aside
       aria-label="Itens do kit em montagem"
       className={cn(
-        "hidden h-full w-full shrink-0 flex-col border-l border-divider bg-leaf-500/5 xl:flex xl:w-[360px] xl:rounded-br-lg",
+        "hidden h-full w-full shrink-0 flex-col border-l border-divider bg-leaf-500/5 xl:flex xl:w-[360px] xl:rounded-br-sm",
         className,
       )}
     >
@@ -71,15 +71,15 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
             <Gift className="h-4 w-4" aria-hidden="true" />
             {template?.name ?? "Kit em montagem"}
           </h2>
-          <span className="text-[10px] font-semibold tracking-wide text-olive-700 uppercase">
+          <span className="text-micro font-semibold tracking-wide text-olive-700 uppercase">
             presente
           </span>
         </header>
 
-        {template && <p className="shrink-0 text-[11px] text-olive-700">{template.tagline}</p>}
+        {template && <p className="shrink-0 text-micro text-olive-700">{template.tagline}</p>}
 
         {savings > 0 && (
-          <div className="flex shrink-0 items-center gap-1 text-[11px] font-semibold text-leaf-700">
+          <div className="flex shrink-0 items-center gap-1 text-micro font-semibold text-leaf-700">
             <Sparkles className="h-3 w-3" aria-hidden="true" />
             {formatBRL(savings)} a menos que no iFood
           </div>
@@ -97,7 +97,7 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
               <li
                 key={slot.id}
                 className={cn(
-                  "flex flex-col gap-2 rounded-md border p-2.5",
+                  "flex flex-col gap-2 rounded-sm border p-2.5",
                   filled
                     ? "border-leaf-500/40 bg-leaf-500/5"
                     : slotPicks.length > 0
@@ -106,10 +106,10 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] font-bold text-olive-900">{slot.label}</p>
+                  <p className="text-micro font-bold text-olive-900">{slot.label}</p>
                   <span
                     className={cn(
-                      "inline-flex items-center gap-1 text-[10px] font-semibold",
+                      "inline-flex items-center gap-1 text-micro font-semibold",
                       filled ? "text-leaf-700" : "text-olive-700",
                     )}
                   >
@@ -119,7 +119,7 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
                 </div>
 
                 {slotPicks.length === 0 ? (
-                  <p className="text-[11px] text-olive-700/70 italic">a escolher</p>
+                  <p className="text-micro text-olive-700 italic">a escolher</p>
                 ) : (
                   <ul className="flex flex-col gap-1.5">
                     {Array.from(slotCounts.entries()).map(([productId, count]) => {
@@ -130,11 +130,11 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
                           <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-sm bg-paper-100">
                             <ProductPhoto product={product} sizes="36px" />
                           </div>
-                          <p className="min-w-0 flex-1 truncate text-[12px] font-medium text-olive-900">
+                          <p className="min-w-0 flex-1 truncate text-caption font-medium text-olive-900">
                             {product.name}
                           </p>
                           {count > 1 && (
-                            <span className="shrink-0 text-[11px] font-semibold text-olive-700">
+                            <span className="shrink-0 text-micro font-semibold text-olive-700">
                               {count}×
                             </span>
                           )}
@@ -153,23 +153,23 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sage-300/40 text-olive-900">
               <Package className="h-3.5 w-3.5" aria-hidden="true" />
             </span>
-            <p className="flex-1 text-[12px] font-semibold text-olive-900">Embalagem de presente</p>
-            <span className="text-[11px] font-semibold text-olive-900">
+            <p className="flex-1 text-caption font-semibold text-olive-900">
+              Embalagem de presente
+            </p>
+            <span className="text-micro font-semibold text-olive-900">
               +{formatBRL(GIFT_PACKAGING_PRICE)}
             </span>
           </Card>
         )}
 
-        <div className="flex shrink-0 flex-col gap-1 rounded-md bg-paper-100 p-3">
-          <div className="flex items-center justify-between text-[11px] text-olive-700">
+        <div className="flex shrink-0 flex-col gap-1 rounded-sm bg-paper-100 p-3">
+          <div className="flex items-center justify-between text-micro text-olive-700">
             <span>
               {totalPicks} de {expectedPicks} escolhidos
             </span>
             <span className="font-semibold text-olive-900">{formatBRL(finalPrice)}</span>
           </div>
-          <p className="text-[10px] text-olive-700/70">
-            Continue o passo a passo pra finalizar o kit.
-          </p>
+          <p className="text-micro text-olive-700">Continue o passo a passo pra finalizar o kit.</p>
         </div>
       </div>
     </aside>

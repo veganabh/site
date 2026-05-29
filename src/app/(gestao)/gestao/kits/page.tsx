@@ -117,7 +117,7 @@ export default function KitsPage() {
                   />
                   {/* Ícone do kit no canto */}
                   <span
-                    className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-md bg-paper-50/90 shadow-sm backdrop-blur-sm"
+                    className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-sm bg-paper-50/90 shadow-sm backdrop-blur-sm"
                     aria-hidden="true"
                   >
                     <KitIcon className="h-3.5 w-3.5 text-olive-900" strokeWidth={1.75} />
@@ -125,7 +125,7 @@ export default function KitsPage() {
                   {/* Badge ativo/inativo */}
                   <span
                     className={cn(
-                      "absolute top-2 left-2 inline-flex items-center rounded-pill px-2 py-0.5 text-[10px] leading-4 font-semibold shadow-sm backdrop-blur-sm",
+                      "absolute top-2 left-2 inline-flex items-center rounded-full px-2 py-0.5 text-micro leading-4 font-semibold shadow-sm backdrop-blur-sm",
                       kit.active
                         ? "bg-leaf-700 text-paper-50"
                         : "bg-paper-50/90 text-olive-700 ring-1 ring-divider ring-inset",
@@ -170,7 +170,7 @@ export default function KitsPage() {
                       type="button"
                       onClick={() => handleOpenEdit(kit)}
                       aria-label={`Editar kit ${kit.name}`}
-                      className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+                      className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
                     >
                       <Pencil className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                     </button>
@@ -182,7 +182,7 @@ export default function KitsPage() {
                       aria-label={
                         kit.active ? `Desativar kit ${kit.name}` : `Ativar kit ${kit.name}`
                       }
-                      className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+                      className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
                     >
                       {kit.active ? (
                         <ToggleRight
@@ -200,7 +200,7 @@ export default function KitsPage() {
                       type="button"
                       onClick={() => handleDeleteRequest(kit)}
                       aria-label={`Excluir kit ${kit.name}`}
-                      className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition hover:bg-terra-500/10 hover:text-terra-700"
+                      className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition hover:bg-terra-500/10 hover:text-terra-700"
                     >
                       <Trash2 className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                     </button>

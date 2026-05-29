@@ -36,9 +36,7 @@ export function CheckoutStatusPanel({ className }: { className?: string }) {
   // Path > store. F5 em /obrigado zera a store em memória — pathname é a
   // fonte de verdade que sobrevive reload. Path /obrigado/* sempre cai em
   // "confirmado" mesmo com store resetado.
-  const currentStep: CheckoutStep = pathname?.startsWith("/obrigado")
-    ? "confirmado"
-    : storeStep;
+  const currentStep: CheckoutStep = pathname?.startsWith("/obrigado") ? "confirmado" : storeStep;
   const currentIdx = stepIndex(currentStep);
 
   // Resumo aparece em endereço e pagamento — acompanha usuário até pagar
@@ -85,14 +83,14 @@ export function CheckoutStatusPanel({ className }: { className?: string }) {
                 <div className="pt-0.5 pb-5">
                   <p
                     className={cn(
-                      "text-[13px] leading-snug font-semibold",
+                      "text-body-sm leading-snug font-semibold",
                       isComplete || isActive ? "text-olive-900" : "text-olive-500",
                     )}
                   >
                     {s.label}
                   </p>
                   {(isActive || isComplete) && (
-                    <p className="mt-0.5 text-[11px] text-olive-700">{s.sublabel}</p>
+                    <p className="mt-0.5 text-micro text-olive-700">{s.sublabel}</p>
                   )}
                 </div>
               </li>
@@ -129,7 +127,7 @@ function OrderSummaryMini() {
     >
       <h3
         id="summary-mini-heading"
-        className="shrink-0 text-[11px] font-semibold tracking-wide text-olive-700 uppercase"
+        className="shrink-0 text-micro font-semibold tracking-wide text-olive-700 uppercase"
       >
         Resumo do pedido
       </h3>
@@ -154,18 +152,18 @@ function OrderSummaryMini() {
                 </span>
               )}
             </div>
-            <p className="min-w-0 flex-1 truncate text-[11px] font-medium text-olive-900">
+            <p className="min-w-0 flex-1 truncate text-micro font-medium text-olive-900">
               {item.product.name}
             </p>
-            <span className="shrink-0 text-[10px] text-olive-700">{item.quantity}×</span>
-            <span className="w-14 shrink-0 text-right text-[11px] font-semibold text-olive-900 tabular-nums">
+            <span className="shrink-0 text-micro text-olive-700">{item.quantity}×</span>
+            <span className="w-14 shrink-0 text-right text-micro font-semibold text-olive-900 tabular-nums">
               {formatBRL(item.product.price_site * item.quantity)}
             </span>
           </li>
         ))}
       </ul>
 
-      <dl className="flex shrink-0 flex-col gap-1 rounded-sm bg-paper-100 px-2.5 py-2 text-[11px]">
+      <dl className="flex shrink-0 flex-col gap-1 rounded-sm bg-paper-100 px-2.5 py-2 text-micro">
         <div className="flex justify-between">
           <dt className="text-olive-700">Subtotal</dt>
           <dd className="font-semibold text-olive-900 tabular-nums">{formatBRL(subtotal)}</dd>
@@ -189,7 +187,7 @@ function OrderSummaryMini() {
         </div>
         <div className="mt-0.5 flex justify-between border-t border-divider pt-1.5">
           <dt className="font-semibold text-olive-900">Total</dt>
-          <dd className="text-[13px] font-bold text-olive-900 tabular-nums">{formatBRL(total)}</dd>
+          <dd className="text-body-sm font-bold text-olive-900 tabular-nums">{formatBRL(total)}</dd>
         </div>
       </dl>
     </section>
@@ -232,7 +230,7 @@ function StepCircle({
       aria-label={`${label}: pendente`}
       className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-divider bg-paper-100"
     >
-      <Circle className="h-3 w-3 text-olive-500/40" aria-hidden="true" />
+      <Circle className="h-3 w-3 text-olive-500" aria-hidden="true" />
     </span>
   );
 }

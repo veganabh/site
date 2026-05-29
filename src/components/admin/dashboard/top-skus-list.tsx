@@ -52,7 +52,7 @@ export function TopSkusList({ skus, thumbs }: TopSkusListProps) {
                     className="object-cover"
                   />
                 ) : (
-                  <span className="flex h-full w-full items-center justify-center text-[10px] text-olive-700">
+                  <span className="flex h-full w-full items-center justify-center text-micro text-olive-700">
                     {index + 1}
                   </span>
                 )}
@@ -65,7 +65,7 @@ export function TopSkusList({ skus, thumbs }: TopSkusListProps) {
                     {sku.productName}
                   </span>
                   {isTop && (
-                    <span className="shrink-0 rounded-pill bg-terra-500/10 px-1.5 py-0 text-[10px] font-bold tracking-wide text-terra-700 uppercase">
+                    <span className="shrink-0 rounded-full bg-terra-500/10 px-1.5 py-0 text-micro font-bold tracking-wide text-terra-700 uppercase">
                       top
                     </span>
                   )}

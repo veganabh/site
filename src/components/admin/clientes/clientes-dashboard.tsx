@@ -157,7 +157,7 @@ export function ClientesDashboard({ analytics }: { analytics: CustomerAnalytics 
                     >
                       {c.name}
                     </Link>
-                    <span className="text-caption text-olive-700/70">{c.phone}</span>
+                    <span className="text-caption text-olive-700">{c.phone}</span>
                   </td>
                   <td className="px-3 py-2 text-caption text-olive-900">{c.orders}</td>
                   <td className="px-3 py-2 text-caption font-semibold text-olive-900">
@@ -175,7 +175,7 @@ export function ClientesDashboard({ analytics }: { analytics: CustomerAnalytics 
                   <td className="px-3 py-2">
                     <span
                       className={cn(
-                        "inline-flex items-center rounded-pill px-2 py-0 text-[10px] font-bold tracking-wide uppercase",
+                        "inline-flex items-center rounded-full px-2 py-0 text-micro font-bold tracking-wide uppercase",
                         SEGMENT_BADGE[c.segment],
                       )}
                     >
@@ -210,7 +210,7 @@ function MetricCard({
         <span className="text-caption font-semibold tracking-wide uppercase">{label}</span>
       </div>
       <span className="text-h4 font-bold text-olive-900">{value}</span>
-      <span className="text-caption text-olive-700/70">{hint}</span>
+      <span className="text-caption text-olive-700">{hint}</span>
     </Card>
   );
 }
@@ -230,7 +230,7 @@ function SegChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-pill border px-2.5 py-0.5 text-[11px] font-semibold transition-colors",
+        "rounded-full border px-2.5 py-0.5 text-micro font-semibold transition-colors",
         active
           ? "border-olive-900 bg-olive-900 text-paper-50"
           : "border-divider bg-paper-50 text-olive-700 hover:bg-paper-100",

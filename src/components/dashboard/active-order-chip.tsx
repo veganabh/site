@@ -84,7 +84,7 @@ export function ActiveOrderChip() {
       href={`/pedido/${latest.id}`}
       aria-label={`Pedido em andamento: ${copy.label}`}
       className={cn(
-        "hidden items-center gap-2 rounded-pill px-3 py-1.5 text-[12px] font-semibold transition-colors md:inline-flex",
+        "hidden items-center gap-2 rounded-full px-3 py-1.5 text-caption font-semibold transition-colors md:inline-flex",
         copy.toneClass,
       )}
     >
@@ -94,7 +94,7 @@ export function ActiveOrderChip() {
       />
       <span>{copy.label}</span>
       {extras > 0 && (
-        <span className="ml-0.5 rounded-pill bg-paper-50/70 px-1.5 text-[10.5px] font-bold text-olive-900">
+        <span className="ml-0.5 rounded-full bg-paper-50/70 px-1.5 text-micro font-bold text-olive-900">
           +{extras}
         </span>
       )}

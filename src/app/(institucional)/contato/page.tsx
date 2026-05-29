@@ -37,7 +37,7 @@ export default function ContatoPage() {
   return (
     <article className="flex flex-col gap-6">
       <header className="flex flex-col gap-2 border-b border-divider pb-5">
-        <h1 className="text-[24px] leading-tight font-bold text-olive-900 md:text-[30px]">
+        <h1 className="text-h2 leading-tight font-bold text-olive-900 md:text-h2">
           Fala com a gente
         </h1>
         <p className="text-body-sm text-olive-700">
@@ -51,12 +51,12 @@ export default function ContatoPage() {
           href={waLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex flex-col gap-1.5 rounded-2xl border border-divider bg-paper-50 p-4 transition hover:border-leaf-500/50 hover:bg-leaf-500/5"
+          className="flex flex-col gap-1.5 rounded-sm border border-divider bg-paper-50 p-4 transition hover:border-leaf-500/50 hover:bg-leaf-500/5"
         >
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-leaf-500/10 text-leaf-700">
             <MessageCircle className="h-5 w-5" aria-hidden="true" />
           </span>
-          <span className="mt-1 text-[15px] font-bold text-olive-900">WhatsApp</span>
+          <span className="mt-1 text-body font-bold text-olive-900">WhatsApp</span>
           <span className="text-body-sm text-olive-700">{waPretty}</span>
         </a>
 
@@ -64,12 +64,12 @@ export default function ContatoPage() {
           href={igLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex flex-col gap-1.5 rounded-2xl border border-divider bg-paper-50 p-4 transition hover:border-terra-500/50 hover:bg-terra-500/5"
+          className="flex flex-col gap-1.5 rounded-sm border border-divider bg-paper-50 p-4 transition hover:border-terra-500/50 hover:bg-terra-500/5"
         >
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-terra-500/10 text-terra-700">
             <InstagramGlyph className="h-5 w-5" />
           </span>
-          <span className="mt-1 text-[15px] font-bold text-olive-900">Instagram</span>
+          <span className="mt-1 text-body font-bold text-olive-900">Instagram</span>
           <span className="text-body-sm text-olive-700">{STORE_LOCATION.instagramHandle}</span>
         </a>
       </div>
@@ -78,7 +78,7 @@ export default function ContatoPage() {
         <div className="flex items-start gap-3">
           <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-olive-700" aria-hidden="true" />
           <div>
-            <p className="text-[14px] font-bold text-olive-900">Onde a gente entrega</p>
+            <p className="text-body-sm font-bold text-olive-900">Onde a gente entrega</p>
             <p className="text-body-sm text-olive-700">
               Delivery em {STORE_LOCATION.city} e região. Confira no carrinho se o seu CEP é
               atendido — a área cresce aos poucos.
@@ -88,7 +88,7 @@ export default function ContatoPage() {
         <div className="flex items-start gap-3 border-t border-divider pt-3">
           <Clock className="mt-0.5 h-5 w-5 shrink-0 text-olive-700" aria-hidden="true" />
           <div>
-            <p className="text-[14px] font-bold text-olive-900">Atendimento</p>
+            <p className="text-body-sm font-bold text-olive-900">Atendimento</p>
             <p className="text-body-sm text-olive-700">
               Pedidos pelo site a qualquer hora. Atendimento no WhatsApp durante o dia — pode mandar
               mensagem que a gente responde assim que possível.

@@ -66,7 +66,7 @@ export function BottomNav() {
                   "flex h-10 items-center justify-center gap-2 rounded-full transition-all duration-300 ease-out",
                   active
                     ? "bg-paper-50 px-4 text-olive-900"
-                    : "w-10 text-paper-50/55 hover:text-paper-50",
+                    : "w-10 text-paper-50 hover:text-paper-50",
                 )}
               >
                 <Icon
@@ -75,7 +75,7 @@ export function BottomNav() {
                   strokeWidth={active ? 2.25 : 1.75}
                 />
                 {active && (
-                  <span className="text-[13px] font-semibold whitespace-nowrap">{item.label}</span>
+                  <span className="text-body-sm font-semibold whitespace-nowrap">{item.label}</span>
                 )}
               </Link>
             </li>
