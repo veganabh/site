@@ -43,7 +43,7 @@ export function TopBar({ className }: TopBarProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-20 flex h-[72px] items-center gap-3 rounded-t-lg border-b border-divider bg-paper-50/80 px-3 backdrop-blur md:px-5",
+        "sticky top-0 z-20 flex h-[72px] items-center gap-3 rounded-t-sm border-b border-divider bg-paper-50/80 px-3 backdrop-blur md:px-5",
         className,
       )}
     >
@@ -64,7 +64,7 @@ export function TopBar({ className }: TopBarProps) {
         {/* Status da loja — visual neutro pra não competir com o ActiveOrderChip. */}
         {now && (
           <div
-            className="hidden items-center gap-2 rounded-pill border border-divider bg-paper-50 px-3 py-1.5 text-caption font-medium text-olive-700 md:inline-flex"
+            className="hidden items-center gap-2 rounded-full border border-divider bg-paper-50 px-3 py-1.5 text-caption font-medium text-olive-700 md:inline-flex"
             aria-live="polite"
           >
             <span
@@ -85,7 +85,7 @@ export function TopBar({ className }: TopBarProps) {
             <summary
               aria-label={`Menu da conta de ${user?.firstName ?? "usuário"}`}
               className={cn(
-                "flex cursor-pointer list-none items-center gap-2.5 rounded-pill border border-divider bg-paper-50 py-1 pr-3 pl-1 transition-colors",
+                "flex cursor-pointer list-none items-center gap-2.5 rounded-full border border-divider bg-paper-50 py-1 pr-3 pl-1 transition-colors",
                 "hover:bg-paper-100",
                 "[&::-webkit-details-marker]:hidden",
               )}
@@ -99,7 +99,7 @@ export function TopBar({ className }: TopBarProps) {
               </div>
             </summary>
 
-            <div className="absolute top-full right-0 z-30 mt-1 w-56 origin-top-right rounded-md border border-divider bg-paper-50 shadow-md">
+            <div className="absolute top-full right-0 z-30 mt-1 w-56 origin-top-right rounded-sm border border-divider bg-paper-50 shadow-md">
               <div className="border-b border-divider px-4 py-3">
                 <p className="text-body-sm font-semibold text-olive-900">{user?.firstName}</p>
                 <p className="truncate text-caption text-olive-700">{user?.email}</p>
@@ -126,7 +126,7 @@ export function TopBar({ className }: TopBarProps) {
             </div>
           </details>
         ) : (
-          <Button asChild variant="primary" size="sm" className="ml-0.5 rounded-pill px-3.5">
+          <Button asChild variant="primary" size="sm" className="ml-0.5 rounded-full px-3.5">
             <Link href="/login">
               <LogIn className="h-3.5 w-3.5" aria-hidden="true" />
               <span className="hidden sm:inline">Entrar</span>

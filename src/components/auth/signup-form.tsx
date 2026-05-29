@@ -23,7 +23,7 @@ export function SignUpForm() {
     return (
       <div
         role="status"
-        className="flex flex-col gap-3 rounded-2xl border border-divider bg-paper-50 p-5 text-center md:p-6"
+        className="flex flex-col gap-3 rounded-sm border border-divider bg-paper-50 p-5 text-center md:p-6"
       >
         <h1 className="text-h2 font-bold text-olive-900">Cadastro recebido</h1>
         <p className="text-body-sm text-olive-700">
@@ -31,7 +31,7 @@ export function SignUpForm() {
         </p>
         <Link
           href="/login"
-          className="mx-auto inline-flex h-11 items-center justify-center rounded-pill bg-terra-500 px-5 text-body-sm font-semibold text-paper-50 hover:bg-terra-700"
+          className="mx-auto inline-flex h-11 items-center justify-center rounded-full bg-terra-500 px-5 text-body-sm font-semibold text-paper-50 hover:bg-terra-700"
         >
           Ir pro login
         </Link>
@@ -42,7 +42,7 @@ export function SignUpForm() {
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-4 rounded-2xl border border-divider bg-paper-50 p-5 md:p-6"
+      className="flex flex-col gap-4 rounded-sm border border-divider bg-paper-50 p-5 md:p-6"
       aria-labelledby="cadastro-titulo"
     >
       <header className="flex flex-col gap-1">
@@ -120,7 +120,7 @@ export function SignUpForm() {
       {state && !state.ok ? (
         <p
           role="alert"
-          className="rounded-md bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
+          className="rounded-sm bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
         >
           {state.message}
         </p>

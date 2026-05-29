@@ -53,7 +53,7 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
         {/* Social proof — top-left */}
         {product.ifoodRating !== undefined && (
           <div
-            className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-pill bg-paper-50/95 px-2 py-0.5 text-micro font-semibold text-olive-900 shadow-sm backdrop-blur-sm"
+            className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-paper-50/95 px-2 py-0.5 text-micro font-semibold text-olive-900 shadow-sm backdrop-blur-sm"
             aria-label={`Avaliação ${product.ifoodRating} de 5 no iFood${
               product.ifoodOrderCount ? `, ${product.ifoodOrderCount} pedidos` : ""
             }`}
@@ -73,7 +73,7 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
         {(isSoldOut || isLowStock) && (
           <div
             className={cn(
-              "absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-pill px-2 py-0.5 text-micro font-semibold shadow-sm",
+              "absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-micro font-semibold shadow-sm",
               isSoldOut ? "bg-olive-900/85 text-paper-50" : "bg-terra-500/95 text-paper-50",
             )}
             aria-label={isSoldOut ? "Esgotado" : `Restam ${product.stock}`}

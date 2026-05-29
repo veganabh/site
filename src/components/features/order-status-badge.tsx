@@ -42,7 +42,7 @@ export function OrderStatusBadge({ status, className }: OrderStatusBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-pill px-2 py-0.5 text-micro leading-tight font-semibold",
+        "inline-flex items-center rounded-full px-2 py-0.5 text-micro leading-tight font-semibold",
         config.classes,
         className,
       )}

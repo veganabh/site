@@ -123,7 +123,7 @@ export function OrderCard({ order, onOpen, className }: OrderCardProps) {
   return (
     <div
       className={cn(
-        "relative flex cursor-pointer flex-col gap-2 rounded-lg border bg-paper-50 p-3 shadow-sm transition-shadow hover:shadow-md",
+        "relative flex cursor-pointer flex-col gap-2 rounded-sm border bg-paper-50 p-3 shadow-sm transition-shadow hover:shadow-md",
         isNew
           ? "border-terra-500"
           : isDelayed
@@ -154,7 +154,7 @@ export function OrderCard({ order, onOpen, className }: OrderCardProps) {
         </span>
         <span
           className={cn(
-            "inline-flex items-center rounded-pill px-1.5 py-0 text-micro leading-4 font-semibold",
+            "inline-flex items-center rounded-full px-1.5 py-0 text-micro leading-4 font-semibold",
             badge.badgeClass,
           )}
         >

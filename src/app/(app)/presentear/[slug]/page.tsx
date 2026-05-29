@@ -42,9 +42,9 @@ export default async function KitDetailPage({ params }: PageProps) {
 
       <div className="grid gap-5 md:grid-cols-[5fr_4fr] md:items-start">
         <section aria-label="Foto do kit" className="flex flex-col gap-3">
-          <div className="relative aspect-[5/4] overflow-hidden rounded-2xl bg-paper-100 shadow-sm">
+          <div className="relative aspect-[5/4] overflow-hidden rounded-sm bg-paper-100 shadow-sm">
             <KitCoverPhoto photo={kit.coverPhoto} priority />
-            <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-pill bg-paper-50/95 px-2.5 py-1 text-micro font-bold text-olive-900 shadow-sm backdrop-blur-sm">
+            <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-paper-50/95 px-2.5 py-1 text-micro font-bold text-olive-900 shadow-sm backdrop-blur-sm">
               <KitIcon name={kit.iconName} className="h-3 w-3 text-terra-700" aria-hidden="true" />
               Kit de Presente
             </span>
@@ -78,7 +78,7 @@ export default async function KitDetailPage({ params }: PageProps) {
                 <span className="text-micro text-olive-700 line-through">
                   iFood {formatBRL(kit.priceIfoodAnchor)}
                 </span>
-                <span className="mt-1 inline-flex items-center gap-1 rounded-pill bg-leaf-500/10 px-2 py-0.5 text-micro font-semibold text-leaf-700">
+                <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-leaf-500/10 px-2 py-0.5 text-micro font-semibold text-leaf-700">
                   economize {formatBRL(savingsVsIfood)}
                 </span>
               </div>
@@ -131,7 +131,7 @@ export default async function KitDetailPage({ params }: PageProps) {
 
           <Link
             href={`/presentear/${kit.slug}/montar`}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-body-sm font-bold text-paper-50 shadow-sm transition-transform active:scale-[0.98]"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-terra-500 px-6 text-body-sm font-bold text-paper-50 shadow-sm transition-transform active:scale-[0.98]"
           >
             Montar esse kit
             <ArrowRight className="h-4 w-4" aria-hidden="true" />

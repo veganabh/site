@@ -157,7 +157,7 @@ export default function PedidosPage() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por #ID ou nome"
               className={cn(
-                "h-8 w-52 rounded-md border border-divider bg-paper-50 pr-3 pl-8",
+                "h-8 w-52 rounded-sm border border-divider bg-paper-50 pr-3 pl-8",
                 "text-caption text-olive-900 placeholder:text-olive-700/50",
                 "focus:border-olive-900 focus:outline-none",
               )}
@@ -169,7 +169,7 @@ export default function PedidosPage() {
             type="button"
             onClick={toggleSound}
             className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-md border transition",
+              "flex h-8 w-8 items-center justify-center rounded-sm border transition",
               soundEnabled
                 ? "border-olive-900 bg-olive-900 text-paper-50"
                 : "border-divider bg-paper-50 text-olive-700 hover:border-sage-300",
@@ -195,7 +195,7 @@ export default function PedidosPage() {
 
       {/* Banner filtro ativo */}
       {onlyDelayed && (
-        <div className="flex items-center justify-between rounded-md border border-terra-500/30 bg-terra-500/5 px-3 py-1.5">
+        <div className="flex items-center justify-between rounded-sm border border-terra-500/30 bg-terra-500/5 px-3 py-1.5">
           <span className="text-caption font-semibold text-terra-700">
             Mostrando apenas pedidos parados há mais de 30 min
           </span>
@@ -222,7 +222,7 @@ export default function PedidosPage() {
           return (
             <div key={col.status} className="flex min-w-[180px] flex-1 flex-col gap-2">
               {/* Header da coluna */}
-              <div className="flex items-center justify-between rounded-md bg-paper-100 px-2.5 py-1.5">
+              <div className="flex items-center justify-between rounded-sm bg-paper-100 px-2.5 py-1.5">
                 <p className="text-micro font-bold tracking-wide text-olive-700 uppercase">
                   {col.label}
                 </p>

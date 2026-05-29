@@ -50,7 +50,7 @@ function StoreStatusBlock() {
     <section
       aria-labelledby="cfg-status-title"
       className={cn(
-        "rounded-lg border p-5",
+        "rounded-sm border p-5",
         isAtivo ? "border-divider bg-paper-50" : "border-terra-500/30 bg-terra-500/5",
       )}
     >
@@ -94,7 +94,7 @@ function StoreStatusBlock() {
       {!isAtivo && (
         <p
           role="status"
-          className="mt-4 rounded-md border border-terra-500/30 bg-terra-500/10 px-4 py-3 text-body-sm text-terra-700"
+          className="mt-4 rounded-sm border border-terra-500/30 bg-terra-500/10 px-4 py-3 text-body-sm text-terra-700"
         >
           A loja está pausada. Reative quando estiver pronta para receber pedidos.
         </p>
@@ -297,7 +297,7 @@ function PrinterBlock() {
             }
             placeholder="Ex.: Epson TM-T20"
             className={cn(
-              "w-full max-w-sm rounded-md border border-divider bg-paper-50 px-3 py-2",
+              "w-full max-w-sm rounded-sm border border-divider bg-paper-50 px-3 py-2",
               "text-body-sm text-olive-900 placeholder:text-olive-700",
               "focus:ring-2 focus:ring-olive-900 focus:ring-offset-1 focus:outline-none",
             )}

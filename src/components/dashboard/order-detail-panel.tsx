@@ -77,7 +77,7 @@ function OrderDetailPanelInner({ className }: OrderDetailPanelProps) {
     <aside
       aria-label="Carrinho"
       className={cn(
-        "hidden h-full w-full shrink-0 flex-col border-l border-divider bg-leaf-500/5 xl:flex xl:w-[360px] xl:rounded-br-lg",
+        "hidden h-full w-full shrink-0 flex-col border-l border-divider bg-leaf-500/5 xl:flex xl:w-[360px] xl:rounded-br-sm",
         className,
       )}
     >
@@ -89,7 +89,7 @@ function OrderDetailPanelInner({ className }: OrderDetailPanelProps) {
           </h2>
         </header>
 
-        <div className="flex shrink-0 gap-0.5 rounded-pill bg-paper-100 p-0.5">
+        <div className="flex shrink-0 gap-0.5 rounded-full bg-paper-100 p-0.5">
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -97,7 +97,7 @@ function OrderDetailPanelInner({ className }: OrderDetailPanelProps) {
               aria-current={activeTab === t.id ? "true" : undefined}
               onClick={() => setActiveTab(t.id)}
               className={cn(
-                "flex-1 rounded-pill px-2 py-1 text-micro font-semibold whitespace-nowrap transition-colors",
+                "flex-1 rounded-full px-2 py-1 text-micro font-semibold whitespace-nowrap transition-colors",
                 activeTab === t.id
                   ? "bg-olive-900 text-paper-50 shadow-sm"
                   : "text-olive-700 hover:text-olive-900",
@@ -191,7 +191,7 @@ function CartView({
             type="button"
             onClick={removeCoupon}
             aria-label={`Remover cupom ${appliedCoupon.code}`}
-            className="group inline-flex items-center gap-1 rounded-pill border border-terra-500/30 bg-terra-500/10 px-2 py-0.5 text-micro font-semibold text-terra-700 transition-colors hover:border-terra-500 hover:bg-terra-500/20"
+            className="group inline-flex items-center gap-1 rounded-full border border-terra-500/30 bg-terra-500/10 px-2 py-0.5 text-micro font-semibold text-terra-700 transition-colors hover:border-terra-500 hover:bg-terra-500/20"
           >
             <Tag className="h-3 w-3" aria-hidden="true" />
             {appliedCoupon.code}
@@ -239,7 +239,7 @@ function CartView({
           type="button"
           onClick={() => setDetailsOpen((v) => !v)}
           aria-expanded={detailsOpen}
-          className="flex w-full items-center justify-between rounded-md px-1 py-1 text-micro font-semibold text-olive-700 transition-colors hover:text-olive-900"
+          className="flex w-full items-center justify-between rounded-sm px-1 py-1 text-micro font-semibold text-olive-700 transition-colors hover:text-olive-900"
         >
           <span>Ver detalhes</span>
           {detailsOpen ? (
@@ -249,7 +249,7 @@ function CartView({
           )}
         </button>
         {detailsOpen && (
-          <dl className="mt-1 flex flex-col gap-1 rounded-md bg-paper-100 p-2.5 text-micro">
+          <dl className="mt-1 flex flex-col gap-1 rounded-sm bg-paper-100 p-2.5 text-micro">
             <div className="flex justify-between">
               <dt className="text-olive-700">Subtotal</dt>
               <dd className="font-semibold text-olive-900">{formatBRL(subtotal)}</dd>
@@ -272,7 +272,7 @@ function CartView({
       <button
         type="button"
         onClick={() => router.push("/carrinho")}
-        className="flex shrink-0 items-center justify-between gap-3 rounded-pill bg-olive-900 px-5 py-3 text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500"
+        className="flex shrink-0 items-center justify-between gap-3 rounded-full bg-olive-900 px-5 py-3 text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500"
       >
         <span className="text-micro font-semibold tracking-wide uppercase opacity-80">
           Fazer pedido
@@ -313,7 +313,7 @@ function CouponSheet({ onClose, subtotal }: { onClose: () => void; subtotal: num
       onClick={onClose}
     >
       <div
-        className="flex flex-col gap-2.5 rounded-t-2xl border-t border-divider bg-paper-50 p-4 shadow-xl"
+        className="flex flex-col gap-2.5 rounded-t-sm border-t border-divider bg-paper-50 p-4 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -344,7 +344,7 @@ function CouponSheet({ onClose, subtotal }: { onClose: () => void; subtotal: num
             placeholder="Código de cupom"
             aria-label="Código de cupom"
             className={cn(
-              "flex-1 rounded-md border bg-paper-50 px-3 py-1.5 text-caption text-olive-900 outline-none placeholder:text-olive-700",
+              "flex-1 rounded-sm border bg-paper-50 px-3 py-1.5 text-caption text-olive-900 outline-none placeholder:text-olive-700",
               inputError ? "border-red-400" : "border-divider focus:border-terra-500/50",
             )}
           />
@@ -352,7 +352,7 @@ function CouponSheet({ onClose, subtotal }: { onClose: () => void; subtotal: num
             type="button"
             onClick={handleApplyCode}
             disabled={pending}
-            className="rounded-md bg-olive-900 px-3 py-1.5 text-caption font-semibold text-paper-50 transition-colors hover:bg-terra-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-sm bg-olive-900 px-3 py-1.5 text-caption font-semibold text-paper-50 transition-colors hover:bg-terra-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {pending ? "..." : "Aplicar"}
           </button>
@@ -379,7 +379,7 @@ function CartItemRow({
   return (
     <li
       className={cn(
-        "flex items-center gap-2.5 rounded-md border p-2 transition-shadow hover:shadow-sm",
+        "flex items-center gap-2.5 rounded-sm border p-2 transition-shadow hover:shadow-sm",
         isGift ? "border-leaf-500/40 bg-leaf-500/5" : "border-divider bg-paper-50",
       )}
     >
@@ -411,7 +411,7 @@ function CartItemRow({
         <span className="text-caption font-bold text-olive-900">
           {formatBRL(item.product.price_site * item.quantity)}
         </span>
-        <div className="flex items-center gap-0.5 rounded-pill bg-paper-100 p-0.5">
+        <div className="flex items-center gap-0.5 rounded-full bg-paper-100 p-0.5">
           <button
             type="button"
             aria-label={isLast ? `Remover ${item.product.name}` : "Diminuir quantidade"}
@@ -454,7 +454,7 @@ function PlacedDeliveryCard({ delivery }: { delivery: PlacedDelivery }) {
     minute: "2-digit",
   });
   return (
-    <li className="flex flex-col gap-2 rounded-md border border-terra-500/30 bg-terra-500/5 p-3">
+    <li className="flex flex-col gap-2 rounded-sm border border-terra-500/30 bg-terra-500/5 p-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 text-micro font-semibold text-terra-700">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-terra-500" />A caminho · {time}
@@ -492,7 +492,7 @@ function DeliveryCard({ group }: { group: PlacedDelivery }) {
   }
 
   return (
-    <li className="flex flex-col gap-2 rounded-md border border-divider bg-paper-50 p-3 transition-shadow hover:shadow-sm">
+    <li className="flex flex-col gap-2 rounded-sm border border-divider bg-paper-50 p-3 transition-shadow hover:shadow-sm">
       <div className="flex items-center justify-between">
         <span className="text-micro font-semibold text-olive-700">Entrega · {date}</span>
         <span className="text-body-sm font-bold text-olive-900">{formatBRL(group.total)}</span>
@@ -520,7 +520,7 @@ function DeliveryCard({ group }: { group: PlacedDelivery }) {
       <button
         type="button"
         onClick={reorderAll}
-        className="mt-1 inline-flex w-full items-center justify-center gap-1.5 rounded-pill bg-olive-900 py-1.5 text-micro font-semibold text-paper-50 transition-colors hover:bg-terra-500"
+        className="mt-1 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-olive-900 py-1.5 text-micro font-semibold text-paper-50 transition-colors hover:bg-terra-500"
       >
         <RotateCcw className="h-3 w-3" aria-hidden="true" />
         Pedir de novo

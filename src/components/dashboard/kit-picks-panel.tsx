@@ -61,7 +61,7 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
     <aside
       aria-label="Itens do kit em montagem"
       className={cn(
-        "hidden h-full w-full shrink-0 flex-col border-l border-divider bg-leaf-500/5 xl:flex xl:w-[360px] xl:rounded-br-lg",
+        "hidden h-full w-full shrink-0 flex-col border-l border-divider bg-leaf-500/5 xl:flex xl:w-[360px] xl:rounded-br-sm",
         className,
       )}
     >
@@ -97,7 +97,7 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
               <li
                 key={slot.id}
                 className={cn(
-                  "flex flex-col gap-2 rounded-md border p-2.5",
+                  "flex flex-col gap-2 rounded-sm border p-2.5",
                   filled
                     ? "border-leaf-500/40 bg-leaf-500/5"
                     : slotPicks.length > 0
@@ -162,7 +162,7 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
           </Card>
         )}
 
-        <div className="flex shrink-0 flex-col gap-1 rounded-md bg-paper-100 p-3">
+        <div className="flex shrink-0 flex-col gap-1 rounded-sm bg-paper-100 p-3">
           <div className="flex items-center justify-between text-micro text-olive-700">
             <span>
               {totalPicks} de {expectedPicks} escolhidos

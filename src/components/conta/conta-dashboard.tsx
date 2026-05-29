@@ -113,7 +113,7 @@ function ContaAuthedDashboard({ firstName }: ContaAuthedDashboardProps) {
         <form action={signOutAction}>
           <button
             type="submit"
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-pill border border-divider bg-paper-50 px-3 text-caption font-semibold text-olive-700 transition-colors hover:bg-paper-100"
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-divider bg-paper-50 px-3 text-caption font-semibold text-olive-700 transition-colors hover:bg-paper-100"
           >
             <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
             Sair
@@ -161,7 +161,7 @@ function SavingsHero({ totalSavings, totalSpent, totalOrders, aCaminho }: Saving
   return (
     <section
       aria-labelledby="economia-titulo"
-      className="relative overflow-hidden rounded-2xl bg-olive-900 p-5 text-paper-50 shadow-lg md:p-8"
+      className="relative overflow-hidden rounded-sm bg-olive-900 p-5 text-paper-50 shadow-lg md:p-8"
     >
       <Sparkles
         className="pointer-events-none absolute -top-6 -right-6 h-36 w-36 text-terra-500/30"
@@ -263,13 +263,13 @@ function ShortcutChip({ icon: Icon, label, tone, ...rest }: ShortcutChipProps) {
         : "bg-paper-100 text-olive-900 group-hover:bg-sage-300/40";
 
   const baseClasses =
-    "group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-divider bg-paper-50 px-2 py-3 transition-colors hover:bg-paper-100";
+    "group flex flex-col items-center justify-center gap-1.5 rounded-sm border border-divider bg-paper-50 px-2 py-3 transition-colors hover:bg-paper-100";
 
   const inner = (
     <>
       <span
         className={cn(
-          "flex h-11 w-11 items-center justify-center rounded-lg transition-colors md:h-12 md:w-12",
+          "flex h-11 w-11 items-center justify-center rounded-sm transition-colors md:h-12 md:w-12",
           toneClasses,
         )}
       >
@@ -326,7 +326,7 @@ function ActiveOrders({ orders }: ActiveOrdersProps) {
             <li key={order.id}>
               <Link
                 href={`/pedido/${order.id}`}
-                className="grid grid-cols-[4.5rem_7rem_minmax(0,1fr)_auto] items-center gap-x-3 rounded-lg border border-leaf-500/30 bg-leaf-500/5 px-3 py-2 transition-shadow hover:bg-leaf-500/10 hover:shadow-sm"
+                className="grid grid-cols-[4.5rem_7rem_minmax(0,1fr)_auto] items-center gap-x-3 rounded-sm border border-leaf-500/30 bg-leaf-500/5 px-3 py-2 transition-shadow hover:bg-leaf-500/10 hover:shadow-sm"
               >
                 <span className="text-micro font-semibold text-olive-700 tabular-nums">
                   {formatShortDate(order.createdAt)}
@@ -380,7 +380,7 @@ function OrdersHistory({ orders }: OrdersHistoryProps) {
         <h2 id="historico-titulo" className="text-h3 font-bold text-olive-900">
           Meus pedidos
         </h2>
-        <div className="rounded-xl border border-dashed border-divider bg-paper-50 p-6 text-center">
+        <div className="rounded-sm border border-dashed border-divider bg-paper-50 p-6 text-center">
           <ShoppingBag className="mx-auto mb-2 h-6 w-6 text-olive-700" aria-hidden="true" />
           <p className="text-body-sm text-olive-700">
             Pedidos entregues ou cancelados vão aparecer por aqui. Acompanhe os ativos no painel
@@ -408,7 +408,7 @@ function OrdersHistory({ orders }: OrdersHistoryProps) {
             <li key={order.id}>
               <Link
                 href={`/pedido/${order.id}`}
-                className="grid grid-cols-[4.5rem_7rem_minmax(0,1fr)_auto_auto] items-center gap-x-3 rounded-lg border border-divider bg-paper-50 px-3 py-2 transition-shadow hover:bg-paper-100/60 hover:shadow-sm"
+                className="grid grid-cols-[4.5rem_7rem_minmax(0,1fr)_auto_auto] items-center gap-x-3 rounded-sm border border-divider bg-paper-50 px-3 py-2 transition-shadow hover:bg-paper-100/60 hover:shadow-sm"
               >
                 <span className="text-micro font-semibold text-olive-700 tabular-nums">
                   {formatShortDate(order.createdAt)}
@@ -434,7 +434,7 @@ function OrdersHistory({ orders }: OrdersHistoryProps) {
                     reorder(order);
                   }}
                   aria-label="Repetir pedido"
-                  className="inline-flex items-center gap-1 rounded-pill border border-terra-500/30 bg-terra-500/5 px-2.5 py-0.5 text-micro font-semibold text-terra-700 transition-colors hover:bg-terra-500/10"
+                  className="inline-flex items-center gap-1 rounded-full border border-terra-500/30 bg-terra-500/5 px-2.5 py-0.5 text-micro font-semibold text-terra-700 transition-colors hover:bg-terra-500/10"
                 >
                   <RotateCcw className="h-3 w-3" aria-hidden="true" />
                   Repetir
@@ -481,7 +481,7 @@ function ContaAnonLanding() {
 
       <section
         aria-labelledby="anon-cta"
-        className="relative overflow-hidden rounded-2xl bg-olive-900 p-5 text-paper-50 shadow-lg md:p-8"
+        className="relative overflow-hidden rounded-sm bg-olive-900 p-5 text-paper-50 shadow-lg md:p-8"
       >
         <Sparkles
           className="pointer-events-none absolute -top-6 -right-6 h-36 w-36 text-terra-500/30"
@@ -513,14 +513,14 @@ function ContaAnonLanding() {
           <div className="mt-1 flex flex-col gap-2 sm:flex-row">
             <Link
               href="/cadastro"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-5 text-body-sm font-semibold text-paper-50 transition-transform active:scale-[0.98]"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-terra-500 px-5 text-body-sm font-semibold text-paper-50 transition-transform active:scale-[0.98]"
             >
               <UserPlus className="h-4 w-4" aria-hidden="true" />
               Criar conta
             </Link>
             <Link
               href="/login"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-pill border border-paper-50/25 bg-paper-50/5 px-5 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-paper-50/10"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-paper-50/25 bg-paper-50/5 px-5 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-paper-50/10"
             >
               <LogIn className="h-4 w-4" aria-hidden="true" />
               Já tenho conta
@@ -535,7 +535,7 @@ function ContaAnonLanding() {
           {benefits.map((b) => (
             <li
               key={b.title}
-              className="flex flex-col gap-2 rounded-xl border border-divider bg-paper-50 p-4"
+              className="flex flex-col gap-2 rounded-sm border border-divider bg-paper-50 p-4"
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-terra-500/10 text-terra-700">
                 <b.icon className="h-4 w-4" aria-hidden="true" />
@@ -549,14 +549,14 @@ function ContaAnonLanding() {
 
       <section
         aria-label="Continue navegando"
-        className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-divider bg-paper-50 p-4"
+        className="flex flex-col items-start gap-3 rounded-sm border border-dashed border-divider bg-paper-50 p-4"
       >
         <p className="text-body-sm text-olive-900">
           Ainda não tá pronto? Sem stress — o cardápio tá aberto.
         </p>
         <Link
           href="/"
-          className="inline-flex h-10 items-center gap-2 rounded-pill border border-olive-900 px-5 text-body-sm font-semibold text-olive-900 transition-colors hover:bg-olive-900 hover:text-paper-50"
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-olive-900 px-5 text-body-sm font-semibold text-olive-900 transition-colors hover:bg-olive-900 hover:text-paper-50"
         >
           <UtensilsCrossed className="h-4 w-4" aria-hidden="true" />
           Ver cardápio

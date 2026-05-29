@@ -38,7 +38,7 @@ function EmptyState() {
   return (
     <section
       aria-label="Sem presentes"
-      className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-divider bg-paper-50 px-6 py-10 text-center"
+      className="flex flex-col items-center gap-3 rounded-sm border border-dashed border-divider bg-paper-50 px-6 py-10 text-center"
     >
       <span className="flex h-12 w-12 items-center justify-center rounded-full bg-terra-500/10 text-terra-700">
         <Gift className="h-5 w-5" aria-hidden="true" />
@@ -51,7 +51,7 @@ function EmptyState() {
       </div>
       <Link
         href="/presentear"
-        className="inline-flex h-10 items-center gap-2 rounded-pill bg-terra-500 px-5 text-body-sm font-semibold text-paper-50 transition-transform active:scale-[0.98]"
+        className="inline-flex h-10 items-center gap-2 rounded-full bg-terra-500 px-5 text-body-sm font-semibold text-paper-50 transition-transform active:scale-[0.98]"
       >
         <Gift className="h-4 w-4" aria-hidden="true" />
         Montar um kit
@@ -64,9 +64,9 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
   const isDelivered = gift.status === "entregue";
 
   return (
-    <li className="flex flex-col gap-3 rounded-2xl border border-divider bg-paper-50 p-4">
+    <li className="flex flex-col gap-3 rounded-sm border border-divider bg-paper-50 p-4">
       <div className="flex items-start gap-3">
-        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-paper-100">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-sm bg-paper-100">
           <KitCoverPhoto photo={gift.coverPhoto} sizes="64px" />
           <span
             aria-hidden="true"
@@ -86,8 +86,8 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
         <span
           className={
             isDelivered
-              ? "inline-flex items-center gap-1 rounded-pill bg-leaf-500/10 px-2 py-0.5 text-micro font-semibold text-leaf-700"
-              : "inline-flex items-center gap-1 rounded-pill bg-terra-500/10 px-2 py-0.5 text-micro font-semibold text-terra-700"
+              ? "inline-flex items-center gap-1 rounded-full bg-leaf-500/10 px-2 py-0.5 text-micro font-semibold text-leaf-700"
+              : "inline-flex items-center gap-1 rounded-full bg-terra-500/10 px-2 py-0.5 text-micro font-semibold text-terra-700"
           }
         >
           {isDelivered ? (
@@ -103,7 +103,7 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
         </span>
       </div>
 
-      <ul className="flex flex-col gap-1 rounded-md bg-paper-100 p-3">
+      <ul className="flex flex-col gap-1 rounded-sm bg-paper-100 p-3">
         {gift.picks.map((row, idx) => (
           <li key={idx} className="text-micro text-olive-900">
             <span className="font-semibold text-olive-700">{row.slotLabel}:</span>{" "}
@@ -119,7 +119,7 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
       </ul>
 
       {gift.cardMessage && (
-        <div className="flex items-start gap-2 rounded-md border border-divider bg-paper-100 p-3">
+        <div className="flex items-start gap-2 rounded-sm border border-divider bg-paper-100 p-3">
           <MessageCircle
             className="mt-0.5 h-3.5 w-3.5 shrink-0 text-terra-500"
             aria-hidden="true"
@@ -131,7 +131,7 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
       )}
 
       {gift.recipient && (
-        <div className="flex items-start gap-2 rounded-md border border-divider p-3">
+        <div className="flex items-start gap-2 rounded-sm border border-divider p-3">
           <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-terra-500" aria-hidden="true" />
           <div className="flex min-w-0 flex-col gap-0.5 text-micro leading-snug">
             <span className="font-semibold text-olive-900">pra {gift.recipient.name}</span>

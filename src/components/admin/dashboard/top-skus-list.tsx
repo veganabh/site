@@ -65,7 +65,7 @@ export function TopSkusList({ skus, thumbs }: TopSkusListProps) {
                     {sku.productName}
                   </span>
                   {isTop && (
-                    <span className="shrink-0 rounded-pill bg-terra-500/10 px-1.5 py-0 text-micro font-bold tracking-wide text-terra-700 uppercase">
+                    <span className="shrink-0 rounded-full bg-terra-500/10 px-1.5 py-0 text-micro font-bold tracking-wide text-terra-700 uppercase">
                       top
                     </span>
                   )}

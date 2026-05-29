@@ -79,7 +79,7 @@ export function SearchBar({
         pushQuery(value.trim());
       }}
       className={cn(
-        "flex h-9 w-full items-center gap-2 rounded-pill border border-transparent bg-paper-100 px-3 text-caption text-olive-700 transition-colors focus-within:border-terra-500/30 focus-within:bg-paper-50",
+        "flex h-9 w-full items-center gap-2 rounded-full border border-transparent bg-paper-100 px-3 text-caption text-olive-700 transition-colors focus-within:border-terra-500/30 focus-within:bg-paper-50",
         className,
       )}
     >

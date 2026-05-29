@@ -18,7 +18,7 @@ export default async function PresentearPage() {
     <div className="flex flex-col gap-5">
       <section
         aria-labelledby="presentear-hero"
-        className="relative flex min-h-[270px] flex-col justify-center overflow-hidden rounded-2xl bg-olive-900 p-5 text-paper-50 shadow-lg md:min-h-[305px] md:p-8"
+        className="relative flex min-h-[270px] flex-col justify-center overflow-hidden rounded-sm bg-olive-900 p-5 text-paper-50 shadow-lg md:min-h-[305px] md:p-8"
       >
         <Gift
           className="pointer-events-none absolute -top-6 -right-6 h-36 w-36 text-terra-500/30"

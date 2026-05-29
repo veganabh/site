@@ -58,7 +58,7 @@ export function AdminNavItem({
   const inner = (
     <>
       {/* Ícone + badge */}
-      <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-md">
+      <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-sm">
         <Icon className="h-[18px] w-[18px]" aria-hidden="true" strokeWidth={active ? 2.25 : 1.75} />
         {showBadge && (
           <span
@@ -83,7 +83,7 @@ export function AdminNavItem({
   );
 
   const baseClass = cn(
-    "flex items-center rounded-md transition-colors",
+    "flex items-center rounded-sm transition-colors",
     collapsed ? "h-10 w-10 justify-center self-center" : "w-full gap-3 px-3 py-2",
     active
       ? "bg-olive-900 text-paper-50 shadow-sm"

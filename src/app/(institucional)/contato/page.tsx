@@ -51,7 +51,7 @@ export default function ContatoPage() {
           href={waLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex flex-col gap-1.5 rounded-2xl border border-divider bg-paper-50 p-4 transition hover:border-leaf-500/50 hover:bg-leaf-500/5"
+          className="flex flex-col gap-1.5 rounded-sm border border-divider bg-paper-50 p-4 transition hover:border-leaf-500/50 hover:bg-leaf-500/5"
         >
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-leaf-500/10 text-leaf-700">
             <MessageCircle className="h-5 w-5" aria-hidden="true" />
@@ -64,7 +64,7 @@ export default function ContatoPage() {
           href={igLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex flex-col gap-1.5 rounded-2xl border border-divider bg-paper-50 p-4 transition hover:border-terra-500/50 hover:bg-terra-500/5"
+          className="flex flex-col gap-1.5 rounded-sm border border-divider bg-paper-50 p-4 transition hover:border-terra-500/50 hover:bg-terra-500/5"
         >
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-terra-500/10 text-terra-700">
             <InstagramGlyph className="h-5 w-5" />

@@ -143,7 +143,7 @@ export function ImportCsvButton() {
             <button
               type="button"
               onClick={downloadTemplate}
-              className="inline-flex w-fit items-center gap-2 rounded-pill border border-olive-900/20 bg-paper-100 px-4 py-2 text-body-sm font-semibold text-olive-900 transition hover:bg-paper-50"
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-olive-900/20 bg-paper-100 px-4 py-2 text-body-sm font-semibold text-olive-900 transition hover:bg-paper-50"
             >
               <Download className="h-4 w-4" aria-hidden="true" />
               Baixar modelo (.csv)
@@ -157,7 +157,7 @@ export function ImportCsvButton() {
 
             <label
               className={cn(
-                "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-divider bg-paper-100 px-4 py-8 text-center transition hover:border-olive-900/40 hover:bg-paper-50",
+                "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-sm border-2 border-dashed border-divider bg-paper-100 px-4 py-8 text-center transition hover:border-olive-900/40 hover:bg-paper-50",
               )}
             >
               <FileSpreadsheet className="h-7 w-7 text-olive-700" aria-hidden="true" />
@@ -184,7 +184,7 @@ export function ImportCsvButton() {
             </p>
 
             {parsed.fatal ? (
-              <div className="flex items-start gap-2 rounded-xl border border-terra-500/30 bg-terra-500/5 p-3">
+              <div className="flex items-start gap-2 rounded-sm border border-terra-500/30 bg-terra-500/5 p-3">
                 <AlertTriangle
                   className="mt-0.5 h-4 w-4 shrink-0 text-terra-700"
                   aria-hidden="true"
@@ -215,7 +215,7 @@ export function ImportCsvButton() {
                 </div>
 
                 {errorRows.length > 0 && (
-                  <div className="flex flex-col gap-2 rounded-xl border border-terra-500/30 bg-terra-500/5 p-3">
+                  <div className="flex flex-col gap-2 rounded-sm border border-terra-500/30 bg-terra-500/5 p-3">
                     <p className="text-caption font-bold text-terra-700">
                       Linhas com erro (não serão importadas):
                     </p>
@@ -276,7 +276,7 @@ export function ImportCsvButton() {
         {phase === "done" && result && (
           <div className="flex flex-col gap-4">
             {result.fatal ? (
-              <div className="flex items-start gap-2 rounded-xl border border-terra-500/30 bg-terra-500/5 p-3">
+              <div className="flex items-start gap-2 rounded-sm border border-terra-500/30 bg-terra-500/5 p-3">
                 <AlertTriangle
                   className="mt-0.5 h-4 w-4 shrink-0 text-terra-700"
                   aria-hidden="true"
@@ -284,7 +284,7 @@ export function ImportCsvButton() {
                 <p className="text-caption text-terra-700">{result.fatal}</p>
               </div>
             ) : (
-              <div className="flex items-start gap-2 rounded-xl border border-leaf-500/30 bg-leaf-500/5 p-3">
+              <div className="flex items-start gap-2 rounded-sm border border-leaf-500/30 bg-leaf-500/5 p-3">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-leaf-700" aria-hidden="true" />
                 <div className="text-caption text-olive-700">
                   <p className="font-bold text-leaf-700">
@@ -300,7 +300,7 @@ export function ImportCsvButton() {
             )}
 
             {result.errors.length > 0 && (
-              <div className="flex flex-col gap-2 rounded-xl border border-terra-500/30 bg-terra-500/5 p-3">
+              <div className="flex flex-col gap-2 rounded-sm border border-terra-500/30 bg-terra-500/5 p-3">
                 <p className="text-caption font-bold text-terra-700">
                   {result.errors.length} linha(s) com erro:
                 </p>
@@ -351,7 +351,7 @@ function SummaryCard({
   }[tone];
 
   return (
-    <div className={cn("flex flex-col gap-1 rounded-xl border p-3", toneClass)}>
+    <div className={cn("flex flex-col gap-1 rounded-sm border p-3", toneClass)}>
       <span className="flex items-center gap-1.5 text-micro font-semibold">
         {icon}
         {label}

@@ -192,7 +192,7 @@ export function CepTester() {
           role="status"
           aria-live="polite"
           className={cn(
-            "flex flex-col gap-1 rounded-md border px-3 py-2.5",
+            "flex flex-col gap-1 rounded-sm border px-3 py-2.5",
             result.estimate
               ? "border-terra-500/30 bg-terra-500/5"
               : "border-leaf-500/30 bg-leaf-500/5",
@@ -225,7 +225,7 @@ export function CepTester() {
         <div
           role="status"
           aria-live="polite"
-          className="flex items-center gap-2 rounded-md border border-terra-500/30 bg-terra-500/5 px-3 py-2.5 text-body-sm text-terra-700"
+          className="flex items-center gap-2 rounded-sm border border-terra-500/30 bg-terra-500/5 px-3 py-2.5 text-body-sm text-terra-700"
         >
           <X className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span>
@@ -239,7 +239,7 @@ export function CepTester() {
         <div
           role="status"
           aria-live="polite"
-          className="rounded-md border border-divider bg-paper-100 px-3 py-2.5 text-body-sm text-olive-700"
+          className="rounded-sm border border-divider bg-paper-100 px-3 py-2.5 text-body-sm text-olive-700"
         >
           CEP inválido. Verifique e tente novamente.
         </div>

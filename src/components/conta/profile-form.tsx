@@ -79,7 +79,7 @@ export function ProfileForm() {
     <form
       action={formAction}
       aria-labelledby="perfil-dados-titulo"
-      className="flex flex-col gap-4 rounded-2xl border border-divider bg-paper-50 p-4 md:p-5"
+      className="flex flex-col gap-4 rounded-sm border border-divider bg-paper-50 p-4 md:p-5"
     >
       <header className="flex flex-col gap-1">
         <h2 id="perfil-dados-titulo" className="text-h3 font-bold text-olive-900">
@@ -161,7 +161,7 @@ export function ProfileForm() {
       {state && !state.ok ? (
         <p
           role="alert"
-          className="rounded-md bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
+          className="rounded-sm bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
         >
           {state.message}
         </p>

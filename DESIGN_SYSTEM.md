@@ -34,7 +34,7 @@ Definidas em `ds-tokens.css` (`@theme`, `--color-*`). Usar sempre a **classe** (
 ### Regra do branco (D3) ✏️
 - **Default:** toda superfície = `paper-50` (ou `paper-100`). `paper-50` (#fbf8ef, off-white quente) **não** é branco puro.
 - `#ffffff` / `bg-white` permitido **só** com elevação/contraste intencional sobre foto/mídia, e **comentário inline** justificando: `/* branco intencional: elevação sobre foto */`. Sem justificativa → `bg-paper-50`.
-- ⛔ Hex de cor literal em `.tsx`. Exceção **whitelist documentada:** paleta de gradiente do placeholder em `src/components/features/product-photo.tsx` (cores fora da marca, intencionais p/ placeholder).
+- ⛔ Hex de cor literal em `.tsx`. Exceções **whitelist documentadas:** (1) paleta de gradiente do placeholder em `src/components/features/product-photo.tsx` (cores fora da marca, intencionais p/ placeholder); (2) `src/app/opengraph-image.tsx` — `ImageResponse`/Satori renderiza PNG sem Tailwind, então usa hex de marca em `style` inline.
 
 ---
 

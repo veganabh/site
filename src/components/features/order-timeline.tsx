@@ -91,7 +91,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
     <div className="flex flex-col gap-4">
       {/* Cancelamento: card de alerta vermelho */}
       {isCancelled && (
-        <div role="alert" className="rounded-xl bg-terra-700 px-4 py-3 text-paper-50">
+        <div role="alert" className="rounded-sm bg-terra-700 px-4 py-3 text-paper-50">
           <p className="text-body-sm font-bold">Pedido cancelado</p>
           {order.cancelReason && (
             <p className="mt-0.5 text-caption text-paper-50/85">{order.cancelReason}</p>
@@ -182,7 +182,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                   <button
                     type="button"
                     disabled
-                    className="mt-2 cursor-not-allowed rounded-pill border border-divider bg-paper-100 px-3 py-1 text-micro font-semibold text-olive-700/50"
+                    className="mt-2 cursor-not-allowed rounded-full border border-divider bg-paper-100 px-3 py-1 text-micro font-semibold text-olive-700/50"
                     title="Em breve"
                   >
                     Avaliar pedido

@@ -9,7 +9,7 @@
  * DS compliance:
  * - Tokens: olive-900, terra-500, paper-50/100, divider, leaf-500.
  * - Tipografia: text-body-sm, text-caption.
- * - Rounded: rounded-full (botão), rounded-lg (popover), rounded-pill (CTA).
+ * - Rounded: rounded-full (botão), rounded-sm (popover), rounded-full (CTA).
  * - Contraste WCAG AA garantido nos pares de texto/fundo usados.
  *
  * P0: sem realtime — dados via TanStack Query (stale 5 min).
@@ -76,7 +76,7 @@ function NotificationItem({ notification, onRead, onCtaClick }: NotificationItem
   return (
     <article
       className={cn(
-        "flex gap-3 rounded-md px-3 py-2.5 transition-colors",
+        "flex gap-3 rounded-sm px-3 py-2.5 transition-colors",
         notification.read
           ? "opacity-60 hover:bg-paper-100/60"
           : "bg-paper-100/50 hover:bg-paper-100",
@@ -122,7 +122,7 @@ function NotificationItem({ notification, onRead, onCtaClick }: NotificationItem
           <button
             type="button"
             onClick={() => onCtaClick(notification)}
-            className="mt-1.5 inline-flex h-7 items-center gap-1 rounded-pill bg-terra-700 px-3 text-micro font-semibold text-paper-50 transition-colors hover:bg-terra-500"
+            className="mt-1.5 inline-flex h-7 items-center gap-1 rounded-full bg-terra-700 px-3 text-micro font-semibold text-paper-50 transition-colors hover:bg-terra-500"
           >
             {notification.couponCode && <Ticket className="h-3 w-3" aria-hidden="true" />}
             {notification.ctaLabel ||
@@ -227,7 +227,7 @@ export function NotificationBell() {
           align="end"
           sideOffset={8}
           className={cn(
-            "z-50 w-[340px] max-w-[calc(100vw-16px)] rounded-lg border border-divider bg-paper-50 shadow-lg",
+            "z-50 w-[340px] max-w-[calc(100vw-16px)] rounded-sm border border-divider bg-paper-50 shadow-lg",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
             "data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95",

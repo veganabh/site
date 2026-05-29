@@ -21,7 +21,7 @@ export function LoginForm({ next }: { next?: string }) {
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-4 rounded-2xl border border-divider bg-paper-50 p-5 md:p-6"
+      className="flex flex-col gap-4 rounded-sm border border-divider bg-paper-50 p-5 md:p-6"
       aria-labelledby="login-titulo"
     >
       {next ? <input type="hidden" name="next" value={next} /> : null}
@@ -57,7 +57,7 @@ export function LoginForm({ next }: { next?: string }) {
       {state && !state.ok ? (
         <p
           role="alert"
-          className="rounded-md bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
+          className="rounded-sm bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
         >
           {state.message}
         </p>

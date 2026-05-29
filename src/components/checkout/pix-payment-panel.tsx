@@ -111,7 +111,7 @@ export function PixPaymentPanel({
     return (
       <section
         aria-label="Pagamento confirmado"
-        className="flex flex-col items-center gap-3 rounded-2xl border border-leaf-500/30 bg-leaf-500/5 p-5 text-center"
+        className="flex flex-col items-center gap-3 rounded-sm border border-leaf-500/30 bg-leaf-500/5 p-5 text-center"
       >
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-leaf-500/15">
           <Check className="h-6 w-6 text-leaf-700" aria-hidden="true" />
@@ -158,7 +158,7 @@ export function PixPaymentPanel({
           automática em alguns segundos.
         </p>
         {devMode ? (
-          <span className="inline-flex w-fit items-center gap-1 rounded-pill bg-terra-700/10 px-2 py-0.5 text-micro font-semibold text-terra-700">
+          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-terra-700/10 px-2 py-0.5 text-micro font-semibold text-terra-700">
             ambiente de teste
           </span>
         ) : null}
@@ -170,7 +170,7 @@ export function PixPaymentPanel({
           <img
             src={brCodeBase64}
             alt="QR Code para pagamento via PIX"
-            className="h-44 w-44 rounded-xl"
+            className="h-44 w-44 rounded-sm"
           />
         </Card>
 
@@ -204,12 +204,12 @@ export function PixPaymentPanel({
             id="pix-copy-paste"
             readOnly
             value={brCode}
-            className="min-w-0 flex-1 rounded-pill border border-divider bg-paper-50 px-3 text-caption text-olive-700 tabular-nums outline-none focus-visible:border-leaf-700"
+            className="min-w-0 flex-1 rounded-full border border-divider bg-paper-50 px-3 text-caption text-olive-700 tabular-nums outline-none focus-visible:border-leaf-700"
           />
           <button
             type="button"
             onClick={handleCopy}
-            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-pill bg-olive-900 px-4 text-caption font-semibold text-paper-50 transition-colors hover:bg-olive-700"
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-olive-900 px-4 text-caption font-semibold text-paper-50 transition-colors hover:bg-olive-700"
           >
             {copied ? (
               <>
@@ -229,7 +229,7 @@ export function PixPaymentPanel({
       <button
         type="button"
         onClick={refresh}
-        className="inline-flex h-10 items-center justify-center gap-1.5 self-start rounded-pill border border-divider px-3 text-caption font-semibold text-olive-900 transition-colors hover:border-leaf-700 hover:text-leaf-700"
+        className="inline-flex h-10 items-center justify-center gap-1.5 self-start rounded-full border border-divider px-3 text-caption font-semibold text-olive-900 transition-colors hover:border-leaf-700 hover:text-leaf-700"
       >
         <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
         verificar agora

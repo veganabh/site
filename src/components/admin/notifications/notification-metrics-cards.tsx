@@ -1,7 +1,7 @@
 /**
  * Cards de métricas das notificações. Presentational — recebe o agregado
  * pronto de getNotificationMetrics. Estilo alinhado ao DS do painel
- * (card p-4 rounded-lg shadow-sm, valor text-h4).
+ * (card p-4 rounded-sm shadow-sm, valor text-h4).
  */
 
 import { Send, Eye, MousePointerClick, Percent } from "lucide-react";

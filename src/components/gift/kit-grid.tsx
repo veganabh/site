@@ -25,7 +25,7 @@ export function KitGrid() {
               <button
                 type="button"
                 onClick={() => setSelectedKit(kit)}
-                className="group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-divider bg-paper-50 text-left shadow-sm transition-shadow md:hover:shadow-md"
+                className="group flex h-full w-full flex-col overflow-hidden rounded-sm border border-divider bg-paper-50 text-left shadow-sm transition-shadow md:hover:shadow-md"
                 aria-label={`Escolher ${kit.name}`}
               >
                 <div className="relative aspect-[5/3] overflow-hidden bg-paper-100">
@@ -33,7 +33,7 @@ export function KitGrid() {
                     photo={kit.coverPhoto}
                     className="transition-transform duration-500 md:group-hover:scale-[1.03]"
                   />
-                  <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-pill bg-paper-50/95 px-2.5 py-1 text-micro font-bold text-olive-900 shadow-sm backdrop-blur-sm">
+                  <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-paper-50/95 px-2.5 py-1 text-micro font-bold text-olive-900 shadow-sm backdrop-blur-sm">
                     <Icon className="h-3 w-3 text-terra-700" aria-hidden="true" />
                     {totalItems} itens
                   </span>

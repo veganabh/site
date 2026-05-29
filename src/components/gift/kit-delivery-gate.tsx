@@ -119,7 +119,7 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
 
         <div className="flex flex-col gap-3">
           {cartUnitCount > 0 && (
-            <div className="flex flex-col gap-2 rounded-xl border border-terra-500/30 bg-terra-500/5 p-3">
+            <div className="flex flex-col gap-2 rounded-sm border border-terra-500/30 bg-terra-500/5 p-3">
               <div className="flex items-center gap-2 text-caption font-bold text-terra-700">
                 <ShoppingBag className="h-3.5 w-3.5" aria-hidden="true" />
                 Você tem {cartUnitCount} {cartUnitCount === 1 ? "item" : "itens"} no carrinho
@@ -131,7 +131,7 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
               <button
                 type="button"
                 onClick={clearCart}
-                className="inline-flex items-center gap-1.5 self-start rounded-pill bg-terra-500 px-3 py-1 text-caption font-semibold text-paper-50 transition hover:bg-terra-700"
+                className="inline-flex items-center gap-1.5 self-start rounded-full bg-terra-500 px-3 py-1 text-caption font-semibold text-paper-50 transition hover:bg-terra-700"
               >
                 <Trash2 className="h-3 w-3" aria-hidden="true" />
                 Esvaziar carrinho
@@ -144,7 +144,7 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
               CEP
             </label>
             <span
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-paper-100 text-olive-700"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-paper-100 text-olive-700"
               aria-hidden="true"
             >
               <MapPin className="h-4 w-4" aria-hidden="true" />
@@ -158,13 +158,13 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
               value={cepInput}
               onChange={(e) => setCepInput(formatCepInput(e.target.value))}
               maxLength={9}
-              className="h-10 min-w-0 flex-1 rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus:border-olive-900 focus:outline-none"
+              className="h-10 min-w-0 flex-1 rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus:border-olive-900 focus:outline-none"
             />
             <button
               type="submit"
               disabled={loading || localLoading}
               className={cn(
-                "h-10 shrink-0 rounded-md bg-olive-900 px-4 text-body-sm font-bold text-paper-50 transition",
+                "h-10 shrink-0 rounded-sm bg-olive-900 px-4 text-body-sm font-bold text-paper-50 transition",
                 loading || localLoading ? "opacity-60" : "hover:bg-olive-700",
               )}
             >
@@ -183,7 +183,7 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
           )}
 
           {activeQuote && !activeQuote.covered && (
-            <div className="flex flex-col gap-2 rounded-xl border border-terra-500/30 bg-terra-500/5 p-3">
+            <div className="flex flex-col gap-2 rounded-sm border border-terra-500/30 bg-terra-500/5 p-3">
               <div className="flex items-center gap-2 text-body-sm font-bold text-terra-700">
                 <X className="h-4 w-4" aria-hidden="true" />
                 Ainda não entregamos em {activeQuote.neighborhood || activeQuote.cep}
@@ -196,7 +196,7 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
                 href={`https://wa.me/${STORE_LOCATION.whatsappNumber}?text=Oi!%20Meu%20CEP%20não%20é%20atendido%20ainda,%20quero%20ser%20avisada%20quando%20chegar%20aí.`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1.5 self-start rounded-pill bg-leaf-700 px-3 py-1 text-caption font-semibold text-paper-50"
+                className="inline-flex items-center gap-1.5 self-start rounded-full bg-leaf-700 px-3 py-1 text-caption font-semibold text-paper-50"
               >
                 <MessageCircle className="h-3 w-3" aria-hidden="true" />
                 Avisar no WhatsApp
@@ -205,7 +205,7 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
           )}
 
           {activeQuote && activeQuote.covered && (
-            <div className="flex flex-col gap-2 rounded-xl border border-leaf-500/30 bg-leaf-500/5 p-3">
+            <div className="flex flex-col gap-2 rounded-sm border border-leaf-500/30 bg-leaf-500/5 p-3">
               <div className="flex items-center gap-2 text-body-sm font-bold text-leaf-700">
                 <Check className="h-4 w-4" aria-hidden="true" />
                 Entregamos em {activeQuote.neighborhood}

@@ -82,7 +82,7 @@ export function CancelReasonDialog({
               <label
                 key={reason}
                 className={cn(
-                  "flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2.5 text-body-sm transition",
+                  "flex cursor-pointer items-center gap-3 rounded-sm border px-3 py-2.5 text-body-sm transition",
                   selected === reason
                     ? "border-olive-900 bg-olive-900/5 text-olive-900"
                     : "border-divider bg-paper-50 text-olive-700 hover:border-sage-300",

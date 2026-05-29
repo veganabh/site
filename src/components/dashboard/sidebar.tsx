@@ -98,7 +98,7 @@ export function Sidebar() {
             onClick={toggleExpanded}
             aria-label="Recolher menu"
             title="Recolher menu"
-            className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+            className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
           >
             <ChevronsLeft className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -131,7 +131,7 @@ export function Sidebar() {
               className={cn(
                 "relative flex items-center transition-colors",
                 expanded
-                  ? "h-10 gap-3 rounded-md px-3"
+                  ? "h-10 gap-3 rounded-sm px-3"
                   : "h-10 w-10 justify-center self-center rounded-full",
                 active
                   ? "bg-olive-900 text-paper-50 shadow-sm"
@@ -177,7 +177,7 @@ export function Sidebar() {
           className={cn(
             "relative flex items-center transition-colors",
             expanded
-              ? "h-10 gap-3 rounded-md px-3"
+              ? "h-10 gap-3 rounded-sm px-3"
               : "h-10 w-10 justify-center self-center rounded-full",
             pathname.startsWith("/gestao")
               ? "bg-olive-900 text-paper-50 shadow-sm"
@@ -199,7 +199,7 @@ export function Sidebar() {
           className={cn(
             "flex items-center text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900",
             expanded
-              ? "h-10 gap-3 rounded-md px-3"
+              ? "h-10 gap-3 rounded-sm px-3"
               : "h-10 w-10 justify-center self-center rounded-full",
           )}
         >
@@ -214,7 +214,7 @@ export function Sidebar() {
             onClick={toggleExpanded}
             aria-label="Expandir menu"
             title="Expandir menu"
-            className="flex h-8 w-8 items-center justify-center self-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+            className="flex h-8 w-8 items-center justify-center self-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
           >
             <ChevronsRight className="h-4 w-4" aria-hidden="true" />
           </button>

@@ -108,7 +108,7 @@ function StepIndicator({ current }: { current: Exclude<CheckoutStep, "confirmado
               aria-current={isActive ? "step" : undefined}
               aria-label={STEP_LABELS[step]}
               className={cn(
-                "flex h-7 items-center gap-1.5 rounded-pill font-semibold transition-all",
+                "flex h-7 items-center gap-1.5 rounded-full font-semibold transition-all",
                 isActive && "bg-olive-900 px-2.5 text-paper-50",
                 isDone && "cursor-pointer px-1 text-olive-900 hover:bg-paper-100",
                 !isActive && !isDone && "px-1 text-olive-700/50",
@@ -253,7 +253,7 @@ function StepResumo() {
           <button
             type="button"
             onClick={() => setCouponOpen(true)}
-            className="inline-flex h-10 w-fit items-center gap-2 rounded-pill border border-divider bg-paper-50 px-4 text-body-sm font-semibold text-olive-900 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
+            className="inline-flex h-10 w-fit items-center gap-2 rounded-full border border-divider bg-paper-50 px-4 text-body-sm font-semibold text-olive-900 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
           >
             <Tag className="h-3.5 w-3.5" aria-hidden="true" />
             Tem cupom?
@@ -267,7 +267,7 @@ function StepResumo() {
               Cupom
             </h2>
             {appliedCoupon ? (
-              <div className="flex items-center justify-between rounded-xl border border-terra-500/30 bg-terra-500/5 px-3 py-2.5">
+              <div className="flex items-center justify-between rounded-sm border border-terra-500/30 bg-terra-500/5 px-3 py-2.5">
                 <div className="flex items-center gap-2 text-body-sm font-semibold text-terra-700">
                   <Tag className="h-3.5 w-3.5" aria-hidden="true" />
                   <span>
@@ -279,7 +279,7 @@ function StepResumo() {
                   type="button"
                   aria-label="Remover cupom"
                   onClick={removeCoupon}
-                  className="flex h-7 w-7 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
+                  className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
                 >
                   <X className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
@@ -298,7 +298,7 @@ function StepResumo() {
                     placeholder="Código de cupom"
                     aria-label="Código de cupom"
                     className={cn(
-                      "flex-1 rounded-pill border bg-paper-50 px-4 py-2 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus-visible:outline-2 focus-visible:outline-olive-500",
+                      "flex-1 rounded-full border bg-paper-50 px-4 py-2 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus-visible:outline-2 focus-visible:outline-olive-500",
                       inputError ? "border-error" : "border-divider focus:border-terra-500/50",
                     )}
                   />
@@ -306,7 +306,7 @@ function StepResumo() {
                     type="button"
                     onClick={handleApplyCode}
                     disabled={couponPending}
-                    className="rounded-pill bg-olive-900 px-5 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-full bg-olive-900 px-5 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-500 focus-visible:outline-2 focus-visible:outline-olive-500 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {couponPending ? "Validando..." : "Aplicar"}
                   </button>
@@ -360,7 +360,7 @@ function StepResumo() {
       <button
         type="button"
         onClick={() => setStep("endereco")}
-        className="hidden h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex"
+        className="hidden h-11 items-center justify-center gap-2 rounded-full bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex"
       >
         Confirmar endereço
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -391,7 +391,7 @@ function SavingsHero({ savings }: { savings: number }) {
   return (
     <section
       aria-labelledby="economia-titulo"
-      className="relative overflow-hidden rounded-2xl bg-olive-900 p-5 text-paper-50 shadow-lg md:p-6"
+      className="relative overflow-hidden rounded-sm bg-olive-900 p-5 text-paper-50 shadow-lg md:p-6"
     >
       <Sparkles
         className="pointer-events-none absolute -top-5 -right-5 h-28 w-28 text-terra-500/30"
@@ -454,9 +454,9 @@ function CrossSellRail({ suggestions, onAccept, savings }: CrossSellRailProps) {
               type="button"
               onClick={() => onAccept(product)}
               aria-label={`Adicionar ${product.name} ao carrinho como brinde da economia`}
-              className="group flex h-full w-full flex-col gap-1.5 rounded-xl border border-leaf-500/30 bg-paper-50 p-2 text-left transition-all hover:border-leaf-500 hover:bg-leaf-500/10 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-leaf-500"
+              className="group flex h-full w-full flex-col gap-1.5 rounded-sm border border-leaf-500/30 bg-paper-50 p-2 text-left transition-all hover:border-leaf-500 hover:bg-leaf-500/10 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-leaf-500"
             >
-              <div className="relative aspect-square overflow-hidden rounded-md bg-paper-100">
+              <div className="relative aspect-square overflow-hidden rounded-sm bg-paper-100">
                 <ProductPhoto product={product} sizes="128px" />
                 <span className="absolute top-1.5 right-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-leaf-500 text-paper-50 shadow-sm group-hover:bg-leaf-700">
                   <Plus className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={2.5} />
@@ -488,7 +488,7 @@ type StickyCTAProps = {
 function StickyCTA({ total, itemCount, label, onClick, disabled, hideSummary }: StickyCTAProps) {
   return (
     <div
-      className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] z-20 rounded-2xl border border-divider bg-paper-50/95 px-5 py-3 shadow-lg backdrop-blur md:hidden"
+      className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+5.25rem)] z-20 rounded-sm border border-divider bg-paper-50/95 px-5 py-3 shadow-lg backdrop-blur md:hidden"
       role="region"
       aria-label="Ações do pedido"
     >
@@ -508,7 +508,7 @@ function StickyCTA({ total, itemCount, label, onClick, disabled, hideSummary }: 
           onClick={onClick}
           disabled={disabled}
           className={cn(
-            "inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-pill px-4 text-body-sm font-semibold text-paper-50 transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
+            "inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full px-4 text-body-sm font-semibold text-paper-50 transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
             disabled ? "cursor-not-allowed bg-sage-300" : "bg-terra-500 hover:bg-terra-700",
           )}
         >
@@ -635,7 +635,7 @@ function StepEndereco() {
             <li key={address.id}>
               <div
                 className={cn(
-                  "relative rounded-2xl border p-4 transition-all",
+                  "relative rounded-sm border p-4 transition-all",
                   isSelected
                     ? "border-olive-500 bg-paper-50 shadow-sm"
                     : "border-divider bg-paper-50 hover:border-olive-500/40",
@@ -645,7 +645,7 @@ function StepEndereco() {
                   type="button"
                   aria-label={`Selecionar endereço: ${address.nickname || addressTypeLabel(address.type)}`}
                   onClick={() => handleSelect(address.id)}
-                  className="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-olive-500"
+                  className="absolute inset-0 rounded-sm focus-visible:outline-2 focus-visible:outline-olive-500"
                 />
 
                 <div className="flex items-start gap-3">
@@ -694,7 +694,7 @@ function StepEndereco() {
                       type="button"
                       aria-label={`Editar ${address.nickname || addressTypeLabel(address.type)}`}
                       onClick={() => handleEdit(address)}
-                      className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
+                      className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
                     >
                       <ChevronRight className="h-4 w-4" aria-hidden="true" />
                     </button>
@@ -702,7 +702,7 @@ function StepEndereco() {
                       type="button"
                       aria-label={`Remover ${address.nickname || addressTypeLabel(address.type)}`}
                       onClick={() => setRemoveDialogId(address.id)}
-                      className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
+                      className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
                     >
                       <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     </button>
@@ -717,7 +717,7 @@ function StepEndereco() {
       <button
         type="button"
         onClick={handleAddNew}
-        className="inline-flex h-10 w-fit items-center gap-1.5 rounded-pill border border-dashed border-olive-500/50 px-4 text-body-sm font-semibold text-olive-700 transition-colors hover:border-olive-500 hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
+        className="inline-flex h-10 w-fit items-center gap-1.5 rounded-full border border-dashed border-olive-500/50 px-4 text-body-sm font-semibold text-olive-700 transition-colors hover:border-olive-500 hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
       >
         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
         Adicionar endereço
@@ -727,7 +727,7 @@ function StepEndereco() {
         <div
           role="status"
           aria-live="polite"
-          className="flex items-start gap-2 rounded-xl border border-warning/40 bg-warning/8 px-3 py-2.5"
+          className="flex items-start gap-2 rounded-sm border border-warning/40 bg-warning/8 px-3 py-2.5"
         >
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" aria-hidden="true" />
           <p className="text-caption text-olive-900">
@@ -743,7 +743,7 @@ function StepEndereco() {
         type="button"
         disabled={!canAdvance}
         onClick={() => setStep("pagamento")}
-        className="hidden h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500 disabled:cursor-not-allowed disabled:bg-sage-300 md:inline-flex"
+        className="hidden h-11 items-center justify-center gap-2 rounded-full bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500 disabled:cursor-not-allowed disabled:bg-sage-300 md:inline-flex"
       >
         Ir para pagamento
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -787,7 +787,7 @@ export function AddressTypeChip({ type }: { type: AddressType }) {
   const label = addressTypeLabel(type);
   return (
     <span
-      className="inline-flex shrink-0 items-center gap-1 rounded-pill bg-paper-100 px-2 py-0.5 text-micro font-semibold tracking-wide text-olive-900 uppercase"
+      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-paper-100 px-2 py-0.5 text-micro font-semibold tracking-wide text-olive-900 uppercase"
       aria-label={label}
     >
       <Icon className="h-2.5 w-2.5" aria-hidden="true" />
@@ -893,7 +893,7 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-md rounded-t-2xl bg-paper-50 p-6 shadow-lg sm:rounded-2xl">
+      <div className="w-full max-w-md rounded-t-sm bg-paper-50 p-6 shadow-lg sm:rounded-sm">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-h3 font-bold text-olive-900">
             {isEditing ? "Editar endereço" : "Novo endereço"}
@@ -902,7 +902,7 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
             type="button"
             aria-label="Fechar"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
+            className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -921,7 +921,7 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
                     aria-pressed={type === t}
                     onClick={() => setType(t)}
                     className={cn(
-                      "inline-flex items-center gap-1.5 rounded-pill border px-3 py-1.5 text-caption font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
+                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-caption font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
                       type === t
                         ? "border-olive-500 bg-olive-500 text-paper-50"
                         : "border-divider bg-paper-100 text-olive-700 hover:border-olive-500/50",
@@ -1020,7 +1020,7 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
           {error ? (
             <p
               role="alert"
-              className="rounded-md bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
+              className="rounded-sm bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
             >
               {error}
             </p>
@@ -1031,7 +1031,7 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
               type="submit"
               disabled={pending}
               className={cn(
-                "inline-flex h-10 flex-1 items-center justify-center rounded-pill px-4 text-body-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
+                "inline-flex h-10 flex-1 items-center justify-center rounded-full px-4 text-body-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
                 pending
                   ? "cursor-wait bg-sage-300 text-paper-50/80"
                   : "bg-olive-900 text-paper-50 hover:bg-terra-500",
@@ -1043,7 +1043,7 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
               type="button"
               onClick={onClose}
               disabled={pending}
-              className="inline-flex h-10 items-center justify-center rounded-pill border border-divider px-4 text-body-sm font-semibold text-olive-700 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center rounded-full border border-divider px-4 text-body-sm font-semibold text-olive-700 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancelar
             </button>
@@ -1084,7 +1084,7 @@ function RemoveAddressDialog({ address, onConfirm, onCancel }: RemoveAddressDial
         if (e.target === e.currentTarget) onCancel();
       }}
     >
-      <div className="w-full max-w-sm rounded-2xl bg-paper-50 p-6 shadow-lg">
+      <div className="w-full max-w-sm rounded-sm bg-paper-50 p-6 shadow-lg">
         <h2 id="remove-addr-title" className="text-body font-semibold text-olive-900">
           Remover endereço?
         </h2>
@@ -1096,14 +1096,14 @@ function RemoveAddressDialog({ address, onConfirm, onCancel }: RemoveAddressDial
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex h-9 items-center justify-center rounded-pill border border-divider px-4 text-body-sm font-semibold text-olive-700 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
+            className="inline-flex h-9 items-center justify-center rounded-full border border-divider px-4 text-body-sm font-semibold text-olive-700 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
           >
             Cancelar
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="inline-flex h-9 items-center justify-center rounded-pill bg-error px-4 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-error/90 focus-visible:outline-2 focus-visible:outline-error"
+            className="inline-flex h-9 items-center justify-center rounded-full bg-error px-4 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-error/90 focus-visible:outline-2 focus-visible:outline-error"
           >
             Remover
           </button>
@@ -1157,7 +1157,7 @@ function FormField({
         required={required}
         inputMode={inputMode}
         maxLength={maxLength}
-        className="rounded-md border border-divider bg-white px-3 py-2 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-olive-500 focus-visible:outline-2 focus-visible:outline-olive-500"
+        className="rounded-sm border border-divider bg-paper-50 px-3 py-2 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-olive-500 focus-visible:outline-2 focus-visible:outline-olive-500"
       />
     </div>
   );
@@ -1294,7 +1294,7 @@ function StepPagamento() {
       <div
         role="tablist"
         aria-label="Forma de pagamento"
-        className="flex gap-0.5 rounded-pill bg-paper-100 p-0.5"
+        className="flex gap-0.5 rounded-full bg-paper-100 p-0.5"
       >
         {(["cartao", "pix"] as PaymentTab[]).map((t) => (
           <button
@@ -1304,7 +1304,7 @@ function StepPagamento() {
             aria-selected={tab === t}
             onClick={() => setTab(t)}
             className={cn(
-              "flex-1 rounded-pill px-4 py-2 text-body-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
+              "flex-1 rounded-full px-4 py-2 text-body-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
               tab === t
                 ? "bg-olive-900 text-paper-50 shadow-sm"
                 : "text-olive-700 hover:text-olive-900",
@@ -1329,7 +1329,7 @@ function StepPagamento() {
               value={cardNumber}
               onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
               placeholder="0000 0000 0000 0000"
-              className="rounded-md border border-divider bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-terra-500/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+              className="rounded-sm border border-divider bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-terra-500/50 focus-visible:outline-2 focus-visible:outline-olive-500"
             />
           </div>
 
@@ -1344,7 +1344,7 @@ function StepPagamento() {
               value={cardName}
               onChange={(e) => setCardName(e.target.value)}
               placeholder="Como está no cartão"
-              className="rounded-md border border-divider bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-terra-500/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+              className="rounded-sm border border-divider bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-terra-500/50 focus-visible:outline-2 focus-visible:outline-olive-500"
             />
           </div>
 
@@ -1361,7 +1361,7 @@ function StepPagamento() {
                 value={cardExpiry}
                 onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
                 placeholder="MM/AA"
-                className="rounded-md border border-divider bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-terra-500/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+                className="rounded-sm border border-divider bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-terra-500/50 focus-visible:outline-2 focus-visible:outline-olive-500"
               />
             </div>
 
@@ -1377,7 +1377,7 @@ function StepPagamento() {
                 value={cardCvv}
                 onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
                 placeholder="123"
-                className="rounded-md border border-divider bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-terra-500/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+                className="rounded-sm border border-divider bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 transition-colors outline-none placeholder:text-olive-500 focus:border-terra-500/50 focus-visible:outline-2 focus-visible:outline-olive-500"
               />
             </div>
           </div>
@@ -1386,7 +1386,7 @@ function StepPagamento() {
         <section aria-label="Pagamento via PIX" className="flex flex-col items-center gap-4 py-4">
           <div
             aria-hidden="true"
-            className="flex h-40 w-40 items-center justify-center rounded-2xl border-2 border-dashed border-divider bg-paper-100"
+            className="flex h-40 w-40 items-center justify-center rounded-sm border-2 border-dashed border-divider bg-paper-100"
           >
             <QrCode className="h-10 w-10 text-olive-500/40" />
           </div>
@@ -1418,13 +1418,13 @@ function StepPagamento() {
       {error ? (
         <div
           role="alert"
-          className="flex flex-col gap-2 rounded-md bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
+          className="flex flex-col gap-2 rounded-sm bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
         >
           <span>{error}</span>
           {error.includes("/conta") ? (
             <Link
               href="/conta"
-              className="inline-flex w-fit items-center gap-1 rounded-pill bg-terra-500 px-3 py-1 text-paper-50 transition-colors hover:bg-terra-700"
+              className="inline-flex w-fit items-center gap-1 rounded-full bg-terra-500 px-3 py-1 text-paper-50 transition-colors hover:bg-terra-700"
             >
               Ir pra minha conta
               <ArrowRight className="h-3 w-3" aria-hidden="true" />
@@ -1439,7 +1439,7 @@ function StepPagamento() {
         onClick={handleConfirm}
         disabled={isPending}
         className={cn(
-          "hidden h-11 items-center justify-center gap-2 rounded-pill px-6 text-body-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex",
+          "hidden h-11 items-center justify-center gap-2 rounded-full px-6 text-body-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex",
           isPending
             ? "cursor-wait bg-sage-300 text-paper-50/80"
             : "bg-terra-500 text-paper-50 hover:bg-terra-700",
@@ -1524,7 +1524,7 @@ function StepConfirmado() {
         <button
           type="button"
           onClick={() => goTo("/?tab=a-caminho")}
-          className="inline-flex h-11 w-full items-center justify-center rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500"
+          className="inline-flex h-11 w-full items-center justify-center rounded-full bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500"
         >
           Acompanhar pedido
         </button>
@@ -1532,7 +1532,7 @@ function StepConfirmado() {
         <button
           type="button"
           onClick={() => goTo("/")}
-          className="inline-flex h-11 w-full items-center justify-center rounded-pill border border-divider bg-paper-50 px-6 text-body-sm font-semibold text-olive-900 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
+          className="inline-flex h-11 w-full items-center justify-center rounded-full border border-divider bg-paper-50 px-6 text-body-sm font-semibold text-olive-900 transition-colors hover:bg-paper-100 focus-visible:outline-2 focus-visible:outline-olive-500"
         >
           Ver cardápio
         </button>
@@ -1555,7 +1555,7 @@ function EmptyCart() {
       <button
         type="button"
         onClick={() => router.push("/")}
-        className="inline-flex h-11 items-center justify-center gap-2 rounded-pill bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500"
+        className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500"
       >
         <ShoppingBag className="h-4 w-4" aria-hidden="true" />
         Ver cardápio
@@ -1589,11 +1589,11 @@ function CartItemCompact({ item }: { item: CartItem }) {
   return (
     <li
       className={cn(
-        "flex items-start gap-3 rounded-xl border p-3",
+        "flex items-start gap-3 rounded-sm border p-3",
         isGift ? "border-leaf-500/40 bg-leaf-500/5" : "border-divider bg-paper-50",
       )}
     >
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-paper-100">
+      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-sm bg-paper-100">
         <ProductPhoto product={item.product} sizes="64px" />
         {isGift && (
           <span
@@ -1626,7 +1626,7 @@ function CartItemCompact({ item }: { item: CartItem }) {
 
         <div className="mt-1 flex items-center gap-2">
           <div
-            className="flex items-center gap-1 rounded-pill border border-divider bg-paper-50"
+            className="flex items-center gap-1 rounded-full border border-divider bg-paper-50"
             role="group"
             aria-label={`Quantidade de ${item.product.name}`}
           >
@@ -1660,7 +1660,7 @@ function CartItemCompact({ item }: { item: CartItem }) {
           </div>
 
           {!isGift && lineSavings > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-pill bg-leaf-500/10 px-2 py-0.5 text-micro font-semibold text-leaf-700">
+            <span className="inline-flex items-center gap-1 rounded-full bg-leaf-500/10 px-2 py-0.5 text-micro font-semibold text-leaf-700">
               −{formatBRL(lineSavings)}
             </span>
           )}
@@ -1700,9 +1700,9 @@ function KitCartItemCompact({ kit }: { kit: KitCartItem }) {
   });
 
   return (
-    <li className="flex flex-col gap-3 rounded-xl border-2 border-terra-500/40 bg-terra-500/5 p-3">
+    <li className="flex flex-col gap-3 rounded-sm border-2 border-terra-500/40 bg-terra-500/5 p-3">
       <div className="flex items-start gap-3">
-        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-paper-100">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-sm bg-paper-100">
           <KitCoverPhoto photo={template.coverPhoto} sizes="64px" />
           <span
             aria-hidden="true"
@@ -1729,7 +1729,7 @@ function KitCartItemCompact({ kit }: { kit: KitCartItem }) {
         </div>
       </div>
 
-      <ul className="flex flex-col gap-1 rounded-md bg-paper-50 p-3">
+      <ul className="flex flex-col gap-1 rounded-sm bg-paper-50 p-3">
         {picksByLabel.map((row) => (
           <li key={row.slotId} className="text-micro text-olive-900">
             <span className="font-semibold text-olive-700">{row.label}:</span>{" "}
@@ -1759,7 +1759,7 @@ function KitCartItemCompact({ kit }: { kit: KitCartItem }) {
       <div className="flex items-center gap-2">
         <a
           href={`/presentear/${template.slug}/montar`}
-          className="inline-flex h-8 items-center gap-1 rounded-pill border border-divider bg-paper-50 px-3 text-micro font-semibold text-olive-900 transition-colors hover:bg-paper-100"
+          className="inline-flex h-8 items-center gap-1 rounded-full border border-divider bg-paper-50 px-3 text-micro font-semibold text-olive-900 transition-colors hover:bg-paper-100"
         >
           Editar escolhas
         </a>
@@ -1767,7 +1767,7 @@ function KitCartItemCompact({ kit }: { kit: KitCartItem }) {
           type="button"
           onClick={() => removeKit(kit.cartId)}
           aria-label={`Remover ${template.name}`}
-          className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-error/10 hover:text-error"
+          className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-error/10 hover:text-error"
         >
           <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
@@ -1841,7 +1841,7 @@ function GuestIdentityCard() {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               placeholder="Ana"
-              className="h-10 w-full rounded-md border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+              className="h-10 w-full rounded-sm border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
             />
           </div>
         </label>
@@ -1861,7 +1861,7 @@ function GuestIdentityCard() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="ana@exemplo.com"
-              className="h-10 w-full rounded-md border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+              className="h-10 w-full rounded-sm border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
             />
           </div>
         </label>
@@ -1882,7 +1882,7 @@ function GuestIdentityCard() {
               value={phone}
               onChange={(e) => setPhone(formatPhone(e.target.value))}
               placeholder="(31) 99999-9999"
-              className="h-10 w-full rounded-md border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+              className="h-10 w-full rounded-sm border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
             />
           </div>
         </label>

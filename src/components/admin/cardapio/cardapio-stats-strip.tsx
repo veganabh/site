@@ -27,7 +27,7 @@ function Pill({ label, value, hint, emphasis = "default" }: PillProps) {
   return (
     <div
       className={cn(
-        "relative flex min-w-0 shrink-0 flex-col items-start gap-0 overflow-hidden rounded-md border text-left",
+        "relative flex min-w-0 shrink-0 flex-col items-start gap-0 overflow-hidden rounded-sm border text-left",
         isPrimary
           ? "border-olive-900/25 bg-olive-900/[0.04] px-4 py-2 shadow-sm"
           : "border-divider bg-paper-50 px-3 py-1.5",

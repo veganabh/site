@@ -68,7 +68,7 @@ export function AddressManager() {
         <button
           type="button"
           onClick={handleAddNew}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-pill bg-olive-900 px-3.5 text-caption font-semibold text-paper-50 transition-colors hover:bg-olive-700"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-olive-900 px-3.5 text-caption font-semibold text-paper-50 transition-colors hover:bg-olive-700"
         >
           <Plus className="h-3.5 w-3.5" aria-hidden="true" />
           Adicionar
@@ -88,7 +88,7 @@ export function AddressManager() {
           {addresses.map((address) => (
             <li
               key={address.id}
-              className="flex items-start gap-3 rounded-xl border border-divider bg-paper-50 p-3"
+              className="flex items-start gap-3 rounded-sm border border-divider bg-paper-50 p-3"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ export function AddressManager() {
                   type="button"
                   aria-label={`Editar ${address.nickname || addressTypeLabel(address.type)}`}
                   onClick={() => handleEdit(address)}
-                  className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+                  className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
                 >
                   <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
@@ -128,7 +128,7 @@ export function AddressManager() {
                   type="button"
                   aria-label={`Remover ${address.nickname || addressTypeLabel(address.type)}`}
                   onClick={() => setToRemoveId(address.id)}
-                  className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-error/10 hover:text-error"
+                  className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-error/10 hover:text-error"
                 >
                   <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
@@ -150,7 +150,7 @@ export function AddressManager() {
             if (e.target === e.currentTarget && !removing) setToRemoveId(null);
           }}
         >
-          <div className="w-full max-w-sm rounded-2xl bg-paper-50 p-6 shadow-lg">
+          <div className="w-full max-w-sm rounded-sm bg-paper-50 p-6 shadow-lg">
             <h3 className="text-h3 font-bold text-olive-900">Remover esse endereço?</h3>
             <p className="mt-2 text-body-sm text-olive-700">
               A gente não apaga em outros lugares — só daqui da sua lista.
@@ -158,7 +158,7 @@ export function AddressManager() {
             {removeError ? (
               <p
                 role="alert"
-                className="mt-3 rounded-md bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
+                className="mt-3 rounded-sm bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
               >
                 {removeError}
               </p>
@@ -168,7 +168,7 @@ export function AddressManager() {
                 type="button"
                 onClick={() => setToRemoveId(null)}
                 disabled={removing}
-                className="inline-flex h-10 items-center rounded-pill px-4 text-body-sm font-semibold text-olive-700 hover:bg-paper-100 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center rounded-full px-4 text-body-sm font-semibold text-olive-700 hover:bg-paper-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancelar
               </button>
@@ -176,7 +176,7 @@ export function AddressManager() {
                 type="button"
                 onClick={confirmRemove}
                 disabled={removing}
-                className="inline-flex h-10 items-center rounded-pill bg-error px-4 text-body-sm font-semibold text-paper-50 hover:bg-error/90 disabled:cursor-wait disabled:opacity-70"
+                className="inline-flex h-10 items-center rounded-full bg-error px-4 text-body-sm font-semibold text-paper-50 hover:bg-error/90 disabled:cursor-wait disabled:opacity-70"
               >
                 {removing ? "Removendo…" : "Remover"}
               </button>

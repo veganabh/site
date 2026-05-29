@@ -15,7 +15,7 @@ export function HeroPromo({ className }: HeroPromoProps) {
     <section
       aria-label="Doce feito em casa em Belo Horizonte"
       className={cn(
-        "relative flex min-h-[270px] flex-col justify-center overflow-hidden rounded-2xl bg-olive-900 p-5 text-paper-50 shadow-lg md:min-h-[305px] md:p-8",
+        "relative flex min-h-[270px] flex-col justify-center overflow-hidden rounded-sm bg-olive-900 p-5 text-paper-50 shadow-lg md:min-h-[305px] md:p-8",
         className,
       )}
     >
@@ -30,7 +30,7 @@ export function HeroPromo({ className }: HeroPromoProps) {
 
       <div className="relative flex flex-col gap-3">
         <span
-          className="inline-flex w-fit items-center gap-1.5 rounded-pill bg-paper-50/10 px-2.5 py-1 text-micro font-medium text-paper-50/90 ring-1 ring-paper-50/15 ring-inset"
+          className="inline-flex w-fit items-center gap-1.5 rounded-full bg-paper-50/10 px-2.5 py-1 text-micro font-medium text-paper-50/90 ring-1 ring-paper-50/15 ring-inset"
           aria-label="Avaliação 4.9 no iFood com mais de 420 pedidos"
         >
           <Star

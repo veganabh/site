@@ -208,7 +208,7 @@ export function CuponsClient() {
           placeholder="Buscar por código"
           aria-label="Buscar cupom por código"
           className={cn(
-            "h-8 w-full rounded-md border border-divider bg-paper-50 pr-8 pl-8",
+            "h-8 w-full rounded-sm border border-divider bg-paper-50 pr-8 pl-8",
             "text-caption text-olive-900 placeholder:text-olive-700/50",
             "focus:border-olive-900 focus:outline-none",
           )}
@@ -283,7 +283,7 @@ export function CuponsClient() {
                       className="border-b border-divider last:border-0 hover:bg-paper-100/50"
                     >
                       <td className="py-2 pr-4">
-                        <code className="rounded bg-paper-100 px-1.5 py-0 font-mono text-micro text-olive-900">
+                        <code className="rounded-sm bg-paper-100 px-1.5 py-0 font-mono text-micro text-olive-900">
                           {coupon.code}
                         </code>
                       </td>
@@ -291,7 +291,7 @@ export function CuponsClient() {
                       <td className="py-2 pr-4">
                         <span
                           className={cn(
-                            "inline-flex items-center rounded-pill px-1.5 py-0 text-micro leading-4 font-semibold",
+                            "inline-flex items-center rounded-full px-1.5 py-0 text-micro leading-4 font-semibold",
                             TYPE_BADGE[coupon.type],
                           )}
                         >
@@ -312,7 +312,7 @@ export function CuponsClient() {
                       <td className="py-2 pr-4">
                         <span
                           className={cn(
-                            "inline-flex items-center rounded-pill px-1.5 py-0 text-micro leading-4 font-semibold",
+                            "inline-flex items-center rounded-full px-1.5 py-0 text-micro leading-4 font-semibold",
                             STATUS_BADGE[status],
                           )}
                         >
@@ -326,7 +326,7 @@ export function CuponsClient() {
                             type="button"
                             onClick={() => handleOpenEdit(coupon)}
                             aria-label={`Editar cupom ${coupon.code}`}
-                            className="flex h-7 w-7 items-center justify-center rounded-md text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+                            className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
                           >
                             <Pencil className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                           </button>
@@ -342,7 +342,7 @@ export function CuponsClient() {
                                   ? `Desativar cupom ${coupon.code}`
                                   : `Ativar cupom ${coupon.code}`
                             }
-                            className="flex h-7 w-7 items-center justify-center rounded-md text-olive-700 transition hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             {status === "ATIVO" ? (
                               <ToggleRight
@@ -363,7 +363,7 @@ export function CuponsClient() {
                             type="button"
                             onClick={() => handleDeleteRequest(coupon)}
                             aria-label={`Excluir cupom ${coupon.code}`}
-                            className="flex h-7 w-7 items-center justify-center rounded-md text-olive-700 transition hover:bg-terra-500/10 hover:text-terra-700"
+                            className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-terra-500/10 hover:text-terra-700"
                           >
                             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                           </button>
@@ -385,12 +385,12 @@ export function CuponsClient() {
               return (
                 <Card key={coupon.id} padding="sm" className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <code className="rounded bg-paper-100 px-1.5 py-0 font-mono text-micro text-olive-900">
+                    <code className="rounded-sm bg-paper-100 px-1.5 py-0 font-mono text-micro text-olive-900">
                       {coupon.code}
                     </code>
                     <span
                       className={cn(
-                        "inline-flex items-center rounded-pill px-1.5 py-0 text-micro leading-4 font-semibold",
+                        "inline-flex items-center rounded-full px-1.5 py-0 text-micro leading-4 font-semibold",
                         STATUS_BADGE[status],
                       )}
                     >
@@ -401,7 +401,7 @@ export function CuponsClient() {
                   <div className="flex items-center gap-2">
                     <span
                       className={cn(
-                        "inline-flex items-center rounded-pill px-1.5 py-0 text-micro leading-4 font-semibold",
+                        "inline-flex items-center rounded-full px-1.5 py-0 text-micro leading-4 font-semibold",
                         TYPE_BADGE[coupon.type],
                       )}
                     >
@@ -422,7 +422,7 @@ export function CuponsClient() {
                       type="button"
                       onClick={() => handleOpenEdit(coupon)}
                       aria-label={`Editar cupom ${coupon.code}`}
-                      className="flex h-7 w-7 items-center justify-center rounded-md text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+                      className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
                     >
                       <Pencil className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                     </button>
@@ -438,7 +438,7 @@ export function CuponsClient() {
                             ? `Desativar cupom ${coupon.code}`
                             : `Ativar cupom ${coupon.code}`
                       }
-                      className="flex h-7 w-7 items-center justify-center rounded-md text-olive-700 transition hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {status === "ATIVO" ? (
                         <ToggleRight
@@ -455,7 +455,7 @@ export function CuponsClient() {
                       type="button"
                       onClick={() => handleDeleteRequest(coupon)}
                       aria-label={`Excluir cupom ${coupon.code}`}
-                      className="flex h-7 w-7 items-center justify-center rounded-md text-olive-700 transition hover:bg-terra-500/10 hover:text-terra-700"
+                      className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-terra-500/10 hover:text-terra-700"
                     >
                       <Trash2 className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                     </button>
@@ -487,7 +487,7 @@ export function CuponsClient() {
         role={toast.state.kind === "error" ? "alert" : "status"}
         aria-live="polite"
         aria-atomic="true"
-        className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-pill px-4 py-2 text-body-sm font-semibold shadow-md transition-all duration-300 ${
+        className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full px-4 py-2 text-body-sm font-semibold shadow-md transition-all duration-300 ${
           toast.state.kind === "error" ? "bg-terra-700 text-paper-50" : "bg-olive-900 text-paper-50"
         } ${toast.state.kind === "idle" ? "pointer-events-none translate-y-2 opacity-0" : "translate-y-0 opacity-100"}`}
       >

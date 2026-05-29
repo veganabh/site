@@ -201,7 +201,7 @@ export function RingsTable({ highlightedId, onMutationSuccess, onMutationError }
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-divider">
+      <div className="overflow-x-auto rounded-sm border border-divider">
         <table className="w-full min-w-[480px] border-collapse text-left">
           <thead>
             <tr className="border-b border-divider bg-paper-100">

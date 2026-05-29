@@ -48,7 +48,7 @@ function StatusToast({ visible }: StatusToastProps) {
   return (
     <div
       aria-live="polite"
-      className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-pill bg-olive-900 px-4 py-2 text-caption font-semibold text-paper-50 shadow-lg transition-all duration-300 ${visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"} `}
+      className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-olive-900 px-4 py-2 text-caption font-semibold text-paper-50 shadow-lg transition-all duration-300 ${visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"} `}
     >
       Status atualizado
     </div>
@@ -136,7 +136,7 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
 
         {/* ETA */}
         {eta && (
-          <p className="mt-2 rounded-lg bg-terra-500/10 px-3 py-1.5 text-caption font-semibold text-terra-700">
+          <p className="mt-2 rounded-sm bg-terra-500/10 px-3 py-1.5 text-caption font-semibold text-terra-700">
             Previsão de entrega: {eta}
           </p>
         )}
@@ -158,7 +158,7 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
         >
           Itens
         </h2>
-        <ul className="flex flex-col gap-1.5 rounded-xl border border-divider bg-paper-50 px-3 py-2">
+        <ul className="flex flex-col gap-1.5 rounded-sm border border-divider bg-paper-50 px-3 py-2">
           {order.items.map((item) => (
             <li
               key={`${order.id}-${item.productId}`}
@@ -208,7 +208,7 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
         href={waUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex w-full items-center justify-center gap-2 rounded-pill border border-divider bg-paper-50 px-4 py-2.5 text-body-sm font-semibold text-olive-900 transition hover:bg-paper-100"
+        className="flex w-full items-center justify-center gap-2 rounded-full border border-divider bg-paper-50 px-4 py-2.5 text-body-sm font-semibold text-olive-900 transition hover:bg-paper-100"
       >
         <MessageCircle className="h-4 w-4" aria-hidden="true" />
         Precisa de ajuda?

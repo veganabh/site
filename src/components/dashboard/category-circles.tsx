@@ -156,7 +156,7 @@ function CategoryChip({ item, active, tier }: CategoryChipProps) {
   const iconBox = (
     <span
       className={cn(
-        "flex h-14 w-14 items-center justify-center rounded-lg border-2 transition-all md:h-16 md:w-16",
+        "flex h-14 w-14 items-center justify-center rounded-sm border-2 transition-all md:h-16 md:w-16",
         !item.available
           ? "border-divider bg-paper-100 text-olive-700/35"
           : active

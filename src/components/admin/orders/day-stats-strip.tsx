@@ -84,7 +84,7 @@ function Pill({
       disabled={disabled}
       aria-pressed={clickable ? active : undefined}
       className={cn(
-        "relative flex min-w-0 shrink-0 flex-col items-start gap-0 overflow-hidden rounded-md border text-left transition",
+        "relative flex min-w-0 shrink-0 flex-col items-start gap-0 overflow-hidden rounded-sm border text-left transition",
         toneBorder,
         isPrimary ? "bg-olive-900/[0.04] px-4 py-2 shadow-sm" : "bg-paper-50 px-3 py-1.5",
         clickable &&

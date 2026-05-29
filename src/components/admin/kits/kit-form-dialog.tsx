@@ -284,7 +284,7 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
           </div>
           <DialogClose
             aria-label="Fechar"
-            className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+            className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </DialogClose>
@@ -402,7 +402,7 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
                   </label>
                   <div className="flex items-center gap-3">
                     <span
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-divider bg-paper-100"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm border border-divider bg-paper-100"
                       aria-hidden="true"
                     >
                       <KitIcon className="h-5 w-5 text-olive-900" strokeWidth={1.75} />
@@ -552,7 +552,7 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
                   return (
                     <div
                       key={field.id}
-                      className="rounded-md border border-divider bg-paper-100/50 p-4"
+                      className="rounded-sm border border-divider bg-paper-100/50 p-4"
                     >
                       <div className="mb-3 flex items-center justify-between">
                         <span className="text-body-sm font-semibold text-olive-900">
@@ -563,7 +563,7 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
                             type="button"
                             onClick={() => remove(idx)}
                             aria-label={`Remover slot ${idx + 1}`}
-                            className="flex h-7 w-7 items-center justify-center rounded-md text-olive-700 transition hover:bg-paper-100 hover:text-terra-700"
+                            className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-terra-700"
                           >
                             <X className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
@@ -688,7 +688,7 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
                                 <label
                                   key={product.id}
                                   className={cn(
-                                    "flex cursor-pointer items-center gap-2 rounded-md border px-2.5 py-2 text-caption transition",
+                                    "flex cursor-pointer items-center gap-2 rounded-sm border px-2.5 py-2 text-caption transition",
                                     checked
                                       ? "border-olive-500 bg-olive-900/5 text-olive-900"
                                       : "border-divider bg-paper-50 text-olive-700 hover:bg-paper-100",
@@ -739,7 +739,7 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
                       eligibleProductIds: [],
                     })
                   }
-                  className="flex h-9 items-center gap-2 rounded-md border border-dashed border-divider bg-paper-50 px-4 text-body-sm font-medium text-olive-700 transition hover:border-olive-500 hover:text-olive-900"
+                  className="flex h-9 items-center gap-2 rounded-sm border border-dashed border-divider bg-paper-50 px-4 text-body-sm font-medium text-olive-700 transition hover:border-olive-500 hover:text-olive-900"
                 >
                   <Plus className="h-4 w-4" aria-hidden="true" />
                   Adicionar slot

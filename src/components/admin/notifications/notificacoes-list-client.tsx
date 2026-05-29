@@ -113,7 +113,7 @@ function DeleteButton({ id, title }: { id: string; title: string }) {
         type="button"
         onClick={() => setConfirm(true)}
         aria-label={`Excluir notificação "${title}"`}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-terra-500/10 hover:text-terra-700"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-terra-500/10 hover:text-terra-700"
       >
         <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
       </button>
@@ -132,14 +132,14 @@ function DeleteButton({ id, title }: { id: string; title: string }) {
             router.refresh();
           });
         }}
-        className="inline-flex h-7 items-center rounded-pill bg-terra-500 px-3 text-micro font-semibold text-paper-50 transition-colors hover:bg-terra-700 disabled:opacity-50"
+        className="inline-flex h-7 items-center rounded-full bg-terra-500 px-3 text-micro font-semibold text-paper-50 transition-colors hover:bg-terra-700 disabled:opacity-50"
       >
         {isPending ? "Excluindo…" : "Sim"}
       </button>
       <button
         type="button"
         onClick={() => setConfirm(false)}
-        className="inline-flex h-7 items-center rounded-pill border border-divider bg-paper-50 px-3 text-micro font-medium text-olive-700 transition-colors hover:bg-paper-100"
+        className="inline-flex h-7 items-center rounded-full border border-divider bg-paper-50 px-3 text-micro font-medium text-olive-700 transition-colors hover:bg-paper-100"
       >
         Não
       </button>
@@ -194,7 +194,7 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
         <p className="text-body-sm text-olive-700">Nenhuma notificação cadastrada.</p>
         <Link
           href="/gestao/notificacoes/nova"
-          className="inline-flex h-9 items-center gap-2 rounded-pill bg-olive-900 px-4 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-olive-700"
+          className="inline-flex h-9 items-center gap-2 rounded-full bg-olive-900 px-4 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-olive-700"
         >
           <Plus className="h-3.5 w-3.5" aria-hidden="true" />
           Criar a primeira
@@ -336,7 +336,7 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
                   <Link
                     href={`/gestao/notificacoes/${n.id}`}
                     aria-label={`Editar notificação "${n.title}"`}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
                   >
                     <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                   </Link>
@@ -368,7 +368,7 @@ function FilterChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-pill border px-2.5 py-0.5 text-micro font-semibold transition-colors",
+        "rounded-full border px-2.5 py-0.5 text-micro font-semibold transition-colors",
         active
           ? "border-olive-900 bg-olive-900 text-paper-50"
           : "border-divider bg-paper-50 text-olive-700 hover:bg-paper-100",

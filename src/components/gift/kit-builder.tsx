@@ -404,7 +404,7 @@ function SlotStep({ slot, picks, onPick, onDecrement }: SlotStepProps) {
           <li key={p.id}>
             <article
               className={cn(
-                "group relative flex flex-col overflow-hidden rounded-xl border-2 bg-paper-50 transition-colors",
+                "group relative flex flex-col overflow-hidden rounded-sm border-2 bg-paper-50 transition-colors",
                 count > 0
                   ? "border-terra-500 shadow-sm"
                   : "border-divider md:hover:border-olive-500/40",
@@ -422,14 +422,14 @@ function SlotStep({ slot, picks, onPick, onDecrement }: SlotStepProps) {
                 {count > 0 && (
                   <span
                     aria-label={`${count} selecionado${count > 1 ? "s" : ""}`}
-                    className="absolute top-2 right-2 inline-flex h-7 min-w-[28px] items-center justify-center gap-0.5 rounded-pill bg-terra-500 px-1.5 text-caption font-bold text-paper-50 shadow-md"
+                    className="absolute top-2 right-2 inline-flex h-7 min-w-[28px] items-center justify-center gap-0.5 rounded-full bg-terra-500 px-1.5 text-caption font-bold text-paper-50 shadow-md"
                   >
                     <Check className="h-3 w-3" aria-hidden="true" strokeWidth={3} />
                     {count > 1 && count}
                   </span>
                 )}
                 {isSoldOut && (
-                  <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-pill bg-olive-900/85 px-2 py-0.5 text-micro font-semibold text-paper-50">
+                  <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-olive-900/85 px-2 py-0.5 text-micro font-semibold text-paper-50">
                     Esgotado
                   </span>
                 )}
@@ -449,7 +449,7 @@ function SlotStep({ slot, picks, onPick, onDecrement }: SlotStepProps) {
                       type="button"
                       onClick={() => onDecrement(p.id)}
                       aria-label={`Remover um ${p.name}`}
-                      className="flex h-7 w-7 items-center justify-center rounded-md border border-divider text-olive-900 hover:bg-paper-100"
+                      className="flex h-7 w-7 items-center justify-center rounded-sm border border-divider text-olive-900 hover:bg-paper-100"
                     >
                       <Minus className="h-3 w-3" aria-hidden="true" />
                     </button>
@@ -464,7 +464,7 @@ function SlotStep({ slot, picks, onPick, onDecrement }: SlotStepProps) {
                       onClick={() => onPick(p.id, isSoldOut)}
                       disabled={!canIncrement}
                       aria-label={`Adicionar mais um ${p.name}`}
-                      className="flex h-7 w-7 items-center justify-center rounded-md border border-divider text-olive-900 hover:bg-paper-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-7 w-7 items-center justify-center rounded-sm border border-divider text-olive-900 hover:bg-paper-100 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Plus className="h-3 w-3" aria-hidden="true" />
                     </button>
@@ -546,7 +546,7 @@ function PersonalizationStep({
           rows={3}
           maxLength={GIFT_CARD_MESSAGE_MAX}
           placeholder="Ex: Pra você, que cuidou de mim sem cobrar nada. Aproveita cada pedaço."
-          className="w-full resize-none rounded-md border border-divider bg-paper-50 p-3 text-body-sm text-olive-900 placeholder:text-olive-700/50"
+          className="w-full resize-none rounded-sm border border-divider bg-paper-50 p-3 text-body-sm text-olive-900 placeholder:text-olive-700/50"
         />
         <div className="flex items-center justify-between text-micro text-olive-700">
           <span>Até {GIFT_CARD_MESSAGE_MAX} caracteres</span>
@@ -599,7 +599,7 @@ function ToggleCard({ active, onToggle, icon: Icon, title, subtitle }: ToggleCar
       onClick={onToggle}
       aria-pressed={active}
       className={cn(
-        "flex items-center gap-3 rounded-xl border-2 bg-paper-50 p-4 text-left transition-colors",
+        "flex items-center gap-3 rounded-sm border-2 bg-paper-50 p-4 text-left transition-colors",
         active ? "border-terra-500 shadow-sm" : "border-divider md:hover:border-olive-500/40",
       )}
     >
@@ -624,7 +624,7 @@ function ToggleCard({ active, onToggle, icon: Icon, title, subtitle }: ToggleCar
       >
         <span
           className={cn(
-            "inline-block h-5 w-5 transform rounded-full bg-paper-50 shadow transition-transform",
+            "inline-block h-5 w-5 transform rounded-full bg-paper-50 shadow-sm transition-transform",
             active ? "translate-x-5" : "translate-x-0.5",
           )}
         />
@@ -801,7 +801,7 @@ function TextField({
         placeholder={placeholder}
         inputMode={inputMode}
         className={cn(
-          "h-10 w-full rounded-md border bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50",
+          "h-10 w-full rounded-sm border bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50",
           statusTone === "ok" && "border-leaf-500",
           statusTone === "error" && "border-terra-500",
           statusTone === "loading" && "border-divider",
@@ -824,7 +824,7 @@ function DeliveryChip({ tone, label, fee, eta }: DeliveryChipProps) {
   return (
     <div
       className={cn(
-        "inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 self-start rounded-pill border px-3 py-1 text-caption",
+        "inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 self-start rounded-full border px-3 py-1 text-caption",
         tone === "ok" && "border-leaf-500/40 bg-leaf-500/10 text-leaf-700",
         tone === "pending" && "border-divider bg-paper-100 text-olive-700",
         tone === "error" && "border-terra-500/40 bg-terra-500/10 text-terra-700",
@@ -862,7 +862,7 @@ type StickyCtaProps = {
 
 function StickyCta({ canAdvance, isLastStep, slotCounter, finalPrice, onNext }: StickyCtaProps) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-10 border-t border-divider bg-paper-50/95 px-4 py-3 shadow-[0_-8px_24px_-12px_rgba(43,50,16,0.25)] backdrop-blur">
+    <div className="fixed inset-x-0 bottom-0 z-10 border-t border-divider bg-paper-50/95 px-4 py-3 shadow-lg backdrop-blur">
       <div className="mx-auto flex max-w-4xl items-center gap-3">
         {slotCounter ? (
           <span className="text-micro text-olive-700">
@@ -878,7 +878,7 @@ function StickyCta({ canAdvance, isLastStep, slotCounter, finalPrice, onNext }: 
           onClick={onNext}
           disabled={!canAdvance}
           className={cn(
-            "ml-auto inline-flex h-11 items-center gap-2 rounded-pill px-5 text-body-sm font-bold transition-transform active:scale-[0.98]",
+            "ml-auto inline-flex h-11 items-center gap-2 rounded-full px-5 text-body-sm font-bold transition-transform active:scale-[0.98]",
             canAdvance
               ? "bg-terra-500 text-paper-50 shadow-sm"
               : "cursor-not-allowed bg-sage-300 text-paper-50/80",

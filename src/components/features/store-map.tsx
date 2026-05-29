@@ -63,7 +63,7 @@ export function StoreMap({ rings, onRingClick, highlightedId }: StoreMapProps) {
 
   return (
     <div
-      className="relative h-[400px] w-full overflow-hidden rounded-lg border border-divider md:h-[500px]"
+      className="relative h-[400px] w-full overflow-hidden rounded-sm border border-divider md:h-[500px]"
       role="img"
       aria-label="Mapa de anéis de entrega centrado na loja Veg.ana"
     >

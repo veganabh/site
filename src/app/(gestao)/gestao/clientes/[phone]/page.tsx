@@ -57,7 +57,7 @@ export default async function ClienteDetalhePage({ params }: PageProps) {
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-h2 font-bold text-olive-900">{customer.name}</h1>
-            <span className="rounded-pill bg-olive-900/10 px-2 py-0.5 text-caption font-bold tracking-wide text-olive-900 uppercase">
+            <span className="rounded-full bg-olive-900/10 px-2 py-0.5 text-caption font-bold tracking-wide text-olive-900 uppercase">
               {SEGMENT_LABELS[customer.segment]}
             </span>
           </div>

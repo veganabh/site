@@ -72,7 +72,7 @@ export function AdminTopbar({ onMenuOpen, pageTitle, className }: AdminTopbarPro
   return (
     <header
       className={cn(
-        "sticky top-0 z-20 flex h-14 items-center gap-3 rounded-t-lg border-b border-divider bg-paper-50/90 px-4 backdrop-blur",
+        "sticky top-0 z-20 flex h-14 items-center gap-3 rounded-t-sm border-b border-divider bg-paper-50/90 px-4 backdrop-blur",
         className,
       )}
     >
@@ -81,7 +81,7 @@ export function AdminTopbar({ onMenuOpen, pageTitle, className }: AdminTopbarPro
         type="button"
         onClick={onMenuOpen}
         aria-label="Abrir menu de navegação"
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 md:hidden"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 md:hidden"
       >
         <Menu className="h-5 w-5" aria-hidden="true" />
       </button>
@@ -131,7 +131,7 @@ export function AdminTopbar({ onMenuOpen, pageTitle, className }: AdminTopbarPro
           {/* Dropdown */}
           <div
             className={cn(
-              "absolute top-full right-0 z-30 mt-1 w-52 rounded-md border border-divider bg-paper-50 shadow-md",
+              "absolute top-full right-0 z-30 mt-1 w-52 rounded-sm border border-divider bg-paper-50 shadow-md",
               "origin-top-right",
             )}
           >

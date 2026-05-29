@@ -188,7 +188,7 @@ export default async function ModulosPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <span
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-paper-100"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-paper-100"
                       aria-hidden="true"
                     >
                       <Icon className="h-5 w-5 text-olive-900" strokeWidth={1.75} />
@@ -198,7 +198,7 @@ export default async function ModulosPage() {
 
                   {/* Badge de fase */}
                   <span
-                    className={`shrink-0 rounded-pill px-2.5 py-1 text-caption font-bold tracking-wide uppercase ${PHASE_CLASSES[phase]}`}
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-caption font-bold tracking-wide uppercase ${PHASE_CLASSES[phase]}`}
                   >
                     {PHASE_LABELS[phase]}
                   </span>

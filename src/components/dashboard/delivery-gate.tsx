@@ -44,7 +44,7 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
       <section
         aria-label="Consulta de entrega"
         className={cn(
-          "flex flex-col justify-center gap-1.5 rounded-lg border border-divider bg-paper-50 px-3 py-2.5",
+          "flex flex-col justify-center gap-1.5 rounded-sm border border-divider bg-paper-50 px-3 py-2.5",
           className,
         )}
       >

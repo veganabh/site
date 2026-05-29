@@ -129,7 +129,7 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                   {/* Cliente */}
                   <section aria-labelledby="section-cliente">
                     <SectionLabel>Cliente</SectionLabel>
-                    <div className="flex flex-col gap-2 rounded-md border border-divider bg-paper-100 px-4 py-3">
+                    <div className="flex flex-col gap-2 rounded-sm border border-divider bg-paper-100 px-4 py-3">
                       <p className="text-body-sm font-semibold text-olive-900">
                         {order.customerName}
                       </p>
@@ -164,7 +164,7 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                       {order.items.map((item, idx) => (
                         <li
                           key={`${item.productId}-${idx}`}
-                          className="flex items-start justify-between gap-3 rounded-md border border-divider bg-paper-100 px-4 py-3"
+                          className="flex items-start justify-between gap-3 rounded-sm border border-divider bg-paper-100 px-4 py-3"
                         >
                           <div className="flex flex-col gap-0.5">
                             <p className="text-body-sm font-semibold text-olive-900">
@@ -193,7 +193,7 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                           Cupom
                         </span>
                       </SectionLabel>
-                      <div className="flex items-center justify-between rounded-md border border-leaf-500/20 bg-leaf-500/5 px-4 py-3">
+                      <div className="flex items-center justify-between rounded-sm border border-leaf-500/20 bg-leaf-500/5 px-4 py-3">
                         <span className="text-body-sm font-bold text-olive-900">
                           {order.couponApplied.code}
                         </span>
@@ -207,7 +207,7 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                   {/* Resumo financeiro */}
                   <section aria-labelledby="section-total">
                     <SectionLabel>Resumo</SectionLabel>
-                    <div className="flex flex-col gap-1.5 rounded-md border border-divider bg-paper-100 px-4 py-3">
+                    <div className="flex flex-col gap-1.5 rounded-sm border border-divider bg-paper-100 px-4 py-3">
                       <div className="flex justify-between text-body-sm text-olive-700">
                         <span>Subtotal</span>
                         <span>{formatBRL(order.subtotal)}</span>
@@ -250,7 +250,7 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                           Entregador
                         </span>
                       </SectionLabel>
-                      <div className="flex flex-col gap-1.5 rounded-md border border-divider bg-paper-100 px-4 py-3">
+                      <div className="flex flex-col gap-1.5 rounded-sm border border-divider bg-paper-100 px-4 py-3">
                         <p className="text-body-sm font-semibold text-olive-900">
                           {deliveryPerson.name}
                         </p>
