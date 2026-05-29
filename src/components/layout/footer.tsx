@@ -40,20 +40,23 @@ export function Footer() {
 
   return (
     <footer className="border-t border-divider bg-paper-100">
-      <div className="mx-auto flex max-w-7xl flex-col items-center gap-6 px-4 py-10 text-center md:flex-row md:justify-between md:py-12 md:text-left">
-        <nav aria-label="Institucional" className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-3 text-center md:flex-row md:gap-4 md:text-left">
+        <nav
+          aria-label="Institucional"
+          className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1"
+        >
           {INSTITUTIONAL_LINKS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-body-sm text-olive-700 transition-colors hover:text-olive-900"
+              className="text-caption text-olive-700 transition-colors hover:text-olive-900"
             >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <a
             href="https://instagram.com/vegana.bh"
             aria-label="Instagram da Veg.ana"
@@ -61,7 +64,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="text-olive-700 transition-colors hover:text-olive-900"
           >
-            <InstagramGlyph className="h-5 w-5" />
+            <InstagramGlyph className="h-4 w-4" />
           </a>
           <a
             href={`https://wa.me/${STORE_LOCATION.whatsappNumber}`}
@@ -70,15 +73,11 @@ export function Footer() {
             rel="noopener noreferrer"
             className="text-olive-700 transition-colors hover:text-olive-900"
           >
-            <MessageCircle className="h-5 w-5" aria-hidden="true" />
+            <MessageCircle className="h-4 w-4" aria-hidden="true" />
           </a>
         </div>
-      </div>
 
-      <div className="border-t border-divider">
-        <p className="mx-auto max-w-7xl px-4 py-4 text-center text-caption text-olive-700">
-          © {year} Veg.ana · Belo Horizonte
-        </p>
+        <p className="text-caption text-olive-700/80">© {year} Veg.ana · Belo Horizonte</p>
       </div>
     </footer>
   );
