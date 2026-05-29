@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus, FolderCog } from "lucide-react";
 import { CardapioList } from "@/components/features/cardapio/cardapio-list";
+import { ImportCsvButton } from "@/components/admin/cardapio/import-csv-dialog";
 
 export const metadata: Metadata = {
   title: "Cardápio — Gestão Vegana BH",
@@ -31,6 +32,7 @@ export default function CardapioPage() {
             <FolderCog className="h-4 w-4" aria-hidden="true" />
             Categorias
           </Link>
+          <ImportCsvButton />
           <Link
             href="/gestao/cardapio/novo"
             className="inline-flex items-center gap-2 rounded-sm bg-olive-900 px-4 py-2 text-cta text-paper-50 transition hover:bg-olive-700"
