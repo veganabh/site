@@ -85,7 +85,7 @@ export function ProfileForm() {
         <h2 id="perfil-dados-titulo" className="text-h3 font-bold text-olive-900">
           Seus dados
         </h2>
-        <p className="text-[12px] leading-snug text-olive-700">
+        <p className="text-caption leading-snug text-olive-700">
           Usados pra confirmar entrega e mandar atualização do pedido no WhatsApp. A gente não
           compartilha com ninguém.
         </p>
@@ -161,7 +161,7 @@ export function ProfileForm() {
       {state && !state.ok ? (
         <p
           role="alert"
-          className="rounded-md bg-terra-500/10 px-3 py-2 text-[12px] font-semibold text-terra-700"
+          className="rounded-md bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
         >
           {state.message}
         </p>
@@ -170,7 +170,7 @@ export function ProfileForm() {
       <div className="flex items-center justify-between gap-3 pt-1">
         {savedAt ? (
           <p
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-leaf-700"
+            className="inline-flex items-center gap-1.5 text-caption font-semibold text-leaf-700"
             role="status"
             aria-live="polite"
           >
@@ -178,7 +178,7 @@ export function ProfileForm() {
             Atualizado.
           </p>
         ) : (
-          <span className="text-[12px] text-olive-700/70">
+          <span className="text-caption text-olive-700/70">
             {dirty ? "Alterações pendentes" : ""}
           </span>
         )}
@@ -208,7 +208,7 @@ type FieldProps = {
 function Field({ label, icon: Icon, inputProps, errors, hint }: FieldProps) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
+      <span className="text-micro font-semibold tracking-wide text-olive-700 uppercase">
         {label}
       </span>
       <div className="relative">
@@ -224,11 +224,11 @@ function Field({ label, icon: Icon, inputProps, errors, hint }: FieldProps) {
         />
       </div>
       {errors?.length ? (
-        <span role="alert" className="text-[11px] font-semibold text-terra-700">
+        <span role="alert" className="text-micro font-semibold text-terra-700">
           {errors[0]}
         </span>
       ) : hint ? (
-        <span className="text-[11px] text-olive-700/60">{hint}</span>
+        <span className="text-micro text-olive-700/60">{hint}</span>
       ) : null}
     </label>
   );

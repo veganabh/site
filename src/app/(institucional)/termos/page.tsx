@@ -15,9 +15,7 @@ export default function TermosPage() {
   return (
     <article className="flex flex-col gap-6">
       <header className="flex flex-col gap-2 border-b border-divider pb-5">
-        <h1 className="text-[24px] leading-tight font-bold text-olive-900 md:text-[30px]">
-          Termos de uso
-        </h1>
+        <h1 className="text-h2 leading-tight font-bold text-olive-900 md:text-h2">Termos de uso</h1>
         <p className="text-body-sm text-olive-700">
           As regras de quem pede com a gente, em português de gente. Ao fazer um pedido, você
           concorda com o que está aqui.
@@ -36,12 +34,12 @@ export default function TermosPage() {
         <ul className="ml-4 list-disc space-y-1.5">
           <li>Os preços e a disponibilidade dos produtos aparecem no cardápio do site.</li>
           <li>
-            O pedido é confirmado depois da aprovação do pagamento, processado pela AbacatePay
-            (PIX ou cartão).
+            O pedido é confirmado depois da aprovação do pagamento, processado pela AbacatePay (PIX
+            ou cartão).
           </li>
           <li>
-            Se algum item ficar indisponível depois do pedido, a gente avisa pelo WhatsApp e
-            resolve com você.
+            Se algum item ficar indisponível depois do pedido, a gente avisa pelo WhatsApp e resolve
+            com você.
           </li>
         </ul>
       </Section>
@@ -118,7 +116,7 @@ export default function TermosPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-[16px] font-bold text-olive-900 md:text-[18px]">{title}</h2>
+      <h2 className="text-body font-bold text-olive-900 md:text-body-lg">{title}</h2>
       <div className="text-body-sm leading-relaxed text-olive-700">{children}</div>
     </section>
   );

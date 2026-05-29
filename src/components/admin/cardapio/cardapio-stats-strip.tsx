@@ -38,7 +38,7 @@ function Pill({ label, value, hint, emphasis = "default" }: PillProps) {
       )}
       <span
         className={cn(
-          "text-[10px] font-semibold tracking-wide uppercase",
+          "text-micro font-semibold tracking-wide uppercase",
           isPrimary ? "text-olive-900" : "text-olive-700",
         )}
       >
@@ -46,7 +46,7 @@ function Pill({ label, value, hint, emphasis = "default" }: PillProps) {
       </span>
       <span
         className={cn(
-          "font-bold leading-tight text-olive-900",
+          "leading-tight font-bold text-olive-900",
           isPrimary ? "text-h4" : "text-caption",
         )}
       >
@@ -56,7 +56,7 @@ function Pill({ label, value, hint, emphasis = "default" }: PillProps) {
         <span
           className={cn(
             "leading-tight",
-            isPrimary ? "text-caption text-olive-700" : "text-[10px] text-olive-700/70",
+            isPrimary ? "text-caption text-olive-700" : "text-micro text-olive-700/70",
           )}
         >
           {hint}
@@ -95,11 +95,7 @@ export function CardapioStatsStrip({ products }: CardapioStatsStripProps) {
       />
       <Pill label="Esgotados" value={String(metrics.exhaustedCount)} />
       <Pill label="Estoque baixo" value={String(metrics.lowStockCount)} />
-      <Pill
-        label="Total em estoque"
-        value={String(metrics.totalStockUnits)}
-        hint="unidades"
-      />
+      <Pill label="Total em estoque" value={String(metrics.totalStockUnits)} hint="unidades" />
     </div>
   );
 }

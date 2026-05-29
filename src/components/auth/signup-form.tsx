@@ -31,7 +31,7 @@ export function SignUpForm() {
         </p>
         <Link
           href="/login"
-          className="mx-auto inline-flex h-11 items-center justify-center rounded-pill bg-terra-500 px-5 text-[13px] font-semibold text-paper-50 hover:bg-terra-700"
+          className="mx-auto inline-flex h-11 items-center justify-center rounded-pill bg-terra-500 px-5 text-body-sm font-semibold text-paper-50 hover:bg-terra-700"
         >
           Ir pro login
         </Link>
@@ -120,7 +120,7 @@ export function SignUpForm() {
       {state && !state.ok ? (
         <p
           role="alert"
-          className="rounded-md bg-terra-500/10 px-3 py-2 text-[12px] font-semibold text-terra-700"
+          className="rounded-md bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
         >
           {state.message}
         </p>
@@ -130,7 +130,7 @@ export function SignUpForm() {
         {pending ? "Cadastrando…" : "Cadastrar"}
       </Button>
 
-      <p className="text-center text-[12px] text-olive-700">
+      <p className="text-center text-caption text-olive-700">
         Já tem conta?{" "}
         <Link href="/login" className="font-semibold text-terra-700 hover:text-terra-500">
           Entrar
@@ -163,7 +163,7 @@ function Field({
 }: FieldProps) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
+      <span className="text-micro font-semibold tracking-wide text-olive-700 uppercase">
         {label}
       </span>
       <div className="relative">
@@ -183,7 +183,7 @@ function Field({
         />
       </div>
       {errors?.length ? (
-        <span role="alert" className="text-[11px] font-semibold text-terra-700">
+        <span role="alert" className="text-micro font-semibold text-terra-700">
           {errors[0]}
         </span>
       ) : null}

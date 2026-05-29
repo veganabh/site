@@ -96,7 +96,7 @@ function NotificationItem({ notification, onRead, onCtaClick }: NotificationItem
       {/* Conteúdo */}
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-olive-700/70">
+          <p className="text-micro font-semibold tracking-wide text-olive-700/70 uppercase">
             {label}
           </p>
           {!notification.read && (
@@ -111,10 +111,10 @@ function NotificationItem({ notification, onRead, onCtaClick }: NotificationItem
           )}
         </div>
 
-        <p className="mt-0.5 text-body-sm font-semibold leading-snug text-olive-900 line-clamp-1">
+        <p className="mt-0.5 line-clamp-1 text-body-sm leading-snug font-semibold text-olive-900">
           {notification.title}
         </p>
-        <p className="mt-0.5 text-caption leading-snug text-olive-700 line-clamp-2">
+        <p className="mt-0.5 line-clamp-2 text-caption leading-snug text-olive-700">
           {notification.body}
         </p>
 
@@ -122,7 +122,7 @@ function NotificationItem({ notification, onRead, onCtaClick }: NotificationItem
           <button
             type="button"
             onClick={() => onCtaClick(notification)}
-            className="mt-1.5 inline-flex h-7 items-center gap-1 rounded-pill bg-terra-700 px-3 text-[11px] font-semibold text-paper-50 transition-colors hover:bg-terra-500"
+            className="mt-1.5 inline-flex h-7 items-center gap-1 rounded-pill bg-terra-700 px-3 text-micro font-semibold text-paper-50 transition-colors hover:bg-terra-500"
           >
             {notification.couponCode && <Ticket className="h-3 w-3" aria-hidden="true" />}
             {notification.ctaLabel ||
@@ -205,7 +205,7 @@ export function NotificationBell() {
           {badgeLabel && (
             <span
               aria-hidden="true"
-              className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-terra-500 px-0.5 text-[9px] font-bold leading-none text-paper-50"
+              className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-terra-500 px-0.5 text-micro leading-none font-bold text-paper-50"
             >
               {badgeLabel}
             </span>
@@ -279,7 +279,11 @@ export function NotificationBell() {
             {!isLoading &&
               notifications.map((n) => (
                 <div role="listitem" key={n.id}>
-                  <NotificationItem notification={n} onRead={markRead} onCtaClick={handleCtaClick} />
+                  <NotificationItem
+                    notification={n}
+                    onRead={markRead}
+                    onCtaClick={handleCtaClick}
+                  />
                 </div>
               ))}
           </div>

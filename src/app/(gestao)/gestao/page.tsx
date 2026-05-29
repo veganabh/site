@@ -60,7 +60,7 @@ export default async function GestaoPage() {
         <DashboardGreeting />
         <span
           role="note"
-          className="inline-flex items-center rounded-pill border border-divider bg-paper-100 px-2.5 py-1 text-[10px] font-semibold tracking-wide text-olive-700 uppercase"
+          className="inline-flex items-center rounded-pill border border-divider bg-paper-100 px-2.5 py-1 text-micro font-semibold tracking-wide text-olive-700 uppercase"
           title="Versão pré-migração — em breve esta área terá login próprio."
         >
           Pré-migração

@@ -33,20 +33,20 @@ export default async function PresentearPage() {
         <div className="relative flex flex-col gap-3">
           <p
             id="presentear-hero"
-            className="text-[11px] font-semibold tracking-wide text-terra-500 uppercase"
+            className="text-micro font-semibold tracking-wide text-terra-500 uppercase"
           >
             Para Presentear
           </p>
-          <h1 className="text-[28px] leading-tight font-extrabold text-paper-50 md:text-[40px]">
+          <h1 className="text-h2 leading-tight font-extrabold text-paper-50 md:text-h1">
             Doces que viajam bonito
             <br className="hidden md:block" /> até quem você gosta.
           </h1>
-          <p className="max-w-xl text-[13px] text-paper-50/80 md:text-[14px]">
+          <p className="max-w-xl text-body-sm text-paper-50/80 md:text-body-sm">
             Monte um kit com os sabores da pessoa, deixe uma mensagem no cartão e a gente entrega na
             casa dela. Sem lactose, sem ovo, sem stress.
           </p>
 
-          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[12px] text-paper-50/85">
+          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-caption text-paper-50/85">
             <li className="inline-flex items-center gap-1.5">
               <Package className="h-3.5 w-3.5 text-terra-500" aria-hidden="true" />
               embalagem pra presente
@@ -75,7 +75,7 @@ export default async function PresentearPage() {
           <h2 id="kits-titulo" className="text-h3 font-bold text-olive-900">
             Kits montados por você
           </h2>
-          <p className="text-[12px] text-olive-700">
+          <p className="text-caption text-olive-700">
             Três formatos. Você escolhe os sabores dentro de cada um.
           </p>
         </div>
@@ -89,7 +89,7 @@ export default async function PresentearPage() {
             <h2 id="presente-avulsos-titulo" className="text-h3 font-bold text-olive-900">
               Ou escolha um só
             </h2>
-            <p className="mt-0.5 text-[12px] text-olive-700">
+            <p className="mt-0.5 text-caption text-olive-700">
               Doces que viajam bem sozinhos — embalagem presente disponível no carrinho.
             </p>
           </div>

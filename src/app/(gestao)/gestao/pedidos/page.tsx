@@ -116,8 +116,7 @@ export default function PedidosPage() {
 
     return todayOrders.filter((o) => {
       if (q) {
-        const matches =
-          o.id.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q);
+        const matches = o.id.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q);
         if (!matches) return false;
       }
       if (onlyDelayed) {
@@ -224,12 +223,12 @@ export default function PedidosPage() {
             <div key={col.status} className="flex min-w-[180px] flex-1 flex-col gap-2">
               {/* Header da coluna */}
               <div className="flex items-center justify-between rounded-md bg-paper-100 px-2.5 py-1.5">
-                <p className="text-[10px] font-bold tracking-wide text-olive-700 uppercase">
+                <p className="text-micro font-bold tracking-wide text-olive-700 uppercase">
                   {col.label}
                 </p>
                 <span
                   className={cn(
-                    "flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] leading-none font-bold",
+                    "flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-micro leading-none font-bold",
                     colOrders.length > 0 ? col.badgeActiveClass : "bg-paper-50 text-olive-700/60",
                   )}
                   aria-label={`${colOrders.length} ${colOrders.length === 1 ? "pedido" : "pedidos"}`}
@@ -241,7 +240,7 @@ export default function PedidosPage() {
               {/* Cards */}
               <div className="flex flex-col gap-2 overflow-y-auto">
                 {colOrders.length === 0 ? (
-                  <p className="px-3 py-4 text-center text-[10px] text-olive-700/60">
+                  <p className="px-3 py-4 text-center text-micro text-olive-700/60">
                     {col.emptyLabel}
                   </p>
                 ) : (

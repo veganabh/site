@@ -36,7 +36,7 @@ type StatusFilter = "todos" | "ativos" | "inativos";
  * P0 UX:
  * - KPI strip acima da busca (Produtos ativos / Valor em estoque / Esgotados / Baixos / Total).
  * - Filtros colapsam em painel toggleável (padrão: fechado). Busca sempre visível.
- * - Densidade: thumb 48px, linhas py-2, badges compactos (text-[10px] px-1.5 py-0).
+ * - Densidade: thumb 48px, linhas py-2, badges compactos (text-micro px-1.5 py-0).
  */
 export function CardapioList() {
   const { products, toggleActive, adjustStock } = useMenuStore();
@@ -226,7 +226,7 @@ export function CardapioList() {
             <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
             Filtros
             {activeFiltersCount > 0 && (
-              <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-paper-50 px-1 text-[10px] font-bold text-olive-900">
+              <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-paper-50 px-1 text-micro font-bold text-olive-900">
                 {activeFiltersCount}
               </span>
             )}
@@ -456,7 +456,7 @@ function FilterChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-pill border px-2.5 py-0.5 text-[11px] leading-tight font-semibold transition-colors",
+        "rounded-pill border px-2.5 py-0.5 text-micro leading-tight font-semibold transition-colors",
         active
           ? tone === "leaf"
             ? "border-leaf-700 bg-leaf-500/15 text-leaf-700"
@@ -510,24 +510,24 @@ function CategorySection({
           >
             {categoryLabel}
           </h2>
-          <span className="rounded-pill bg-paper-50 px-2 py-0 text-[10px] leading-4 font-semibold text-olive-700">
+          <span className="rounded-pill bg-paper-50 px-2 py-0 text-micro leading-4 font-semibold text-olive-700">
             {products.length} {products.length === 1 ? "produto" : "produtos"}
           </span>
           {dimmed && (
-            <span className="rounded-pill bg-olive-900/8 px-1.5 py-0 text-[10px] leading-4 font-semibold tracking-wide text-olive-700 uppercase">
+            <span className="rounded-pill bg-olive-900/8 px-1.5 py-0 text-micro leading-4 font-semibold tracking-wide text-olive-700 uppercase">
               sem estoque
             </span>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] text-olive-700">{totalStock} em estoque</span>
+          <span className="text-micro text-olive-700">{totalStock} em estoque</span>
           {esgotados > 0 && (
-            <span className="rounded-pill bg-terra-500/15 px-1.5 py-0 text-[10px] leading-4 font-semibold text-terra-700">
+            <span className="rounded-pill bg-terra-500/15 px-1.5 py-0 text-micro leading-4 font-semibold text-terra-700">
               {esgotados} esgotado{esgotados > 1 ? "s" : ""}
             </span>
           )}
           {baixos > 0 && (
-            <span className="bg-terra-300/25 rounded-pill px-1.5 py-0 text-[10px] leading-4 font-semibold text-terra-700">
+            <span className="bg-terra-300/25 rounded-pill px-1.5 py-0 text-micro leading-4 font-semibold text-terra-700">
               {baixos} baixo{baixos > 1 ? "s" : ""}
             </span>
           )}
@@ -559,22 +559,22 @@ function CategorySection({
                   />
                 </th>
               )}
-              <th className="px-3 py-1.5 text-[10px] font-semibold tracking-wide text-olive-700 uppercase">
+              <th className="px-3 py-1.5 text-micro font-semibold tracking-wide text-olive-700 uppercase">
                 Foto
               </th>
-              <th className="px-3 py-1.5 text-[10px] font-semibold tracking-wide text-olive-700 uppercase">
+              <th className="px-3 py-1.5 text-micro font-semibold tracking-wide text-olive-700 uppercase">
                 Produto
               </th>
-              <th className="px-3 py-1.5 text-[10px] font-semibold tracking-wide text-olive-700 uppercase">
+              <th className="px-3 py-1.5 text-micro font-semibold tracking-wide text-olive-700 uppercase">
                 Preço site
               </th>
-              <th className="px-3 py-1.5 text-[10px] font-semibold tracking-wide text-olive-700 uppercase">
+              <th className="px-3 py-1.5 text-micro font-semibold tracking-wide text-olive-700 uppercase">
                 Estoque
               </th>
-              <th className="px-3 py-1.5 text-[10px] font-semibold tracking-wide text-olive-700 uppercase">
+              <th className="px-3 py-1.5 text-micro font-semibold tracking-wide text-olive-700 uppercase">
                 Status
               </th>
-              <th className="px-3 py-1.5 text-[10px] font-semibold tracking-wide text-olive-700 uppercase">
+              <th className="px-3 py-1.5 text-micro font-semibold tracking-wide text-olive-700 uppercase">
                 Ações
               </th>
             </tr>
@@ -613,7 +613,7 @@ function CategorySection({
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-paper-100">
-                        <span className="text-[9px] font-bold text-olive-700">foto</span>
+                        <span className="text-micro font-bold text-olive-700">foto</span>
                       </div>
                     )}
                   </div>
@@ -637,15 +637,15 @@ function CategorySection({
                   <div className="flex items-center gap-2">
                     <div className="flex w-[7rem] shrink-0 items-center">
                       {product.stock === 0 ? (
-                        <span className="inline-flex items-center rounded-pill bg-terra-500/15 px-1.5 py-0 text-[10px] leading-4 font-semibold text-terra-700">
+                        <span className="inline-flex items-center rounded-pill bg-terra-500/15 px-1.5 py-0 text-micro leading-4 font-semibold text-terra-700">
                           Esgotado
                         </span>
                       ) : product.stock <= product.lowStockThreshold ? (
-                        <span className="bg-terra-300/25 inline-flex items-center rounded-pill px-1.5 py-0 text-[10px] leading-4 font-semibold text-terra-700">
+                        <span className="bg-terra-300/25 inline-flex items-center rounded-pill px-1.5 py-0 text-micro leading-4 font-semibold text-terra-700">
                           Baixo — {product.stock}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-olive-700">
+                        <span className="text-micro text-olive-700">
                           {product.stock} em estoque
                         </span>
                       )}
@@ -681,7 +681,7 @@ function CategorySection({
                       product.active ? `Desativar ${product.name}` : `Ativar ${product.name}`
                     }
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-pill px-1.5 py-0 text-[10px] leading-4 font-semibold transition-colors",
+                      "inline-flex items-center gap-1 rounded-pill px-1.5 py-0 text-micro leading-4 font-semibold transition-colors",
                       product.active
                         ? "bg-leaf-500/10 text-leaf-700 hover:bg-leaf-500/20"
                         : "bg-paper-100 text-olive-700 hover:bg-paper-100",

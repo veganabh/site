@@ -286,7 +286,7 @@ export function KitBuilder({ slug }: KitBuilderProps) {
         <button
           type="button"
           onClick={handleBack}
-          className="inline-flex w-fit items-center gap-1 text-[12px] font-semibold text-olive-700 transition-colors hover:text-olive-900"
+          className="inline-flex w-fit items-center gap-1 text-caption font-semibold text-olive-700 transition-colors hover:text-olive-900"
         >
           <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
           {stepIdx === 0 ? "Cancelar" : "Voltar"}
@@ -294,10 +294,10 @@ export function KitBuilder({ slug }: KitBuilderProps) {
 
         <div className="flex flex-col gap-2">
           <div className="flex items-baseline justify-between gap-3">
-            <h1 className="text-[18px] leading-tight font-bold text-olive-900 md:text-[22px]">
+            <h1 className="text-body-lg leading-tight font-bold text-olive-900 md:text-h3">
               {currentSlot ? currentSlot.label : "Finalização"}
             </h1>
-            <span className="shrink-0 text-[11px] font-semibold text-olive-700">
+            <span className="shrink-0 text-micro font-semibold text-olive-700">
               Passo {stepIdx + 1} de {totalSteps}
             </span>
           </div>
@@ -305,7 +305,7 @@ export function KitBuilder({ slug }: KitBuilderProps) {
           <ProgressBar current={stepIdx + 1} total={totalSteps} />
 
           {currentSlot?.helper && (
-            <p className="text-[12px] text-olive-700">{currentSlot.helper}</p>
+            <p className="text-caption text-olive-700">{currentSlot.helper}</p>
           )}
 
           <DeliveryChip
@@ -422,23 +422,23 @@ function SlotStep({ slot, picks, onPick, onDecrement }: SlotStepProps) {
                 {count > 0 && (
                   <span
                     aria-label={`${count} selecionado${count > 1 ? "s" : ""}`}
-                    className="absolute top-2 right-2 inline-flex h-7 min-w-[28px] items-center justify-center gap-0.5 rounded-pill bg-terra-500 px-1.5 text-[12px] font-bold text-paper-50 shadow-md"
+                    className="absolute top-2 right-2 inline-flex h-7 min-w-[28px] items-center justify-center gap-0.5 rounded-pill bg-terra-500 px-1.5 text-caption font-bold text-paper-50 shadow-md"
                   >
                     <Check className="h-3 w-3" aria-hidden="true" strokeWidth={3} />
                     {count > 1 && count}
                   </span>
                 )}
                 {isSoldOut && (
-                  <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-pill bg-olive-900/85 px-2 py-0.5 text-[10px] font-semibold text-paper-50">
+                  <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-pill bg-olive-900/85 px-2 py-0.5 text-micro font-semibold text-paper-50">
                     Esgotado
                   </span>
                 )}
               </button>
 
               <div className="flex flex-1 flex-col gap-1 p-3">
-                <h3 className="text-[13px] leading-snug font-semibold text-olive-900">{p.name}</h3>
+                <h3 className="text-body-sm leading-snug font-semibold text-olive-900">{p.name}</h3>
                 {p.contains && p.contains.length > 0 && (
-                  <p className="text-[10px] text-olive-700">
+                  <p className="text-micro text-olive-700">
                     contém {p.contains.slice(0, 2).join(", ")}
                   </p>
                 )}
@@ -455,7 +455,7 @@ function SlotStep({ slot, picks, onPick, onDecrement }: SlotStepProps) {
                     </button>
                     <span
                       aria-label={`Quantidade selecionada: ${count}`}
-                      className="min-w-[1.5rem] text-center text-[13px] font-bold text-olive-900"
+                      className="min-w-[1.5rem] text-center text-body-sm font-bold text-olive-900"
                     >
                       {count}
                     </span>
@@ -532,10 +532,10 @@ function PersonalizationStep({
             <MessageCircle className="h-4 w-4" aria-hidden="true" />
           </span>
           <div>
-            <h2 id="kit-msg-titulo" className="text-[14px] font-bold text-olive-900">
+            <h2 id="kit-msg-titulo" className="text-body-sm font-bold text-olive-900">
               Mensagem no cartão
             </h2>
-            <p className="text-[11px] text-olive-700">
+            <p className="text-micro text-olive-700">
               Impresso à mão e colocado junto dos doces. Opcional.
             </p>
           </div>
@@ -548,7 +548,7 @@ function PersonalizationStep({
           placeholder="Ex: Pra você, que cuidou de mim sem cobrar nada. Aproveita cada pedaço."
           className="w-full resize-none rounded-md border border-divider bg-paper-50 p-3 text-body-sm text-olive-900 placeholder:text-olive-700/50"
         />
-        <div className="flex items-center justify-between text-[11px] text-olive-700">
+        <div className="flex items-center justify-between text-micro text-olive-700">
           <span>Até {GIFT_CARD_MESSAGE_MAX} caracteres</span>
           <span>
             {cardMessage.length}/{GIFT_CARD_MESSAGE_MAX}
@@ -576,7 +576,7 @@ function PersonalizationStep({
         />
       )}
 
-      <p className="mt-1 text-center text-[11px] text-olive-700">
+      <p className="mt-1 text-center text-micro text-olive-700">
         Ao concluir, você vai pro carrinho pra revisar e fechar o pedido.
       </p>
     </div>
@@ -612,8 +612,8 @@ function ToggleCard({ active, onToggle, icon: Icon, title, subtitle }: ToggleCar
         <Icon className="h-4 w-4" aria-hidden="true" />
       </span>
       <div className="flex-1">
-        <p className="text-[14px] font-bold text-olive-900">{title}</p>
-        <p className="text-[11px] text-olive-700">{subtitle}</p>
+        <p className="text-body-sm font-bold text-olive-900">{title}</p>
+        <p className="text-micro text-olive-700">{subtitle}</p>
       </div>
       <span
         aria-hidden="true"
@@ -736,7 +736,7 @@ function RecipientForm({
           {cepHint && (
             <span
               className={cn(
-                "inline-flex items-center gap-1 text-[11px] font-medium",
+                "inline-flex items-center gap-1 text-micro font-medium",
                 cepHint.tone === "error" && "text-terra-700",
                 cepHint.tone === "ok" && "text-leaf-700",
                 cepHint.tone === "loading" && "text-olive-700",
@@ -790,7 +790,7 @@ function TextField({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
+      <span className="text-micro font-semibold tracking-wide text-olive-700 uppercase">
         {label}
       </span>
       <input
@@ -824,7 +824,7 @@ function DeliveryChip({ tone, label, fee, eta }: DeliveryChipProps) {
   return (
     <div
       className={cn(
-        "inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 self-start rounded-pill border px-3 py-1 text-[11.5px]",
+        "inline-flex flex-wrap items-center gap-x-2 gap-y-0.5 self-start rounded-pill border px-3 py-1 text-caption",
         tone === "ok" && "border-leaf-500/40 bg-leaf-500/10 text-leaf-700",
         tone === "pending" && "border-divider bg-paper-100 text-olive-700",
         tone === "error" && "border-terra-500/40 bg-terra-500/10 text-terra-700",
@@ -865,11 +865,11 @@ function StickyCta({ canAdvance, isLastStep, slotCounter, finalPrice, onNext }: 
     <div className="fixed inset-x-0 bottom-0 z-10 border-t border-divider bg-paper-50/95 px-4 py-3 shadow-[0_-8px_24px_-12px_rgba(43,50,16,0.25)] backdrop-blur">
       <div className="mx-auto flex max-w-4xl items-center gap-3">
         {slotCounter ? (
-          <span className="text-[11px] text-olive-700">
+          <span className="text-micro text-olive-700">
             {slotCounter.current} de {slotCounter.total} escolhidos
           </span>
         ) : (
-          <span className="text-[11px] text-olive-700">
+          <span className="text-micro text-olive-700">
             Total: <strong className="text-olive-900">{formatBRL(finalPrice)}</strong>
           </span>
         )}
@@ -878,7 +878,7 @@ function StickyCta({ canAdvance, isLastStep, slotCounter, finalPrice, onNext }: 
           onClick={onNext}
           disabled={!canAdvance}
           className={cn(
-            "ml-auto inline-flex h-11 items-center gap-2 rounded-pill px-5 text-[13px] font-bold transition-transform active:scale-[0.98]",
+            "ml-auto inline-flex h-11 items-center gap-2 rounded-pill px-5 text-body-sm font-bold transition-transform active:scale-[0.98]",
             canAdvance
               ? "bg-terra-500 text-paper-50 shadow-sm"
               : "cursor-not-allowed bg-sage-300 text-paper-50/80",

@@ -125,7 +125,7 @@ export default function KitsPage() {
                   {/* Badge ativo/inativo */}
                   <span
                     className={cn(
-                      "absolute top-2 left-2 inline-flex items-center rounded-pill px-2 py-0.5 text-[10px] leading-4 font-semibold shadow-sm backdrop-blur-sm",
+                      "absolute top-2 left-2 inline-flex items-center rounded-pill px-2 py-0.5 text-micro leading-4 font-semibold shadow-sm backdrop-blur-sm",
                       kit.active
                         ? "bg-leaf-700 text-paper-50"
                         : "bg-paper-50/90 text-olive-700 ring-1 ring-divider ring-inset",

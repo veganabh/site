@@ -121,7 +121,7 @@ export default async function ObrigadoPage({ params }: { params: Promise<{ order
             <p className="text-body-sm font-semibold text-olive-900">
               Pagamento será combinado no WhatsApp
             </p>
-            <p className="text-[12px] text-olive-700">
+            <p className="text-caption text-olive-700">
               Não foi possível gerar o PIX automático. A Veg.ana vai te chamar no WhatsApp nos
               próximos minutos pra finalizar.
             </p>
@@ -155,7 +155,7 @@ export default async function ObrigadoPage({ params }: { params: Promise<{ order
           ))}
         </ul>
 
-        <dl className="flex flex-col gap-1 border-t border-divider pt-3 text-[12px]">
+        <dl className="flex flex-col gap-1 border-t border-divider pt-3 text-caption">
           <div className="flex justify-between">
             <dt className="text-olive-700">Subtotal</dt>
             <dd className="font-semibold text-olive-900 tabular-nums">
@@ -194,7 +194,7 @@ export default async function ObrigadoPage({ params }: { params: Promise<{ order
         <MessageCircle className="mt-0.5 h-5 w-5 shrink-0 text-leaf-700" aria-hidden="true" />
         <div className="flex flex-col gap-1">
           <p className="text-body-sm font-semibold text-olive-900">Próximo passo</p>
-          <p className="text-[12px] text-olive-700">
+          <p className="text-caption text-olive-700">
             Situação atual:{" "}
             <strong>
               {order.paymentStatus === "PAGO"

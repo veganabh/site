@@ -60,7 +60,7 @@ export function AddressManager() {
           <h2 id="perfil-enderecos-titulo" className="text-h3 font-bold text-olive-900">
             Endereços salvos
           </h2>
-          <p className="text-[12px] leading-snug text-olive-700">
+          <p className="text-caption leading-snug text-olive-700">
             Dá pra salvar mais de um — no checkout você escolhe pra onde vai.
           </p>
         </div>
@@ -68,7 +68,7 @@ export function AddressManager() {
         <button
           type="button"
           onClick={handleAddNew}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-pill bg-olive-900 px-3.5 text-[12px] font-semibold text-paper-50 transition-colors hover:bg-olive-700"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-pill bg-olive-900 px-3.5 text-caption font-semibold text-paper-50 transition-colors hover:bg-olive-700"
         >
           <Plus className="h-3.5 w-3.5" aria-hidden="true" />
           Adicionar
@@ -94,24 +94,24 @@ export function AddressManager() {
                 <div className="flex items-center gap-2">
                   <AddressTypeChip type={address.type} />
                   {address.nickname && address.nickname !== addressTypeLabel(address.type) && (
-                    <p className="text-[13px] leading-snug font-semibold text-olive-900">
+                    <p className="text-body-sm leading-snug font-semibold text-olive-900">
                       {address.nickname}
                     </p>
                   )}
                 </div>
-                <p className="mt-1.5 text-[12px] leading-relaxed text-olive-700">
+                <p className="mt-1.5 text-caption leading-relaxed text-olive-700">
                   {address.street}, {address.number}
                   {address.complement ? ` — ${address.complement}` : ""}
                 </p>
-                <p className="text-[12px] leading-relaxed text-olive-700">
+                <p className="text-caption leading-relaxed text-olive-700">
                   {address.neighborhood} · {address.city}/{address.state} · {address.cep}
                 </p>
                 {address.shippingFee > 0 ? (
-                  <p className="mt-1 text-[11px] font-semibold text-terra-700">
+                  <p className="mt-1 text-micro font-semibold text-terra-700">
                     Taxa de entrega: {formatBRL(address.shippingFee)}
                   </p>
                 ) : (
-                  <p className="mt-1 text-[11px] font-semibold text-success">Entrega grátis</p>
+                  <p className="mt-1 text-micro font-semibold text-success">Entrega grátis</p>
                 )}
               </div>
 
@@ -158,7 +158,7 @@ export function AddressManager() {
             {removeError ? (
               <p
                 role="alert"
-                className="mt-3 rounded-md bg-terra-500/10 px-3 py-2 text-[12px] font-semibold text-terra-700"
+                className="mt-3 rounded-md bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
               >
                 {removeError}
               </p>
@@ -168,7 +168,7 @@ export function AddressManager() {
                 type="button"
                 onClick={() => setToRemoveId(null)}
                 disabled={removing}
-                className="inline-flex h-10 items-center rounded-pill px-4 text-[13px] font-semibold text-olive-700 hover:bg-paper-100 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-10 items-center rounded-pill px-4 text-body-sm font-semibold text-olive-700 hover:bg-paper-100 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancelar
               </button>
@@ -176,7 +176,7 @@ export function AddressManager() {
                 type="button"
                 onClick={confirmRemove}
                 disabled={removing}
-                className="inline-flex h-10 items-center rounded-pill bg-error px-4 text-[13px] font-semibold text-paper-50 hover:bg-error/90 disabled:cursor-wait disabled:opacity-70"
+                className="inline-flex h-10 items-center rounded-pill bg-error px-4 text-body-sm font-semibold text-paper-50 hover:bg-error/90 disabled:cursor-wait disabled:opacity-70"
               >
                 {removing ? "Removendo…" : "Remover"}
               </button>

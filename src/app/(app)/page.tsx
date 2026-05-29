@@ -62,10 +62,10 @@ export default async function Home({ searchParams }: HomeProps) {
               {headerLabel}
             </h2>
             {collection?.tagline && (
-              <p className="mt-0.5 text-[12px] text-olive-700">{collection.tagline}</p>
+              <p className="mt-0.5 text-caption text-olive-700">{collection.tagline}</p>
             )}
           </div>
-          <p className="inline-flex items-center gap-1.5 text-[11px] text-olive-700">
+          <p className="inline-flex items-center gap-1.5 text-micro text-olive-700">
             <span className="h-1.5 w-1.5 rounded-full bg-leaf-500" aria-hidden="true" />
             {products.length} {products.length === 1 ? "item" : "itens"} · sem lactose, vegano
           </p>

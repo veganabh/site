@@ -68,10 +68,7 @@ export function Sidebar() {
   const expanded = useSidebarStore((s) => s.publicExpanded);
   const toggleExpanded = useSidebarStore((s) => s.togglePublic);
 
-  const navItems: NavItem[] = [
-    ...BASE_NAV,
-    isAuthed ? CONTA_ITEM_AUTHED : CONTA_ITEM_ANON,
-  ];
+  const navItems: NavItem[] = [...BASE_NAV, isAuthed ? CONTA_ITEM_AUTHED : CONTA_ITEM_ANON];
 
   return (
     <aside
@@ -83,10 +80,7 @@ export function Sidebar() {
     >
       {/* Topo: logo + toggle */}
       <div
-        className={cn(
-          "flex items-center",
-          expanded ? "justify-between px-3" : "justify-center",
-        )}
+        className={cn("flex items-center", expanded ? "justify-between px-3" : "justify-center")}
       >
         <Link
           href="/"
@@ -153,14 +147,14 @@ export function Sidebar() {
                 {badgeCount > 0 && (
                   <span
                     aria-hidden="true"
-                    className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-terra-500 text-[9px] leading-none font-bold text-paper-50"
+                    className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-terra-500 text-micro leading-none font-bold text-paper-50"
                   >
                     {badgeCount > 9 ? "9+" : badgeCount}
                   </span>
                 )}
               </span>
               {expanded && (
-                <span className="truncate text-[13px] font-semibold">{item.label}</span>
+                <span className="truncate text-body-sm font-semibold">{item.label}</span>
               )}
             </Link>
           );
@@ -168,12 +162,7 @@ export function Sidebar() {
       </nav>
 
       {/* Rodapé: divider + gestão + dev + settings + toggle (quando collapsed) */}
-      <div
-        className={cn(
-          "flex flex-col gap-2",
-          expanded ? "items-stretch px-2" : "items-center",
-        )}
-      >
+      <div className={cn("flex flex-col gap-2", expanded ? "items-stretch px-2" : "items-center")}>
         <div
           className={cn("border-t border-divider", expanded ? "w-full" : "w-6 self-center")}
           role="separator"
@@ -200,7 +189,7 @@ export function Sidebar() {
             aria-hidden="true"
             strokeWidth={pathname.startsWith("/gestao") ? 2.25 : 1.75}
           />
-          {expanded && <span className="truncate text-[13px] font-semibold">Gestão</span>}
+          {expanded && <span className="truncate text-body-sm font-semibold">Gestão</span>}
         </Link>
 
         <button
@@ -215,7 +204,7 @@ export function Sidebar() {
           )}
         >
           <Settings className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
-          {expanded && <span className="truncate text-[13px] font-semibold">Configurações</span>}
+          {expanded && <span className="truncate text-body-sm font-semibold">Configurações</span>}
         </button>
 
         {/* Toggle fica no rodapé quando collapsed */}
@@ -234,4 +223,3 @@ export function Sidebar() {
     </aside>
   );
 }
-

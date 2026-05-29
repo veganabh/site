@@ -47,7 +47,7 @@ export function AdminGate({ children }: AdminGateProps) {
         </p>
         <Link
           href="/"
-          className="mt-2 inline-flex h-10 items-center justify-center rounded-pill bg-terra-500 px-5 text-[13px] font-semibold text-paper-50 hover:bg-terra-700"
+          className="mt-2 inline-flex h-10 items-center justify-center rounded-pill bg-terra-500 px-5 text-body-sm font-semibold text-paper-50 hover:bg-terra-700"
         >
           Voltar pra home
         </Link>

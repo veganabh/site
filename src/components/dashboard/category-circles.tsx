@@ -166,14 +166,18 @@ function CategoryChip({ item, active, tier }: CategoryChipProps) {
               : "border-leaf-500/30 bg-leaf-500/8 text-leaf-700 hover:border-leaf-500/70",
       )}
     >
-      <Icon className="h-5 w-5 md:h-6 md:w-6" aria-hidden="true" strokeWidth={active ? 2.25 : 1.9} />
+      <Icon
+        className="h-5 w-5 md:h-6 md:w-6"
+        aria-hidden="true"
+        strokeWidth={active ? 2.25 : 1.9}
+      />
     </span>
   );
 
   const label = (
     <span
       className={cn(
-        "line-clamp-2 w-[4.75rem] text-center text-[11px] leading-tight font-semibold",
+        "line-clamp-2 w-[4.75rem] text-center text-micro leading-tight font-semibold",
         !item.available
           ? "text-olive-700/40"
           : active
@@ -197,7 +201,7 @@ function CategoryChip({ item, active, tier }: CategoryChipProps) {
       >
         {iconBox}
         {label}
-        <span className="text-[9px] font-medium tracking-wide text-olive-700/45 uppercase">
+        <span className="text-micro font-medium tracking-wide text-olive-700/45 uppercase">
           sem estoque
         </span>
       </div>

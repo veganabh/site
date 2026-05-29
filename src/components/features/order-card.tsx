@@ -116,7 +116,7 @@ export function OrderCard({ order, onOpen, className }: OrderCardProps) {
 
   // CTA herda cor do status atual — vínculo visual badge↔ação
   const ctaCommonClass = cn(
-    "flex-1 rounded-sm py-1.5 text-[11px] font-semibold transition",
+    "flex-1 rounded-sm py-1.5 text-micro font-semibold transition",
     badge.ctaClass,
   );
 
@@ -149,10 +149,12 @@ export function OrderCard({ order, onOpen, className }: OrderCardProps) {
 
       {/* Header: ID + badge status compacto */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[10px] font-bold tracking-tight text-olive-900">#{order.orderNumber}</span>
+        <span className="text-micro font-bold tracking-tight text-olive-900">
+          #{order.orderNumber}
+        </span>
         <span
           className={cn(
-            "inline-flex items-center rounded-pill px-1.5 py-0 text-[10px] leading-4 font-semibold",
+            "inline-flex items-center rounded-pill px-1.5 py-0 text-micro leading-4 font-semibold",
             badge.badgeClass,
           )}
         >
@@ -164,11 +166,11 @@ export function OrderCard({ order, onOpen, className }: OrderCardProps) {
       <div className="flex flex-col gap-0">
         <p className="truncate text-caption font-semibold text-olive-900">{order.customerName}</p>
         {ordinal > 1 && (
-          <p className="text-[10px] leading-tight text-olive-700/70">
+          <p className="text-micro leading-tight text-olive-700/70">
             {ordinalPtBR(ordinal)} pedido
           </p>
         )}
-        <p className="mt-0.5 text-[10px] text-olive-700">
+        <p className="mt-0.5 text-micro text-olive-700">
           {formatTime(order.createdAt)} · {itemCount} {itemCount === 1 ? "item" : "itens"}
         </p>
       </div>
@@ -177,7 +179,7 @@ export function OrderCard({ order, onOpen, className }: OrderCardProps) {
       {order.status === "PREPARANDO" && elapsedMinutes !== null && (
         <p
           className={cn(
-            "text-[10px] font-semibold",
+            "text-micro font-semibold",
             elapsedMinutes >= 30 ? "text-error" : "text-olive-700",
           )}
           aria-label={`${elapsedMinutes} minutos preparando`}

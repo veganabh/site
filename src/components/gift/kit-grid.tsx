@@ -33,21 +33,19 @@ export function KitGrid() {
                     photo={kit.coverPhoto}
                     className="transition-transform duration-500 md:group-hover:scale-[1.03]"
                   />
-                  <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-pill bg-paper-50/95 px-2.5 py-1 text-[11px] font-bold text-olive-900 shadow-sm backdrop-blur-sm">
+                  <span className="absolute top-3 left-3 inline-flex items-center gap-1 rounded-pill bg-paper-50/95 px-2.5 py-1 text-micro font-bold text-olive-900 shadow-sm backdrop-blur-sm">
                     <Icon className="h-3 w-3 text-terra-700" aria-hidden="true" />
                     {totalItems} itens
                   </span>
                 </div>
 
                 <div className="flex flex-1 flex-col gap-2 p-4">
-                  <h3 className="text-[15px] leading-tight font-bold text-olive-900">
-                    {kit.name}
-                  </h3>
-                  <p className="text-[12px] leading-snug text-olive-700">{kit.tagline}</p>
+                  <h3 className="text-body leading-tight font-bold text-olive-900">{kit.name}</h3>
+                  <p className="text-caption leading-snug text-olive-700">{kit.tagline}</p>
 
                   <ul className="mt-1 flex flex-col gap-0.5">
                     {kit.slots.map((s) => (
-                      <li key={s.id} className="text-[11px] text-olive-700">
+                      <li key={s.id} className="text-micro text-olive-700">
                         · {s.qty} ×{" "}
                         {s.label
                           .replace(/^Escolha( o| a| os| as| \d+)? /i, "")
@@ -61,11 +59,11 @@ export function KitGrid() {
                       <span className="text-body font-bold text-olive-900">
                         {formatBRL(kit.price)}
                       </span>
-                      <span className="text-[10px] text-olive-700 line-through">
+                      <span className="text-micro text-olive-700 line-through">
                         iFood {formatBRL(kit.priceIfoodAnchor)}
                       </span>
                     </div>
-                    <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-terra-700">
+                    <span className="inline-flex items-center gap-1 text-caption font-semibold text-terra-700">
                       Montar
                       <ArrowRight
                         className="h-3.5 w-3.5 transition-transform md:group-hover:translate-x-0.5"

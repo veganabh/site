@@ -117,7 +117,7 @@ export function PixPaymentPanel({
           <Check className="h-6 w-6 text-leaf-700" aria-hidden="true" />
         </span>
         <p className="text-body-sm font-semibold text-olive-900">Pagamento confirmado</p>
-        <p className="text-[12px] text-olive-700">
+        <p className="text-caption text-olive-700">
           A Veg.ana já está preparando seu pedido. Você recebe atualizações no WhatsApp.
         </p>
       </section>
@@ -136,7 +136,7 @@ export function PixPaymentPanel({
         <p className="text-body-sm font-semibold text-olive-900">
           PIX automático indisponível no momento
         </p>
-        <p className="text-[12px] text-olive-700">
+        <p className="text-caption text-olive-700">
           A Veg.ana vai te chamar no WhatsApp pra enviar o PIX manualmente ou combinar pagamento na
           entrega.
         </p>
@@ -153,12 +153,12 @@ export function PixPaymentPanel({
     >
       <header className="flex flex-col gap-1">
         <h2 className="text-body-sm font-semibold text-olive-900">Pague com PIX</h2>
-        <p className="text-[12px] text-olive-700">
+        <p className="text-caption text-olive-700">
           Total <strong className="tabular-nums">{formatBRL(amount)}</strong>. Confirmação
           automática em alguns segundos.
         </p>
         {devMode ? (
-          <span className="inline-flex w-fit items-center gap-1 rounded-pill bg-terra-700/10 px-2 py-0.5 text-[11px] font-semibold text-terra-700">
+          <span className="inline-flex w-fit items-center gap-1 rounded-pill bg-terra-700/10 px-2 py-0.5 text-micro font-semibold text-terra-700">
             ambiente de teste
           </span>
         ) : null}
@@ -177,7 +177,7 @@ export function PixPaymentPanel({
         <div
           role="status"
           aria-live="polite"
-          className="flex items-center gap-2 text-[12px] text-olive-700"
+          className="flex items-center gap-2 text-caption text-olive-700"
         >
           {expired ? (
             <span className="font-semibold text-terra-700">
@@ -196,7 +196,7 @@ export function PixPaymentPanel({
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="pix-copy-paste" className="text-[12px] font-semibold text-olive-900">
+        <label htmlFor="pix-copy-paste" className="text-caption font-semibold text-olive-900">
           Ou copie o código PIX
         </label>
         <div className="flex items-stretch gap-2">
@@ -204,12 +204,12 @@ export function PixPaymentPanel({
             id="pix-copy-paste"
             readOnly
             value={brCode}
-            className="min-w-0 flex-1 rounded-pill border border-divider bg-paper-50 px-3 text-[12px] text-olive-700 tabular-nums outline-none focus-visible:border-leaf-700"
+            className="min-w-0 flex-1 rounded-pill border border-divider bg-paper-50 px-3 text-caption text-olive-700 tabular-nums outline-none focus-visible:border-leaf-700"
           />
           <button
             type="button"
             onClick={handleCopy}
-            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-pill bg-olive-900 px-4 text-[12px] font-semibold text-paper-50 transition-colors hover:bg-olive-700"
+            className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-pill bg-olive-900 px-4 text-caption font-semibold text-paper-50 transition-colors hover:bg-olive-700"
           >
             {copied ? (
               <>
@@ -229,14 +229,14 @@ export function PixPaymentPanel({
       <button
         type="button"
         onClick={refresh}
-        className="inline-flex h-10 items-center justify-center gap-1.5 self-start rounded-pill border border-divider px-3 text-[12px] font-semibold text-olive-900 transition-colors hover:border-leaf-700 hover:text-leaf-700"
+        className="inline-flex h-10 items-center justify-center gap-1.5 self-start rounded-pill border border-divider px-3 text-caption font-semibold text-olive-900 transition-colors hover:border-leaf-700 hover:text-leaf-700"
       >
         <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
         verificar agora
       </button>
 
       {gatewayError ? (
-        <p className="text-[11px] text-terra-700">
+        <p className="text-micro text-terra-700">
           Não conseguimos checar o status agora. A confirmação pode demorar alguns segundos a mais.
         </p>
       ) : null}

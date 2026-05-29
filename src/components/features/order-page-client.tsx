@@ -48,7 +48,7 @@ function StatusToast({ visible }: StatusToastProps) {
   return (
     <div
       aria-live="polite"
-      className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-pill bg-olive-900 px-4 py-2 text-[12px] font-semibold text-paper-50 shadow-lg transition-all duration-300 ${visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"} `}
+      className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-pill bg-olive-900 px-4 py-2 text-caption font-semibold text-paper-50 shadow-lg transition-all duration-300 ${visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"} `}
     >
       Status atualizado
     </div>
@@ -101,7 +101,7 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
         <p className="text-body-sm text-olive-700">Pedido não encontrado.</p>
         <Link
           href="/conta"
-          className="mt-4 inline-flex text-[13px] font-semibold text-terra-700 underline"
+          className="mt-4 inline-flex text-body-sm font-semibold text-terra-700 underline"
         >
           Voltar pra conta
         </Link>
@@ -120,7 +120,7 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
       {/* Voltar */}
       <Link
         href="/conta"
-        className="mb-4 inline-flex items-center gap-1.5 text-[12px] font-semibold text-olive-700 transition hover:text-olive-900"
+        className="mb-4 inline-flex items-center gap-1.5 text-caption font-semibold text-olive-700 transition hover:text-olive-900"
       >
         <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
         Minha conta
@@ -129,14 +129,14 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
       {/* Cabeçalho */}
       <header className="mb-5">
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-[18px] font-bold text-olive-900">Pedido #{order.orderNumber}</h1>
+          <h1 className="text-body-lg font-bold text-olive-900">Pedido #{order.orderNumber}</h1>
           <OrderStatusBadge status={order.status} />
         </div>
-        <p className="mt-1 text-[12px] text-olive-700">{formatDateTime(order.createdAt)}</p>
+        <p className="mt-1 text-caption text-olive-700">{formatDateTime(order.createdAt)}</p>
 
         {/* ETA */}
         {eta && (
-          <p className="mt-2 rounded-lg bg-terra-500/10 px-3 py-1.5 text-[12px] font-semibold text-terra-700">
+          <p className="mt-2 rounded-lg bg-terra-500/10 px-3 py-1.5 text-caption font-semibold text-terra-700">
             Previsão de entrega: {eta}
           </p>
         )}
@@ -154,7 +154,7 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
       <section aria-labelledby="itens-titulo" className="mb-6">
         <h2
           id="itens-titulo"
-          className="mb-2 text-[13px] font-semibold tracking-wide text-olive-700 uppercase"
+          className="mb-2 text-body-sm font-semibold tracking-wide text-olive-700 uppercase"
         >
           Itens
         </h2>
@@ -164,10 +164,10 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
               key={`${order.id}-${item.productId}`}
               className="flex items-center justify-between gap-2"
             >
-              <span className="text-[13px] text-olive-900">
+              <span className="text-body-sm text-olive-900">
                 {item.qty}× {item.productName}
               </span>
-              <span className="shrink-0 text-[13px] font-semibold text-olive-900 tabular-nums">
+              <span className="shrink-0 text-body-sm font-semibold text-olive-900 tabular-nums">
                 {formatBRL(item.unitPriceSite * item.qty)}
               </span>
             </li>
@@ -176,8 +176,8 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
           {/* Linha frete */}
           {order.shippingFee > 0 && (
             <li className="mt-0.5 flex items-center justify-between gap-2 border-t border-divider pt-1.5">
-              <span className="text-[12px] text-olive-700">Frete</span>
-              <span className="text-[12px] text-olive-700 tabular-nums">
+              <span className="text-caption text-olive-700">Frete</span>
+              <span className="text-caption text-olive-700 tabular-nums">
                 {formatBRL(order.shippingFee)}
               </span>
             </li>
@@ -186,8 +186,8 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
           {/* Desconto cupom */}
           {order.couponApplied && (
             <li className="flex items-center justify-between gap-2">
-              <span className="text-[12px] text-leaf-700">Cupom {order.couponApplied.code}</span>
-              <span className="text-[12px] text-leaf-700 tabular-nums">
+              <span className="text-caption text-leaf-700">Cupom {order.couponApplied.code}</span>
+              <span className="text-caption text-leaf-700 tabular-nums">
                 −{formatBRL(order.couponApplied.discountValue)}
               </span>
             </li>
@@ -195,8 +195,8 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
 
           {/* Total */}
           <li className="mt-0.5 flex items-center justify-between gap-2 border-t border-divider pt-1.5">
-            <span className="text-[13px] font-bold text-olive-900">Total</span>
-            <span className="text-[14px] font-bold text-olive-900 tabular-nums">
+            <span className="text-body-sm font-bold text-olive-900">Total</span>
+            <span className="text-body-sm font-bold text-olive-900 tabular-nums">
               {formatBRL(order.total)}
             </span>
           </li>
@@ -208,7 +208,7 @@ export function OrderPageClient({ orderId }: OrderPageClientProps) {
         href={waUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex w-full items-center justify-center gap-2 rounded-pill border border-divider bg-paper-50 px-4 py-2.5 text-[13px] font-semibold text-olive-900 transition hover:bg-paper-100"
+        className="flex w-full items-center justify-center gap-2 rounded-pill border border-divider bg-paper-50 px-4 py-2.5 text-body-sm font-semibold text-olive-900 transition hover:bg-paper-100"
       >
         <MessageCircle className="h-4 w-4" aria-hidden="true" />
         Precisa de ajuda?

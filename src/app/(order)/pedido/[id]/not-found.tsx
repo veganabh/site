@@ -9,7 +9,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/conta"
-        className="mt-8 inline-flex rounded-pill bg-olive-900 px-6 py-2.5 text-[13px] font-semibold text-paper-50 transition hover:bg-olive-700"
+        className="mt-8 inline-flex rounded-pill bg-olive-900 px-6 py-2.5 text-body-sm font-semibold text-paper-50 transition hover:bg-olive-700"
       >
         Minha conta
       </Link>

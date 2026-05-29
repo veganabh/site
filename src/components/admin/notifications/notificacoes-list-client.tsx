@@ -132,14 +132,14 @@ function DeleteButton({ id, title }: { id: string; title: string }) {
             router.refresh();
           });
         }}
-        className="inline-flex h-7 items-center rounded-pill bg-terra-500 px-3 text-[11px] font-semibold text-paper-50 transition-colors hover:bg-terra-700 disabled:opacity-50"
+        className="inline-flex h-7 items-center rounded-pill bg-terra-500 px-3 text-micro font-semibold text-paper-50 transition-colors hover:bg-terra-700 disabled:opacity-50"
       >
         {isPending ? "Excluindo…" : "Sim"}
       </button>
       <button
         type="button"
         onClick={() => setConfirm(false)}
-        className="inline-flex h-7 items-center rounded-pill border border-divider bg-paper-50 px-3 text-[11px] font-medium text-olive-700 transition-colors hover:bg-paper-100"
+        className="inline-flex h-7 items-center rounded-pill border border-divider bg-paper-50 px-3 text-micro font-medium text-olive-700 transition-colors hover:bg-paper-100"
       >
         Não
       </button>
@@ -194,7 +194,7 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
         <p className="text-body-sm text-olive-700">Nenhuma notificação cadastrada.</p>
         <Link
           href="/gestao/notificacoes/nova"
-          className="inline-flex h-9 items-center gap-2 rounded-pill bg-olive-900 px-4 text-[13px] font-semibold text-paper-50 transition-colors hover:bg-olive-700"
+          className="inline-flex h-9 items-center gap-2 rounded-pill bg-olive-900 px-4 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-olive-700"
         >
           <Plus className="h-3.5 w-3.5" aria-hidden="true" />
           Criar a primeira
@@ -290,16 +290,16 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={cn(
-                        "inline-flex h-5 items-center rounded-full px-2 text-[10px] font-bold tracking-wide uppercase",
+                        "inline-flex h-5 items-center rounded-full px-2 text-micro font-bold tracking-wide uppercase",
                         STATUS_BADGE[status],
                       )}
                     >
                       {STATUS_LABEL[status]}
                     </span>
-                    <span className="text-[11px] font-medium text-olive-700/70">
+                    <span className="text-micro font-medium text-olive-700/70">
                       {TYPE_LABELS[n.type]}
                     </span>
-                    <span className="text-[11px] text-olive-700/50">
+                    <span className="text-micro text-olive-700/50">
                       {AUDIENCE_LABEL[n.audience] ?? n.audience}
                     </span>
                   </div>
@@ -309,7 +309,7 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
                   </p>
                   <p className="mt-0.5 line-clamp-1 text-caption text-olive-700">{n.body}</p>
 
-                  <p className="mt-1 text-[10px] text-olive-700/50">
+                  <p className="mt-1 text-micro text-olive-700/50">
                     {formatDate(n.publishedAt)} → {formatDate(n.expiresAt)}
                   </p>
 
@@ -368,7 +368,7 @@ function FilterChip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-pill border px-2.5 py-0.5 text-[11px] font-semibold transition-colors",
+        "rounded-pill border px-2.5 py-0.5 text-micro font-semibold transition-colors",
         active
           ? "border-olive-900 bg-olive-900 text-paper-50"
           : "border-divider bg-paper-50 text-olive-700 hover:bg-paper-100",

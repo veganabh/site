@@ -51,7 +51,7 @@ function EmptyState() {
       </div>
       <Link
         href="/presentear"
-        className="inline-flex h-10 items-center gap-2 rounded-pill bg-terra-500 px-5 text-[13px] font-semibold text-paper-50 transition-transform active:scale-[0.98]"
+        className="inline-flex h-10 items-center gap-2 rounded-pill bg-terra-500 px-5 text-body-sm font-semibold text-paper-50 transition-transform active:scale-[0.98]"
       >
         <Gift className="h-4 w-4" aria-hidden="true" />
         Montar um kit
@@ -77,8 +77,8 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 leading-snug">
-          <p className="text-[13px] font-bold text-olive-900">{gift.templateName}</p>
-          <p className="text-[11px] text-olive-700">
+          <p className="text-body-sm font-bold text-olive-900">{gift.templateName}</p>
+          <p className="text-micro text-olive-700">
             enviado em {formatShortDate(gift.placedAt)} · pedido {gift.orderId}
           </p>
         </div>
@@ -86,8 +86,8 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
         <span
           className={
             isDelivered
-              ? "inline-flex items-center gap-1 rounded-pill bg-leaf-500/10 px-2 py-0.5 text-[10px] font-semibold text-leaf-700"
-              : "inline-flex items-center gap-1 rounded-pill bg-terra-500/10 px-2 py-0.5 text-[10px] font-semibold text-terra-700"
+              ? "inline-flex items-center gap-1 rounded-pill bg-leaf-500/10 px-2 py-0.5 text-micro font-semibold text-leaf-700"
+              : "inline-flex items-center gap-1 rounded-pill bg-terra-500/10 px-2 py-0.5 text-micro font-semibold text-terra-700"
           }
         >
           {isDelivered ? (
@@ -105,13 +105,13 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
 
       <ul className="flex flex-col gap-1 rounded-md bg-paper-100 p-3">
         {gift.picks.map((row, idx) => (
-          <li key={idx} className="text-[11px] text-olive-900">
+          <li key={idx} className="text-micro text-olive-900">
             <span className="font-semibold text-olive-700">{row.slotLabel}:</span>{" "}
             {row.productNames.join(", ")}
           </li>
         ))}
         {gift.packaging && (
-          <li className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-terra-700">
+          <li className="mt-1 inline-flex items-center gap-1 text-micro font-semibold text-terra-700">
             <Package className="h-3 w-3" aria-hidden="true" />
             Embalagem de presente
           </li>
@@ -124,7 +124,7 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
             className="mt-0.5 h-3.5 w-3.5 shrink-0 text-terra-500"
             aria-hidden="true"
           />
-          <p className="text-[11px] leading-relaxed text-olive-900 italic">
+          <p className="text-micro leading-relaxed text-olive-900 italic">
             &ldquo;{gift.cardMessage}&rdquo;
           </p>
         </div>
@@ -133,7 +133,7 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
       {gift.recipient && (
         <div className="flex items-start gap-2 rounded-md border border-divider p-3">
           <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-terra-500" aria-hidden="true" />
-          <div className="flex min-w-0 flex-col gap-0.5 text-[11px] leading-snug">
+          <div className="flex min-w-0 flex-col gap-0.5 text-micro leading-snug">
             <span className="font-semibold text-olive-900">pra {gift.recipient.name}</span>
             <span className="text-olive-700">
               {gift.recipient.street}, {gift.recipient.number}
@@ -147,7 +147,7 @@ function GiftCard({ gift }: { gift: PlacedGift }) {
       )}
 
       <div className="flex items-center justify-between border-t border-divider pt-3">
-        <span className="text-[11px] font-semibold text-olive-700">Total</span>
+        <span className="text-micro font-semibold text-olive-700">Total</span>
         <span className="text-body-sm font-bold text-olive-900 tabular-nums">
           {formatBRL(gift.total)}
         </span>

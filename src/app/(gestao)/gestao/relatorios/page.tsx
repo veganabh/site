@@ -105,7 +105,7 @@ export default async function RelatoriosPage({
                 key={p}
                 href={`/gestao/relatorios?period=${p}`}
                 className={cn(
-                  "rounded-pill border px-2.5 py-0.5 text-[11px] font-semibold transition-colors",
+                  "rounded-pill border px-2.5 py-0.5 text-micro font-semibold transition-colors",
                   period === p
                     ? "border-olive-900 bg-olive-900 text-paper-50"
                     : "border-divider bg-paper-50 text-olive-700 hover:bg-paper-100",

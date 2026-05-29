@@ -64,7 +64,7 @@ export function TopBar({ className }: TopBarProps) {
         {/* Status da loja — visual neutro pra não competir com o ActiveOrderChip. */}
         {now && (
           <div
-            className="hidden items-center gap-2 rounded-pill border border-divider bg-paper-50 px-3 py-1.5 text-[12px] font-medium text-olive-700 md:inline-flex"
+            className="hidden items-center gap-2 rounded-pill border border-divider bg-paper-50 px-3 py-1.5 text-caption font-medium text-olive-700 md:inline-flex"
             aria-live="polite"
           >
             <span
@@ -90,12 +90,12 @@ export function TopBar({ className }: TopBarProps) {
                 "[&::-webkit-details-marker]:hidden",
               )}
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sage-300 text-[14px] font-bold text-olive-900">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sage-300 text-body-sm font-bold text-olive-900">
                 {initial}
               </span>
               <div className="hidden leading-tight md:block">
-                <p className="text-[13px] font-semibold text-olive-900">{user?.firstName}</p>
-                <p className="text-[11px] text-olive-900/60">{user?.city}</p>
+                <p className="text-body-sm font-semibold text-olive-900">{user?.firstName}</p>
+                <p className="text-micro text-olive-900/60">{user?.city}</p>
               </div>
             </summary>
 

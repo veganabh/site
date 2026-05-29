@@ -97,10 +97,7 @@ export function AdminTopbar({ onMenuOpen, pageTitle, className }: AdminTopbarPro
         className="hidden items-center gap-1.5 rounded-full border border-divider bg-paper-100 px-3 py-1 md:inline-flex"
       >
         <span
-          className={cn(
-            "h-1.5 w-1.5 rounded-full",
-            isAtivo ? "bg-leaf-500" : "bg-terra-500",
-          )}
+          className={cn("h-1.5 w-1.5 rounded-full", isAtivo ? "bg-leaf-500" : "bg-terra-500")}
           aria-hidden="true"
         />
         <span className="text-caption font-semibold text-olive-700">
@@ -121,12 +118,12 @@ export function AdminTopbar({ onMenuOpen, pageTitle, className }: AdminTopbarPro
             )}
           >
             <span
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-olive-900 text-[13px] font-bold text-paper-50"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-olive-900 text-body-sm font-bold text-paper-50"
               aria-hidden="true"
             >
               {initial}
             </span>
-            <span className="hidden text-[13px] font-semibold text-olive-900 sm:block">
+            <span className="hidden text-body-sm font-semibold text-olive-900 sm:block">
               {displayName}
             </span>
           </summary>

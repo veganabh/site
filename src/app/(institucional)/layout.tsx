@@ -16,7 +16,7 @@ export default function InstitucionalLayout({ children }: { children: React.Reac
           </Link>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-olive-700 transition-colors hover:text-olive-900"
+            className="inline-flex items-center gap-1.5 text-caption font-semibold text-olive-700 transition-colors hover:text-olive-900"
           >
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
             Voltar ao cardápio

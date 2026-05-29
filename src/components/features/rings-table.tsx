@@ -4,10 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import * as Switch from "@radix-ui/react-switch";
 import { cn } from "@/lib/utils";
 import { useRingsStore } from "@/stores/rings-store";
-import {
-  resetRingsToDefaultsAction,
-  updateRingAction,
-} from "@/server/actions/rings";
+import { resetRingsToDefaultsAction, updateRingAction } from "@/server/actions/rings";
 import type { DeliveryRing } from "@/types/delivery-ring";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -64,7 +61,7 @@ function RingRow({ ring, isHighlighted, onUpdate }: RingRowProps) {
             step={0.5}
             value={ring.fee}
             onChange={(e) => onUpdate(ring.id, { fee: parseFloat(e.target.value) || 0 })}
-            className="w-14 rounded-sm border border-olive-900/20 bg-paper-50 px-1.5 py-0.5 text-right text-[12px] text-olive-900 focus:border-olive-700 focus:outline-none"
+            className="w-14 rounded-sm border border-olive-900/20 bg-paper-50 px-1.5 py-0.5 text-right text-caption text-olive-900 focus:border-olive-700 focus:outline-none"
           />
         </div>
       </td>
@@ -81,7 +78,7 @@ function RingRow({ ring, isHighlighted, onUpdate }: RingRowProps) {
           step={5}
           value={ring.etaMin}
           onChange={(e) => onUpdate(ring.id, { etaMin: parseInt(e.target.value, 10) || 0 })}
-          className="w-12 rounded-sm border border-olive-900/20 bg-paper-50 px-1.5 py-0.5 text-right text-[12px] text-olive-900 focus:border-olive-700 focus:outline-none"
+          className="w-12 rounded-sm border border-olive-900/20 bg-paper-50 px-1.5 py-0.5 text-right text-caption text-olive-900 focus:border-olive-700 focus:outline-none"
         />
       </td>
 
@@ -97,7 +94,7 @@ function RingRow({ ring, isHighlighted, onUpdate }: RingRowProps) {
           step={5}
           value={ring.etaMax}
           onChange={(e) => onUpdate(ring.id, { etaMax: parseInt(e.target.value, 10) || 0 })}
-          className="w-12 rounded-sm border border-olive-900/20 bg-paper-50 px-1.5 py-0.5 text-right text-[12px] text-olive-900 focus:border-olive-700 focus:outline-none"
+          className="w-12 rounded-sm border border-olive-900/20 bg-paper-50 px-1.5 py-0.5 text-right text-caption text-olive-900 focus:border-olive-700 focus:outline-none"
         />
       </td>
 
@@ -198,7 +195,7 @@ export function RingsTable({ highlightedId, onMutationSuccess, onMutationError }
           type="button"
           onClick={handleReset}
           disabled={resetting}
-          className="text-[11px] font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900 disabled:opacity-60"
+          className="text-micro font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900 disabled:opacity-60"
         >
           {resetting ? "Restaurando..." : "Restaurar padrões"}
         </button>
@@ -208,22 +205,22 @@ export function RingsTable({ highlightedId, onMutationSuccess, onMutationError }
         <table className="w-full min-w-[480px] border-collapse text-left">
           <thead>
             <tr className="border-b border-divider bg-paper-100">
-              <th className="py-2 pr-2 pl-3 text-[11px] font-bold tracking-wide text-olive-700 uppercase">
+              <th className="py-2 pr-2 pl-3 text-micro font-bold tracking-wide text-olive-700 uppercase">
                 Anel
               </th>
-              <th className="px-2 py-2 text-[11px] font-bold tracking-wide text-olive-700 uppercase">
+              <th className="px-2 py-2 text-micro font-bold tracking-wide text-olive-700 uppercase">
                 Raio
               </th>
-              <th className="px-2 py-2 text-[11px] font-bold tracking-wide text-olive-700 uppercase">
+              <th className="px-2 py-2 text-micro font-bold tracking-wide text-olive-700 uppercase">
                 Taxa
               </th>
-              <th className="px-2 py-2 text-[11px] font-bold tracking-wide text-olive-700 uppercase">
+              <th className="px-2 py-2 text-micro font-bold tracking-wide text-olive-700 uppercase">
                 ETA mín
               </th>
-              <th className="px-2 py-2 text-[11px] font-bold tracking-wide text-olive-700 uppercase">
+              <th className="px-2 py-2 text-micro font-bold tracking-wide text-olive-700 uppercase">
                 ETA máx
               </th>
-              <th className="py-2 pr-3 pl-2 text-center text-[11px] font-bold tracking-wide text-olive-700 uppercase">
+              <th className="py-2 pr-3 pl-2 text-center text-micro font-bold tracking-wide text-olive-700 uppercase">
                 Ativo
               </th>
             </tr>
@@ -241,7 +238,7 @@ export function RingsTable({ highlightedId, onMutationSuccess, onMutationError }
         </table>
       </div>
 
-      <p className="text-[11px] text-olive-700">
+      <p className="text-micro text-olive-700">
         ETA em minutos · Taxa em R$ · Salva automaticamente.
       </p>
     </div>

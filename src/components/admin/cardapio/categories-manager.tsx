@@ -263,11 +263,11 @@ function CategoryRow({
             <span className="truncate text-body-sm font-semibold text-olive-900">
               {category.name}
             </span>
-            <span className="shrink-0 rounded-pill bg-paper-100 px-2 py-0 text-[10px] leading-4 font-semibold text-olive-700">
+            <span className="shrink-0 rounded-pill bg-paper-100 px-2 py-0 text-micro leading-4 font-semibold text-olive-700">
               {productCount} {productCount === 1 ? "produto" : "produtos"}
             </span>
             {!category.active && (
-              <span className="shrink-0 rounded-pill bg-paper-100 px-2 py-0 text-[10px] leading-4 font-semibold text-olive-700">
+              <span className="shrink-0 rounded-pill bg-paper-100 px-2 py-0 text-micro leading-4 font-semibold text-olive-700">
                 oculta
               </span>
             )}

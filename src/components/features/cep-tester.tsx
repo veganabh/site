@@ -127,7 +127,7 @@ export function CepTester() {
       <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
         {/* Input CEP */}
         <div className="flex min-w-[140px] flex-1 flex-col gap-1">
-          <label htmlFor="cep-tester-cep" className="text-[11px] font-medium text-olive-700">
+          <label htmlFor="cep-tester-cep" className="text-micro font-medium text-olive-700">
             CEP
           </label>
           <input
@@ -138,13 +138,13 @@ export function CepTester() {
             value={cep}
             onChange={handleCepChange}
             maxLength={9}
-            className="rounded-sm border border-olive-900/20 bg-paper-50 px-2.5 py-1.5 text-[13px] text-olive-900 placeholder:text-olive-500 focus:border-olive-700 focus:outline-none"
+            className="rounded-sm border border-olive-900/20 bg-paper-50 px-2.5 py-1.5 text-body-sm text-olive-900 placeholder:text-olive-500 focus:border-olive-700 focus:outline-none"
           />
         </div>
 
         {/* Input número (opcional) */}
         <div className="flex w-20 flex-col gap-1">
-          <label htmlFor="cep-tester-number" className="text-[11px] font-medium text-olive-700">
+          <label htmlFor="cep-tester-number" className="text-micro font-medium text-olive-700">
             Nº (opcional)
           </label>
           <input
@@ -154,7 +154,7 @@ export function CepTester() {
             placeholder="202"
             value={number}
             onChange={(e) => setNumber(e.target.value)}
-            className="rounded-sm border border-olive-900/20 bg-paper-50 px-2.5 py-1.5 text-[13px] text-olive-900 placeholder:text-olive-500 focus:border-olive-700 focus:outline-none"
+            className="rounded-sm border border-olive-900/20 bg-paper-50 px-2.5 py-1.5 text-body-sm text-olive-900 placeholder:text-olive-500 focus:border-olive-700 focus:outline-none"
           />
         </div>
 
@@ -164,7 +164,7 @@ export function CepTester() {
           disabled={result.status === "loading"}
           aria-label="Verificar cobertura de CEP"
           className={cn(
-            "flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-[12px] font-semibold text-paper-50 transition-colors",
+            "flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-caption font-semibold text-paper-50 transition-colors",
             result.status === "loading"
               ? "cursor-wait bg-olive-900/50"
               : "bg-olive-900 hover:bg-olive-700",
@@ -203,7 +203,7 @@ export function CepTester() {
             {result.neighborhood ? `CEP ${cep} → ${result.neighborhood}` : `CEP ${cep}`}
             {result.ring.order > 0 && ` · Anel ${result.ring.order}`}
           </div>
-          <p className="text-[12px] text-olive-700">
+          <p className="text-caption text-olive-700">
             {result.ring.fee === 0 ? (
               <span className="font-semibold text-leaf-700">Frete grátis</span>
             ) : (
@@ -213,7 +213,7 @@ export function CepTester() {
             {result.ring.etaMin}–{result.ring.etaMax} min
           </p>
           {result.estimate && (
-            <p className="flex items-center gap-1 text-[11px] text-terra-700">
+            <p className="flex items-center gap-1 text-micro text-terra-700">
               <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
               Estimativa — conexão com mapa indisponível. Valor pode ajustar ao confirmar pedido.
             </p>

@@ -96,9 +96,7 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
   const newOrderCount = useAdminOrdersStore((s) => {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
-    return s.orders.filter(
-      (o) => o.status === "NOVO" && new Date(o.createdAt) >= start,
-    ).length;
+    return s.orders.filter((o) => o.status === "NOVO" && new Date(o.createdAt) >= start).length;
   });
 
   return (
@@ -175,11 +173,9 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
           >
             {collapsed ? (
               // Rail: divisor no lugar do rótulo (exceto antes do 1º grupo)
-              sectionIndex > 0 && (
-                <span aria-hidden="true" className="my-1 h-px w-7 bg-divider" />
-              )
+              sectionIndex > 0 && <span aria-hidden="true" className="my-1 h-px w-7 bg-divider" />
             ) : (
-              <span className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-olive-700/60 uppercase">
+              <span className="px-3 pb-1 text-micro font-semibold tracking-wide text-olive-700/60 uppercase">
                 {section.label}
               </span>
             )}
@@ -245,7 +241,7 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
               collapsed ? "h-10 w-10 justify-center" : "w-full gap-3 px-3 py-2",
             )}
           >
-              <svg
+            <svg
               className="h-[18px] w-[18px] shrink-0"
               viewBox="0 0 24 24"
               fill="none"

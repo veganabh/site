@@ -31,14 +31,14 @@ export function MiniCartBar() {
       <span className="flex items-center gap-2">
         <span className="relative inline-flex">
           <ShoppingBag className="h-5 w-5" aria-hidden="true" strokeWidth={2} />
-          <span className="absolute -top-1.5 -right-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-terra-500 px-1 text-[10px] font-bold text-paper-50">
+          <span className="absolute -top-1.5 -right-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-terra-500 px-1 text-micro font-bold text-paper-50">
             {itemCount}
           </span>
         </span>
-        <span className="text-[13px] font-semibold">Ver carrinho</span>
+        <span className="text-body-sm font-semibold">Ver carrinho</span>
       </span>
       <span className="flex items-center gap-2">
-        <span className="text-[14px] font-bold tabular-nums">{formatBRL(subtotal)}</span>
+        <span className="text-body-sm font-bold tabular-nums">{formatBRL(subtotal)}</span>
         <ArrowRight className="h-4 w-4" aria-hidden="true" />
       </span>
     </Link>
