@@ -125,8 +125,21 @@ const PALETTES: Record<ProductCategory, Palette[]> = {
   "edicao-especial": [{ bgFrom: "#3c4221", bgTo: "#2b3210", accent: "#de6e27", ink: "#fbf8ef" }],
 };
 
+/** Pools conhecidos — usados como fallback para categorias dinâmicas (tabela
+ * `categories`) que não têm paleta fixa em PALETTES. */
+const POOL_LIST: Palette[][] = Object.values(PALETTES);
+
 function paletteFor(category: ProductCategory, slug: string): Palette {
-  const pool = PALETTES[category];
+  // Categoria agora é dinâmica (slug livre). Se não há paleta fixa, escolhe um
+  // pool estável por hash do nome da categoria — evita crash e mantém consistência.
+  let pool = PALETTES[category];
+  if (!pool || pool.length === 0) {
+    let catHash = 0;
+    for (let i = 0; i < category.length; i += 1) {
+      catHash = (catHash + category.charCodeAt(i)) % POOL_LIST.length;
+    }
+    pool = POOL_LIST[catHash] ?? POOL_LIST[0];
+  }
   let hash = 0;
   for (let i = 0; i < slug.length; i += 1) hash = (hash + slug.charCodeAt(i)) % pool.length;
   return pool[hash];

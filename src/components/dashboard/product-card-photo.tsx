@@ -5,9 +5,10 @@ import { Plus, Star, Truck } from "lucide-react";
 import { ProductPhoto } from "@/components/features/product-photo";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
-import { CATEGORY_LABEL } from "@/lib/product-meta";
 import { useCartStore } from "@/stores/cart-store";
 import { useDeliveryStore } from "@/stores/delivery-store";
+import { useCategoryLabelMap } from "@/stores/categories-store";
+import { labelForCategory } from "@/types/category";
 import type { Product } from "@/types/product";
 
 type ProductCardPhotoProps = {
@@ -18,6 +19,7 @@ type ProductCardPhotoProps = {
 export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) {
   const addItem = useCartStore((s) => s.addItem);
   const deliveryQuote = useDeliveryStore((s) => s.quote);
+  const categoryLabels = useCategoryLabelMap();
   const savings = product.price_ifood - product.price_site;
   const hasSavings = savings > 0;
 
@@ -102,7 +104,7 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
           {product.name}
         </h3>
         <p className="text-[11px] text-olive-700">
-          {CATEGORY_LABEL[product.category]} · {product.gramatura_g}g
+          {labelForCategory(product.category, categoryLabels)} · {product.gramatura_g}g
           {product.serves !== undefined && ` · serve ${product.serves}`}
         </p>
 
