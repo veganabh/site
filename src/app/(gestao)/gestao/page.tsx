@@ -7,11 +7,12 @@
  * 3. O que tá saindo mais?
  *
  * Estrutura:
- * - AttentionHero (client, reativo via Zustand)
+ * - DashboardQuickActions (server, atalhos)
  * - DayStatsGrid (server, mock + métricas puras)
  * - TopSkusList + RecentOrdersFeed (lado a lado em xl)
  *
- * Hub de acesso aos módulos foi movido para /gestao/modulos.
+ * Alertas (pedidos novos/atrasados, estoque baixo) vivem nas abas Pedidos e
+ * Cardápio. Hub de acesso aos módulos foi movido para /gestao/modulos.
  */
 
 import type { Metadata } from "next";
@@ -22,10 +23,11 @@ import { DashboardGreeting } from "@/components/admin/dashboard/dashboard-greeti
 import { DashboardQuickActions } from "@/components/admin/dashboard/dashboard-quick-actions";
 import { DayStatsGrid } from "@/components/admin/dashboard/day-stats-grid";
 import { TopSkusList, type ProductThumb } from "@/components/admin/dashboard/top-skus-list";
-// Seções client reativas (Zustand) — import direto; Next 16 hidrata OK porque
-// cada arquivo declara "use client". `dynamic({ssr:false})` não é permitido
+// Seção client reativa (Zustand) — import direto; Next 16 hidrata OK porque
+// o arquivo declara "use client". `dynamic({ssr:false})` não é permitido
 // em Server Components nesta versão.
-import { AttentionHero } from "@/components/admin/dashboard/attention-hero";
+// Alertas de atenção (pedidos novos/atrasados, estoque baixo) agora vivem nas
+// próprias abas: Pedidos (header + DayStatsStrip) e Cardápio (CardapioStatsStrip).
 import { RecentOrdersFeed } from "@/components/admin/dashboard/recent-orders-feed";
 
 export const metadata: Metadata = {
@@ -68,15 +70,7 @@ export default async function GestaoPage() {
       {/* Atalhos rápidos */}
       <DashboardQuickActions />
 
-      {/* Linha 1 — Hero de atenção (reativo, client) */}
-      <section aria-labelledby="section-atencao">
-        <h2 id="section-atencao" className="sr-only">
-          Alertas que precisam de atenção
-        </h2>
-        <AttentionHero />
-      </section>
-
-      {/* Linha 2 — Faturamento do dia */}
+      {/* Linha 1 — Faturamento do dia */}
       <section aria-labelledby="section-faturamento">
         <h2 id="section-faturamento" className="sr-only">
           Faturamento do dia
