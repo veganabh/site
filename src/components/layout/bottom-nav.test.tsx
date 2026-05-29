@@ -6,6 +6,11 @@ vi.mock("next/navigation", () => ({
   usePathname: () => mockPathname(),
 }));
 
+// Sessão autenticada: 3º item da nav vira "Conta" (anônimo seria "Entrar").
+vi.mock("@/lib/auth/use-session", () => ({
+  useSession: () => ({ isAuthed: true, status: "authed" }),
+}));
+
 // Importar depois do mock
 import { BottomNav } from "./bottom-nav";
 

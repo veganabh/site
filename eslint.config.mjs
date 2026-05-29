@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Worktrees do Claude (cópias stale) não entram no lint.
+    ".claude/**",
   ]),
   // Anti-mock rule — mocks de domínio só vivem em src/__fixtures__/ ou
   // scripts/ (seed). Importar de outros lugares é red flag — código de
