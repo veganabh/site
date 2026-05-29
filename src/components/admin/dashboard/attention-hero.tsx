@@ -19,6 +19,7 @@ import { ClipboardList, Clock, Package } from "lucide-react";
 import { useAdminOrdersStore } from "@/stores/admin-orders-store";
 import { useMenuStore } from "@/stores/menu-store";
 import { countDelayedOrders } from "@/lib/dashboard-metrics";
+import { cn } from "@/lib/utils";
 
 export function AttentionHero() {
   const orders = useAdminOrdersStore((s) => s.orders);
@@ -30,7 +31,16 @@ export function AttentionHero() {
     (p) => p.active && p.stock > 0 && p.stock <= p.lowStockThreshold,
   ).length;
 
-  const hasAlerts = newCount > 0 || delayedCount > 0 || lowStockCount > 0;
+  const activeCount = [newCount > 0, delayedCount > 0, lowStockCount > 0].filter(Boolean).length;
+  const hasAlerts = activeCount > 0;
+
+  // Grid acompanha o nº de cards ativos pra não deixar coluna órfã.
+  const gridCols =
+    activeCount === 1
+      ? "grid-cols-1"
+      : activeCount === 2
+        ? "grid-cols-1 sm:grid-cols-2"
+        : "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3";
 
   if (!hasAlerts) {
     return (
@@ -46,10 +56,7 @@ export function AttentionHero() {
   }
 
   return (
-    <div
-      aria-label="Alertas operacionais"
-      className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
-    >
+    <div aria-label="Alertas operacionais" className={cn("grid gap-4", gridCols)}>
       {/* Card: pedidos novos */}
       {newCount > 0 && (
         <div className="flex flex-col gap-2 rounded-lg border border-terra-500/40 bg-terra-500/8 p-4 shadow-sm">

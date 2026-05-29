@@ -19,6 +19,7 @@ import { calcDayMetrics, calcTopSkus } from "@/lib/dashboard-metrics";
 import { listAllOrders } from "@/server/orders";
 import { listProducts } from "@/server/products";
 import { DashboardGreeting } from "@/components/admin/dashboard/dashboard-greeting";
+import { DashboardQuickActions } from "@/components/admin/dashboard/dashboard-quick-actions";
 import { DayStatsGrid } from "@/components/admin/dashboard/day-stats-grid";
 import { TopSkusList, type ProductThumb } from "@/components/admin/dashboard/top-skus-list";
 // Seções client reativas (Zustand) — import direto; Next 16 hidrata OK porque
@@ -63,6 +64,9 @@ export default async function GestaoPage() {
           Pré-migração
         </span>
       </div>
+
+      {/* Atalhos rápidos */}
+      <DashboardQuickActions />
 
       {/* Linha 1 — Hero de atenção (reativo, client) */}
       <section aria-labelledby="section-atencao">
