@@ -24,6 +24,8 @@ import { listProducts } from "@/server/products";
 import { listAllRings } from "@/server/rings";
 import { listAdminCoupons } from "@/server/coupons";
 import { listAllOrders } from "@/server/orders";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Módulos — Gestão Veg.ana",
@@ -50,76 +52,76 @@ function buildCards(opts: {
   inProgressOrdersCount: number;
 }): GestaoCard[] {
   return [
-  {
-    icon: Package,
-    title: "Cardápio",
-    description: "Gerir produtos, preços de venda e fotos do cardápio.",
-    href: "/gestao/cardapio",
-    stat: `${opts.activeProducts} produtos ativos`,
-    statSecondary: opts.lowStock > 0 ? `${opts.lowStock} com estoque baixo` : undefined,
-    phase: "disponível",
-  },
-  {
-    icon: Tag,
-    title: "Cupons",
-    description: "Criar, desativar e medir o uso de cupons de desconto.",
-    href: "/gestao/cupons",
-    stat: `${opts.couponsCount} cupons cadastrados`,
-    phase: "em construção",
-  },
-  {
-    icon: GitBranch,
-    title: "Cross-sell",
-    description: "Editar faixas de economia e os itens sugeridos no carrinho.",
-    href: "/gestao/cross-sell",
-    phase: "em construção",
-  },
-  {
-    icon: ClipboardList,
-    title: "Pedidos",
-    description: "Kanban dos pedidos do site — aceitar, preparar, chamar entregador.",
-    href: "/gestao/pedidos",
-    stat: `${opts.inProgressOrdersCount} em andamento`,
-    statSecondary:
-      opts.newOrdersCount > 0 ? `${opts.newOrdersCount} novo(s) esperando aceite` : undefined,
-    phase: "disponível",
-  },
-  {
-    icon: Sparkles,
-    title: "Edições Especiais",
-    description: "Cardápio rotativo mensal — criação e publicação de edições limitadas.",
-    href: "/gestao/edicoes",
-    phase: "fase 4",
-  },
-  {
-    icon: Gift,
-    title: "Kits de presente",
-    description: "Criar, editar e ativar templates de kits — individual, família ou anfitriã.",
-    href: "/gestao/kits",
-    phase: "disponível",
-  },
-  {
-    icon: BarChart2,
-    title: "Relatórios",
-    description: "Faturamento, margem e leitura dos relatórios do iFood.",
-    href: "/gestao/relatorios",
-    phase: "em construção",
-  },
-  {
-    icon: MapPin,
-    title: "Zonas de Entrega",
-    description: "Raio de atendimento, taxa e tempo estimado por região.",
-    href: "/gestao/zonas",
-    stat: `${opts.activeRingsCount} anéis ativos (até ${opts.maxKm} km)`,
-    phase: "disponível",
-  },
-  {
-    icon: SlidersHorizontal,
-    title: "Configurações",
-    description: "Status da loja, horário de funcionamento e impressora.",
-    href: "/gestao/configuracoes",
-    phase: "disponível",
-  },
+    {
+      icon: Package,
+      title: "Cardápio",
+      description: "Gerir produtos, preços de venda e fotos do cardápio.",
+      href: "/gestao/cardapio",
+      stat: `${opts.activeProducts} produtos ativos`,
+      statSecondary: opts.lowStock > 0 ? `${opts.lowStock} com estoque baixo` : undefined,
+      phase: "disponível",
+    },
+    {
+      icon: Tag,
+      title: "Cupons",
+      description: "Criar, desativar e medir o uso de cupons de desconto.",
+      href: "/gestao/cupons",
+      stat: `${opts.couponsCount} cupons cadastrados`,
+      phase: "em construção",
+    },
+    {
+      icon: GitBranch,
+      title: "Cross-sell",
+      description: "Editar faixas de economia e os itens sugeridos no carrinho.",
+      href: "/gestao/cross-sell",
+      phase: "em construção",
+    },
+    {
+      icon: ClipboardList,
+      title: "Pedidos",
+      description: "Kanban dos pedidos do site — aceitar, preparar, chamar entregador.",
+      href: "/gestao/pedidos",
+      stat: `${opts.inProgressOrdersCount} em andamento`,
+      statSecondary:
+        opts.newOrdersCount > 0 ? `${opts.newOrdersCount} novo(s) esperando aceite` : undefined,
+      phase: "disponível",
+    },
+    {
+      icon: Sparkles,
+      title: "Edições Especiais",
+      description: "Cardápio rotativo mensal — criação e publicação de edições limitadas.",
+      href: "/gestao/edicoes",
+      phase: "fase 4",
+    },
+    {
+      icon: Gift,
+      title: "Kits de presente",
+      description: "Criar, editar e ativar templates de kits — individual, família ou anfitriã.",
+      href: "/gestao/kits",
+      phase: "disponível",
+    },
+    {
+      icon: BarChart2,
+      title: "Relatórios",
+      description: "Faturamento, margem e leitura dos relatórios do iFood.",
+      href: "/gestao/relatorios",
+      phase: "em construção",
+    },
+    {
+      icon: MapPin,
+      title: "Zonas de Entrega",
+      description: "Raio de atendimento, taxa e tempo estimado por região.",
+      href: "/gestao/zonas",
+      stat: `${opts.activeRingsCount} anéis ativos (até ${opts.maxKm} km)`,
+      phase: "disponível",
+    },
+    {
+      icon: SlidersHorizontal,
+      title: "Configurações",
+      description: "Status da loja, horário de funcionamento e impressora.",
+      href: "/gestao/configuracoes",
+      phase: "disponível",
+    },
   ];
 }
 
@@ -143,12 +145,9 @@ export default async function ModulosPage() {
     listAllOrders(),
   ]);
   const activeProducts = products.filter((p) => p.active).length;
-  const lowStock = products.filter(
-    (p) => p.stock > 0 && p.stock <= p.lowStockThreshold,
-  ).length;
+  const lowStock = products.filter((p) => p.stock > 0 && p.stock <= p.lowStockThreshold).length;
   const activeRingsCount = rings.filter((r) => r.active).length;
-  const maxKm =
-    Math.max(...rings.filter((r) => r.active).map((r) => r.outerRadiusM), 0) / 1000;
+  const maxKm = Math.max(...rings.filter((r) => r.active).map((r) => r.outerRadiusM), 0) / 1000;
   const newOrdersCount = orders.filter((o) => o.status === "NOVO").length;
   const inProgressOrdersCount = orders.filter(
     (o) => o.status === "PREPARANDO" || o.status === "PRONTO" || o.status === "A_CAMINHO",
@@ -184,10 +183,7 @@ export default async function ModulosPage() {
             const isUnavailable = phase !== "disponível";
 
             return (
-              <div
-                key={card.href}
-                className="flex flex-col gap-3 rounded-lg border border-divider bg-paper-50 p-5 shadow-sm transition-shadow hover:shadow-md"
-              >
+              <Card key={card.href} padding="md" interactive className="flex flex-col gap-3">
                 {/* Ícone + título */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -223,23 +219,21 @@ export default async function ModulosPage() {
 
                 {/* CTA */}
                 {isUnavailable ? (
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="md"
                     disabled
                     aria-label={`${card.title} — em construção`}
-                    className="mt-auto w-full cursor-not-allowed rounded-sm border border-divider bg-paper-100 py-2.5 text-cta text-olive-700 opacity-60"
+                    className="mt-auto w-full"
                   >
                     Acessar
-                  </button>
+                  </Button>
                 ) : (
-                  <a
-                    href={card.href}
-                    className="mt-auto block w-full rounded-sm bg-olive-900 py-2.5 text-center text-cta text-paper-50 transition hover:bg-olive-700"
-                  >
-                    Acessar
-                  </a>
+                  <Button asChild variant="primary" size="md" className="mt-auto w-full">
+                    <a href={card.href}>Acessar</a>
+                  </Button>
                 )}
-              </div>
+              </Card>
             );
           })}
         </div>

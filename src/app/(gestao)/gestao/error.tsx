@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 type ErrorProps = {
   error: Error & { digest?: string };
@@ -19,13 +20,9 @@ export default function GestaoError({ error, reset }: ErrorProps) {
       <p className="mt-4 text-body text-olive-700">
         Pode ser passageiro — tenta de novo e, se persistir, fala com o time.
       </p>
-      <button
-        type="button"
-        onClick={reset}
-        className="mt-8 rounded-sm bg-olive-900 px-6 py-3 text-cta text-paper-50 transition hover:bg-olive-700"
-      >
+      <Button variant="primary" size="md" onClick={reset} className="mt-8">
         Tentar de novo
-      </button>
+      </Button>
     </main>
   );
 }

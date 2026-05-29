@@ -16,6 +16,7 @@ import { useAdminSettingsStore } from "@/stores/admin-settings-store";
 import type { WeekHours } from "@/stores/admin-settings-store";
 import { updateStoreSettingsAction } from "@/server/actions/store-settings";
 import { Toggle } from "@/components/ui/toggle";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 // Persiste o estado atual do store (após setter otimista) no Supabase.
@@ -35,15 +36,7 @@ const DAY_LABELS: Record<keyof WeekHours, string> = {
   sun: "Domingo",
 };
 
-const WEEK_ORDER: (keyof WeekHours)[] = [
-  "mon",
-  "tue",
-  "wed",
-  "thu",
-  "fri",
-  "sat",
-  "sun",
-];
+const WEEK_ORDER: (keyof WeekHours)[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 // ── Bloco A — Status da loja ───────────────────────────────────────────────────
 
@@ -58,9 +51,7 @@ function StoreStatusBlock() {
       aria-labelledby="cfg-status-title"
       className={cn(
         "rounded-lg border p-5",
-        isAtivo
-          ? "border-divider bg-paper-50"
-          : "border-terra-500/30 bg-terra-500/5",
+        isAtivo ? "border-divider bg-paper-50" : "border-terra-500/30 bg-terra-500/5",
       )}
     >
       <header className="mb-4 flex flex-col gap-1">
@@ -77,10 +68,7 @@ function StoreStatusBlock() {
         <div className="flex flex-col gap-0.5">
           <span
             id="cfg-status-label"
-            className={cn(
-              "text-body font-semibold",
-              isAtivo ? "text-olive-900" : "text-terra-700",
-            )}
+            className={cn("text-body font-semibold", isAtivo ? "text-olive-900" : "text-terra-700")}
           >
             {isAtivo ? "Loja aberta" : "Loja pausada"}
           </span>
@@ -108,8 +96,7 @@ function StoreStatusBlock() {
           role="status"
           className="mt-4 rounded-md border border-terra-500/30 bg-terra-500/10 px-4 py-3 text-body-sm text-terra-700"
         >
-          A loja está pausada. Reative quando estiver pronta para receber
-          pedidos.
+          A loja está pausada. Reative quando estiver pronta para receber pedidos.
         </p>
       )}
     </section>
@@ -124,17 +111,14 @@ function HoursBlock() {
   const updateDayHours = useAdminSettingsStore((s) => s.updateDayHours);
 
   return (
-    <section
-      aria-labelledby="cfg-hours-title"
-      className="rounded-lg border border-divider bg-paper-50 p-4"
-    >
+    <Card as="section" padding="none" aria-labelledby="cfg-hours-title" className="p-4">
       <header className="mb-3 flex flex-col gap-0.5">
         <h2 id="cfg-hours-title" className="text-body-lg font-semibold text-olive-900">
           Horário de funcionamento
         </h2>
         <p className="text-caption text-olive-700">
-          Referência informativa. Pedidos fora desse horário seguem normalmente
-          — em breve voltam como &ldquo;agendado pra depois&rdquo;.
+          Referência informativa. Pedidos fora desse horário seguem normalmente — em breve voltam
+          como &ldquo;agendado pra depois&rdquo;.
         </p>
       </header>
 
@@ -150,16 +134,10 @@ function HoursBlock() {
             const toId = `cfg-day-to-${day}`;
 
             const hasTimeError =
-              dayData.open &&
-              dayData.from &&
-              dayData.to &&
-              dayData.to <= dayData.from;
+              dayData.open && dayData.from && dayData.to && dayData.to <= dayData.from;
 
             return (
-              <div
-                key={day}
-                className="flex flex-wrap items-center gap-2 py-2 sm:flex-nowrap"
-              >
+              <div key={day} className="flex flex-wrap items-center gap-2 py-2 sm:flex-nowrap">
                 {/* Label do dia */}
                 <span
                   id={labelId}
@@ -209,17 +187,14 @@ function HoursBlock() {
                       aria-label={`${DAY_LABELS[day]} — abre`}
                       className={cn(
                         "rounded-sm border px-1.5 py-0.5 text-caption text-olive-900",
-                        "focus:outline-none focus:ring-2 focus:ring-olive-900 focus:ring-offset-1",
+                        "focus:ring-2 focus:ring-olive-900 focus:ring-offset-1 focus:outline-none",
                         hasTimeError
                           ? "border-terra-500 bg-terra-500/5"
                           : "border-divider bg-paper-50",
                       )}
                     />
 
-                    <span
-                      className="text-caption text-olive-700"
-                      aria-hidden="true"
-                    >
+                    <span className="text-caption text-olive-700" aria-hidden="true">
                       –
                     </span>
 
@@ -235,7 +210,7 @@ function HoursBlock() {
                       aria-label={`${DAY_LABELS[day]} — fecha`}
                       className={cn(
                         "rounded-sm border px-1.5 py-0.5 text-caption text-olive-900",
-                        "focus:outline-none focus:ring-2 focus:ring-olive-900 focus:ring-offset-1",
+                        "focus:ring-2 focus:ring-olive-900 focus:ring-offset-1 focus:outline-none",
                         hasTimeError
                           ? "border-terra-500 bg-terra-500/5"
                           : "border-divider bg-paper-50",
@@ -244,10 +219,7 @@ function HoursBlock() {
 
                     {/* Erro de validação inline */}
                     {hasTimeError && (
-                      <p
-                        role="alert"
-                        className="text-caption font-medium text-terra-700"
-                      >
+                      <p role="alert" className="text-caption font-medium text-terra-700">
                         Fechamento deve ser depois da abertura.
                       </p>
                     )}
@@ -258,7 +230,7 @@ function HoursBlock() {
           })}
         </div>
       </fieldset>
-    </section>
+    </Card>
   );
 }
 
@@ -271,17 +243,14 @@ function PrinterBlock() {
   const setPrinterName = useAdminSettingsStore((s) => s.setPrinterName);
 
   return (
-    <section
-      aria-labelledby="cfg-printer-title"
-      className="rounded-lg border border-divider bg-paper-50 p-5"
-    >
+    <Card as="section" padding="md" aria-labelledby="cfg-printer-title">
       <header className="mb-4 flex flex-col gap-1">
         <h2 id="cfg-printer-title" className="text-h3 text-olive-900">
           Impressora de pedidos
         </h2>
         <p className="text-body-sm text-olive-700">
-          Integração real com impressora térmica chega na Fase 5. Por enquanto
-          os pedidos aparecem só no painel.
+          Integração real com impressora térmica chega na Fase 5. Por enquanto os pedidos aparecem
+          só no painel.
         </p>
       </header>
 
@@ -313,10 +282,7 @@ function PrinterBlock() {
       {/* Campo nome — só quando habilitado */}
       {printerEnabled && (
         <div className="mt-4 flex flex-col gap-1.5">
-          <label
-            htmlFor="cfg-printer-name"
-            className="text-body-sm font-medium text-olive-900"
-          >
+          <label htmlFor="cfg-printer-name" className="text-body-sm font-medium text-olive-900">
             Nome da impressora
           </label>
           <input
@@ -333,7 +299,7 @@ function PrinterBlock() {
             className={cn(
               "w-full max-w-sm rounded-md border border-divider bg-paper-50 px-3 py-2",
               "text-body-sm text-olive-900 placeholder:text-olive-700",
-              "focus:outline-none focus:ring-2 focus:ring-olive-900 focus:ring-offset-1",
+              "focus:ring-2 focus:ring-olive-900 focus:ring-offset-1 focus:outline-none",
             )}
           />
           <p className="text-caption text-olive-700">
@@ -343,11 +309,9 @@ function PrinterBlock() {
       )}
 
       {!printerEnabled && (
-        <p className="mt-2 text-body-sm text-olive-700">
-          Pedidos aparecem só no painel digital.
-        </p>
+        <p className="mt-2 text-body-sm text-olive-700">Pedidos aparecem só no painel digital.</p>
       )}
-    </section>
+    </Card>
   );
 }
 
@@ -359,7 +323,7 @@ export default function ConfiguracoesPage() {
       {/* Header */}
       <div className="flex flex-col gap-1">
         <h1 className="text-h2 font-bold text-olive-900">Configurações</h1>
-        <p className="text-body-lg italic text-olive-700">
+        <p className="text-body-lg text-olive-700 italic">
           Ajustes operacionais da loja — status, horários e periféricos.
         </p>
       </div>

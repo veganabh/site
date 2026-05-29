@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Lock, Mail } from "lucide-react";
 
 import { signInAction, type AuthActionResult } from "@/server/auth/actions";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const INITIAL_STATE: AuthActionResult | null = null;
 
@@ -15,7 +16,7 @@ export function LoginForm({ next }: { next?: string }) {
     INITIAL_STATE,
   );
 
-  const fieldErrors = state && !state.ok ? state.fieldErrors ?? {} : {};
+  const fieldErrors = state && !state.ok ? (state.fieldErrors ?? {}) : {};
 
   return (
     <form
@@ -28,9 +29,7 @@ export function LoginForm({ next }: { next?: string }) {
         <h1 id="login-titulo" className="text-h2 font-bold text-olive-900">
           Entrar
         </h1>
-        <p className="text-body-sm text-olive-700">
-          Bem-vinda de volta. Cadê seus bolinhos.
-        </p>
+        <p className="text-body-sm text-olive-700">Bem-vinda de volta. Cadê seus bolinhos.</p>
       </header>
 
       <Field
@@ -64,18 +63,9 @@ export function LoginForm({ next }: { next?: string }) {
         </p>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className={cn(
-          "inline-flex h-11 items-center justify-center gap-2 rounded-pill px-5 text-[13px] font-semibold transition-colors",
-          pending
-            ? "cursor-wait bg-sage-300 text-paper-50/80"
-            : "bg-terra-500 text-paper-50 hover:bg-terra-700",
-        )}
-      >
+      <Button type="submit" variant="primary" isLoading={pending} disabled={pending}>
         {pending ? "Entrando…" : "Entrar"}
-      </button>
+      </Button>
 
       <p className="text-center text-[12px] text-olive-700">
         Ainda não tem conta?{" "}
@@ -120,7 +110,7 @@ function Field({
           className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700/60"
           aria-hidden="true"
         />
-        <input
+        <Input
           name={name}
           type={type}
           autoComplete={autoComplete}
@@ -128,7 +118,8 @@ function Field({
           required={required}
           defaultValue={defaultValue}
           aria-invalid={Boolean(errors?.length)}
-          className="h-10 w-full rounded-md border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50"
+          hasError={Boolean(errors?.length)}
+          className="pr-3 pl-9"
         />
       </div>
       {errors?.length ? (

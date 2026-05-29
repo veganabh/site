@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Store, Bike, AlertTriangle, MapPin, Clock } from "lucide-react";
 
 import { AdminGate } from "@/components/features/admin-gate";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
 import { buildChannelMetrics } from "@/lib/channel-metrics";
@@ -29,7 +30,20 @@ export const metadata: Metadata = {
 
 function monthLabel(key: string): string {
   const [y, m] = key.split("-");
-  const names = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  const names = [
+    "jan",
+    "fev",
+    "mar",
+    "abr",
+    "mai",
+    "jun",
+    "jul",
+    "ago",
+    "set",
+    "out",
+    "nov",
+    "dez",
+  ];
   return `${names[Number(m) - 1]}/${y.slice(2)}`;
 }
 
@@ -146,7 +160,7 @@ export default async function RelatoriosPage({
               hint={`${channel.ifood.orders} pedidos · ${formatBRL(channel.ifood.avgTicket)} ticket`}
               tone="terra"
             />
-            <div className="flex flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
+            <Card padding="none" className="flex flex-col gap-2 p-4">
               <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">
                 % no site
               </span>
@@ -154,8 +168,8 @@ export default async function RelatoriosPage({
                 {sitePct === null ? "—" : `${sitePct}%`}
               </span>
               <span className="text-caption text-olive-700/70">da receita total</span>
-            </div>
-            <div className="flex flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
+            </Card>
+            <Card padding="none" className="flex flex-col gap-2 p-4">
               <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">
                 Receita total
               </span>
@@ -163,11 +177,11 @@ export default async function RelatoriosPage({
                 {formatBRL(channel.totalRevenue)}
               </span>
               <span className="text-caption text-olive-700/70">site + iFood</span>
-            </div>
+            </Card>
           </div>
 
           {/* Tendência mensal — barras empilhadas (site vs iFood) */}
-          <div className="flex flex-col gap-3 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
+          <Card padding="none" className="flex flex-col gap-3 p-4">
             <div className="flex items-center justify-between">
               <h3 className="text-body-sm font-bold text-olive-900">Evolução mensal</h3>
               <div className="flex items-center gap-3 text-caption text-olive-700">
@@ -211,7 +225,7 @@ export default async function RelatoriosPage({
                 })}
               </ul>
             )}
-          </div>
+          </Card>
         </section>
 
         {/* ── Cupons: ROI ───────────────────────────────────────────────── */}
@@ -226,8 +240,16 @@ export default async function RelatoriosPage({
 
           <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
             <SimpleStat label="Usos" value={String(couponRoi.totalUses)} hint="pedidos com cupom" />
-            <SimpleStat label="Desconto dado" value={formatBRL(couponRoi.totalDiscount)} hint="total concedido" />
-            <SimpleStat label="Receita c/ cupom" value={formatBRL(couponRoi.totalRevenue)} hint="pedidos com cupom" />
+            <SimpleStat
+              label="Desconto dado"
+              value={formatBRL(couponRoi.totalDiscount)}
+              hint="total concedido"
+            />
+            <SimpleStat
+              label="Receita c/ cupom"
+              value={formatBRL(couponRoi.totalRevenue)}
+              hint="pedidos com cupom"
+            />
             <SimpleStat
               label="ROI médio"
               value={couponRoi.overallRoi === null ? "—" : `${couponRoi.overallRoi.toFixed(1)}x`}
@@ -236,16 +258,19 @@ export default async function RelatoriosPage({
           </div>
 
           {couponRoi.coupons.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-divider bg-paper-50 p-6 text-center">
+            <Card padding="none" className="border-dashed p-6 text-center">
               <p className="text-caption text-olive-700">Nenhum cupom usado ainda.</p>
-            </div>
+            </Card>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-divider bg-paper-50 shadow-sm">
+            <Card padding="none" className="overflow-x-auto">
               <table className="w-full min-w-[560px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-divider">
                     {["Cupom", "Usos", "Desconto", "Receita", "Ticket médio", "ROI"].map((h) => (
-                      <th key={h} className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase">
+                      <th
+                        key={h}
+                        className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase"
+                      >
                         {h}
                       </th>
                     ))}
@@ -254,11 +279,19 @@ export default async function RelatoriosPage({
                 <tbody>
                   {couponRoi.coupons.map((c) => (
                     <tr key={c.code} className="border-b border-divider last:border-0">
-                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">{c.code}</td>
+                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">
+                        {c.code}
+                      </td>
                       <td className="px-3 py-2 text-caption text-olive-700">{c.uses}</td>
-                      <td className="px-3 py-2 text-caption text-terra-700">−{formatBRL(c.discountGiven)}</td>
-                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">{formatBRL(c.revenue)}</td>
-                      <td className="px-3 py-2 text-caption text-olive-700">{formatBRL(c.avgTicket)}</td>
+                      <td className="px-3 py-2 text-caption text-terra-700">
+                        −{formatBRL(c.discountGiven)}
+                      </td>
+                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">
+                        {formatBRL(c.revenue)}
+                      </td>
+                      <td className="px-3 py-2 text-caption text-olive-700">
+                        {formatBRL(c.avgTicket)}
+                      </td>
                       <td className="px-3 py-2 text-caption font-semibold text-leaf-700">
                         {c.roi === null ? "—" : `${c.roi.toFixed(1)}x`}
                       </td>
@@ -266,7 +299,7 @@ export default async function RelatoriosPage({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </Card>
           )}
         </section>
 
@@ -275,43 +308,66 @@ export default async function RelatoriosPage({
           <div className="flex flex-col gap-0.5">
             <h2 className="text-body font-bold text-olive-900">Notificação → compra</h2>
             <p className="text-caption text-olive-700">
-              Cliente logado que clicou no CTA e comprou em até {attribution.windowDays} dias.
-              Mede se a notificação vende. (Clique anônimo não atribui — sem identidade.)
+              Cliente logado que clicou no CTA e comprou em até {attribution.windowDays} dias. Mede
+              se a notificação vende. (Clique anônimo não atribui — sem identidade.)
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-            <SimpleStat label="Cliques" value={String(attribution.totalClicks)} hint="logados (atribuíveis)" />
-            <SimpleStat label="Conversões" value={String(attribution.totalConversions)} hint="clicou e comprou" />
+            <SimpleStat
+              label="Cliques"
+              value={String(attribution.totalClicks)}
+              hint="logados (atribuíveis)"
+            />
+            <SimpleStat
+              label="Conversões"
+              value={String(attribution.totalConversions)}
+              hint="clicou e comprou"
+            />
             <SimpleStat
               label="Taxa conversão"
-              value={attribution.overallConvRate === null ? "—" : `${Math.round(attribution.overallConvRate * 100)}%`}
+              value={
+                attribution.overallConvRate === null
+                  ? "—"
+                  : `${Math.round(attribution.overallConvRate * 100)}%`
+              }
               hint="conversões ÷ cliques"
             />
-            <SimpleStat label="Receita atribuída" value={formatBRL(attribution.totalAttributedRevenue)} hint="pedidos pós-clique" />
+            <SimpleStat
+              label="Receita atribuída"
+              value={formatBRL(attribution.totalAttributedRevenue)}
+              hint="pedidos pós-clique"
+            />
           </div>
 
           {attribution.rows.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-divider bg-paper-50 p-6 text-center">
+            <Card padding="none" className="border-dashed p-6 text-center">
               <p className="text-caption text-olive-700">Nenhum clique de cliente logado ainda.</p>
-            </div>
+            </Card>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-divider bg-paper-50 shadow-sm">
+            <Card padding="none" className="overflow-x-auto">
               <table className="w-full min-w-[560px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-divider">
-                    {["Notificação", "Cliques", "Conversões", "Taxa", "Receita atribuída"].map((h) => (
-                      <th key={h} className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase">
-                        {h}
-                      </th>
-                    ))}
+                    {["Notificação", "Cliques", "Conversões", "Taxa", "Receita atribuída"].map(
+                      (h) => (
+                        <th
+                          key={h}
+                          className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase"
+                        >
+                          {h}
+                        </th>
+                      ),
+                    )}
                   </tr>
                 </thead>
                 <tbody>
                   {attribution.rows.map((r) => (
                     <tr key={r.notificationId} className="border-b border-divider last:border-0">
                       <td className="px-3 py-2">
-                        <span className="block truncate text-caption font-semibold text-olive-900">{r.title}</span>
+                        <span className="block truncate text-caption font-semibold text-olive-900">
+                          {r.title}
+                        </span>
                       </td>
                       <td className="px-3 py-2 text-caption text-olive-700">{r.clicks}</td>
                       <td className="px-3 py-2 text-caption text-olive-700">{r.conversions}</td>
@@ -325,7 +381,7 @@ export default async function RelatoriosPage({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </Card>
           )}
         </section>
 
@@ -334,33 +390,52 @@ export default async function RelatoriosPage({
           <div className="flex flex-col gap-0.5">
             <h2 className="text-body font-bold text-olive-900">Margem por produto</h2>
             <p className="text-caption text-olive-700">
-              Receita − custo (CPV). Cadastre o CPV no produto pra ver margem real. Sem CPV =
-              margem incompleta.
+              Receita − custo (CPV). Cadastre o CPV no produto pra ver margem real. Sem CPV = margem
+              incompleta.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-            <SimpleStat label="Receita" value={formatBRL(margin.totalRevenue)} hint="produtos vendidos" />
-            <SimpleStat label="Custo (CPV)" value={formatBRL(margin.totalCost)} hint="só com CPV informado" />
-            <SimpleStat label="Margem" value={formatBRL(margin.totalMargin)} hint="receita − custo" />
+            <SimpleStat
+              label="Receita"
+              value={formatBRL(margin.totalRevenue)}
+              hint="produtos vendidos"
+            />
+            <SimpleStat
+              label="Custo (CPV)"
+              value={formatBRL(margin.totalCost)}
+              hint="só com CPV informado"
+            />
+            <SimpleStat
+              label="Margem"
+              value={formatBRL(margin.totalMargin)}
+              hint="receita − custo"
+            />
             <SimpleStat
               label="Margem %"
-              value={margin.overallMarginPct === null ? "—" : `${Math.round(margin.overallMarginPct * 100)}%`}
+              value={
+                margin.overallMarginPct === null
+                  ? "—"
+                  : `${Math.round(margin.overallMarginPct * 100)}%`
+              }
               hint="margem ÷ receita"
             />
           </div>
 
           {margin.rows.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-divider bg-paper-50 p-6 text-center">
+            <Card padding="none" className="border-dashed p-6 text-center">
               <p className="text-caption text-olive-700">Nenhuma venda no período.</p>
-            </div>
+            </Card>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-divider bg-paper-50 shadow-sm">
+            <Card padding="none" className="overflow-x-auto">
               <table className="w-full min-w-[560px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-divider">
                     {["Produto", "Vendidos", "Receita", "Custo", "Margem", "Margem %"].map((h) => (
-                      <th key={h} className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase">
+                      <th
+                        key={h}
+                        className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase"
+                      >
                         {h}
                       </th>
                     ))}
@@ -369,11 +444,19 @@ export default async function RelatoriosPage({
                 <tbody>
                   {margin.rows.map((r) => (
                     <tr key={r.productId} className="border-b border-divider last:border-0">
-                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">{r.name}</td>
+                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">
+                        {r.name}
+                      </td>
                       <td className="px-3 py-2 text-caption text-olive-700">{r.unitsSold}</td>
-                      <td className="px-3 py-2 text-caption text-olive-900">{formatBRL(r.revenue)}</td>
+                      <td className="px-3 py-2 text-caption text-olive-900">
+                        {formatBRL(r.revenue)}
+                      </td>
                       <td className="px-3 py-2 text-caption text-olive-700">
-                        {r.hasCost ? formatBRL(r.cost) : <span className="text-terra-700">sem CPV</span>}
+                        {r.hasCost ? (
+                          formatBRL(r.cost)
+                        ) : (
+                          <span className="text-terra-700">sem CPV</span>
+                        )}
                       </td>
                       <td className="px-3 py-2 text-caption font-semibold text-olive-900">
                         {r.hasCost ? formatBRL(r.margin) : "—"}
@@ -385,7 +468,7 @@ export default async function RelatoriosPage({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </Card>
           )}
         </section>
 
@@ -396,16 +479,19 @@ export default async function RelatoriosPage({
             <h2 className="text-body font-bold text-olive-900">Pedidos por bairro</h2>
           </div>
           {geo.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-divider bg-paper-50 p-6 text-center">
+            <Card padding="none" className="border-dashed p-6 text-center">
               <p className="text-caption text-olive-700">Nenhum pedido no período.</p>
-            </div>
+            </Card>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-divider bg-paper-50 shadow-sm">
+            <Card padding="none" className="overflow-x-auto">
               <table className="w-full min-w-[360px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-divider">
                     {["Bairro", "Pedidos", "Receita"].map((h) => (
-                      <th key={h} className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase">
+                      <th
+                        key={h}
+                        className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase"
+                      >
                         {h}
                       </th>
                     ))}
@@ -414,14 +500,18 @@ export default async function RelatoriosPage({
                 <tbody>
                   {geo.map((g) => (
                     <tr key={g.neighborhood} className="border-b border-divider last:border-0">
-                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">{g.neighborhood}</td>
+                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">
+                        {g.neighborhood}
+                      </td>
                       <td className="px-3 py-2 text-caption text-olive-700">{g.orders}</td>
-                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">{formatBRL(g.revenue)}</td>
+                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">
+                        {formatBRL(g.revenue)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            </Card>
           )}
         </section>
 
@@ -436,16 +526,21 @@ export default async function RelatoriosPage({
             {timing.peakHour !== null ? `, ~${String(timing.peakHour).padStart(2, "0")}h` : ""}. Bom
             pra programar produção e disparar notificação.
           </p>
-          <div className="flex flex-col gap-3 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
+          <Card padding="none" className="flex flex-col gap-3 p-4">
             <span className="text-caption font-semibold text-olive-700">Por dia da semana</span>
             <ul className="flex flex-col gap-1.5">
               {timing.byWeekday.map((w) => {
-                const pct = timing.maxWeekdayOrders > 0 ? (w.orders / timing.maxWeekdayOrders) * 100 : 0;
+                const pct =
+                  timing.maxWeekdayOrders > 0 ? (w.orders / timing.maxWeekdayOrders) * 100 : 0;
                 return (
                   <li key={w.day} className="flex items-center gap-3">
                     <span className="w-10 shrink-0 text-caption text-olive-700">{w.day}</span>
                     <div className="h-4 flex-1 overflow-hidden rounded-sm bg-paper-100">
-                      <div className="h-full bg-olive-500" style={{ width: `${pct}%` }} aria-hidden="true" />
+                      <div
+                        className="h-full bg-olive-500"
+                        style={{ width: `${pct}%` }}
+                        aria-hidden="true"
+                      />
                     </div>
                     <span className="w-8 shrink-0 text-right text-caption font-semibold text-olive-900">
                       {w.orders}
@@ -454,7 +549,7 @@ export default async function RelatoriosPage({
                 );
               })}
             </ul>
-          </div>
+          </Card>
         </section>
       </div>
     </AdminGate>
@@ -463,11 +558,13 @@ export default async function RelatoriosPage({
 
 function SimpleStat({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
-      <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">{label}</span>
+    <Card padding="none" className="flex flex-col gap-2 p-4">
+      <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">
+        {label}
+      </span>
       <span className="text-h4 font-bold text-olive-900">{value}</span>
       <span className="text-caption text-olive-700/70">{hint}</span>
-    </div>
+    </Card>
   );
 }
 
@@ -485,7 +582,7 @@ function ChannelCard({
   tone: "leaf" | "terra";
 }) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
+    <Card padding="none" className="flex flex-col gap-2 p-4">
       <div
         className={cn(
           "flex items-center gap-1.5",
@@ -497,6 +594,6 @@ function ChannelCard({
       </div>
       <span className="text-h4 font-bold text-olive-900">{value}</span>
       <span className="text-caption text-olive-700/70">{hint}</span>
-    </div>
+    </Card>
   );
 }

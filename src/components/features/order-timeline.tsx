@@ -2,6 +2,7 @@
 
 import { Check, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 import type { Order, OrderStatus } from "@/types/order";
 import { useDeliveryPersonsStore } from "@/stores/delivery-persons-store";
 
@@ -154,7 +155,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
 
                 {/* Card entregador quando A_CAMINHO */}
                 {step === "A_CAMINHO" && isActive && (
-                  <div className="mt-2 flex items-center gap-2 rounded-lg border border-divider bg-paper-50 px-3 py-2">
+                  <Card padding="none" className="mt-2 flex items-center gap-2 px-3 py-2">
                     {deliveryPerson ? (
                       <>
                         <div className="flex flex-col">
@@ -173,7 +174,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                     ) : (
                       <p className="text-[12px] text-olive-700">Motoqueiro a caminho</p>
                     )}
-                  </div>
+                  </Card>
                 )}
 
                 {/* CTA avaliar quando ENTREGUE */}

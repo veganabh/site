@@ -6,6 +6,7 @@ import { getGiftKitBySlug } from "@/server/gift-kits";
 import { KitCoverPhoto } from "@/components/gift/kit-cover-photo";
 import { KitIcon } from "@/components/gift/kit-icon";
 import { formatBRL } from "@/lib/format";
+import { Card } from "@/components/ui/card";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -63,10 +64,7 @@ export default async function KitDetailPage({ params }: PageProps) {
 
           <p className="text-[13px] leading-relaxed text-olive-900">{kit.description}</p>
 
-          <div
-            aria-label="Preço do kit"
-            className="flex items-end gap-3 rounded-xl border border-divider bg-paper-50 p-4"
-          >
+          <Card aria-label="Preço do kit" padding="none" className="flex items-end gap-3 p-4">
             <div className="flex flex-col leading-none">
               <span className="text-[11px] font-semibold tracking-wide text-olive-700 uppercase">
                 Kit montado
@@ -85,11 +83,13 @@ export default async function KitDetailPage({ params }: PageProps) {
                 </span>
               </div>
             )}
-          </div>
+          </Card>
 
-          <section
+          <Card
+            as="section"
             aria-labelledby="kit-slots-titulo"
-            className="flex flex-col gap-2 rounded-xl border border-divider bg-paper-50 p-4"
+            padding="none"
+            className="flex flex-col gap-2 p-4"
           >
             <h2 id="kit-slots-titulo" className="text-[13px] font-bold text-olive-900">
               O que vem no kit
@@ -112,7 +112,7 @@ export default async function KitDetailPage({ params }: PageProps) {
             <p className="mt-1 text-[11px] text-olive-700">
               Total: {totalItems} itens · você escolhe cada sabor no próximo passo.
             </p>
-          </section>
+          </Card>
 
           <ul className="flex flex-wrap gap-x-4 gap-y-2 text-[11px] text-olive-700">
             <li className="inline-flex items-center gap-1.5">

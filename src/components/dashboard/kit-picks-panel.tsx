@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { Gift, Package, Sparkles, Check } from "lucide-react";
 import { ProductPhoto } from "@/components/features/product-photo";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
 import { GIFT_PACKAGING_PRICE } from "@/types/gift-kit";
@@ -26,7 +27,7 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
   const products = useMenuStore((s) => s.products);
   const kits = useGiftKitsStore((s) => s.kits);
 
-  const template = templateId ? kits.find((k) => k.id === templateId) ?? null : null;
+  const template = templateId ? (kits.find((k) => k.id === templateId) ?? null) : null;
   const productsById = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
 
   const pickedItems = useMemo(() => {
@@ -53,8 +54,7 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
   const totalPicks = pickedItems.reduce((acc, r) => acc + r.count, 0);
   const expectedPicks = template?.slots.reduce((acc, s) => acc + s.qty, 0) ?? 0;
   const finalPrice = (template?.price ?? 0) + (packaging ? GIFT_PACKAGING_PRICE : 0);
-  const ifoodAnchor =
-    (template?.priceIfoodAnchor ?? 0) + (packaging ? GIFT_PACKAGING_PRICE : 0);
+  const ifoodAnchor = (template?.priceIfoodAnchor ?? 0) + (packaging ? GIFT_PACKAGING_PRICE : 0);
   const savings = Math.max(0, ifoodAnchor - finalPrice);
 
   return (
@@ -76,9 +76,7 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
           </span>
         </header>
 
-        {template && (
-          <p className="shrink-0 text-[11px] text-olive-700">{template.tagline}</p>
-        )}
+        {template && <p className="shrink-0 text-[11px] text-olive-700">{template.tagline}</p>}
 
         {savings > 0 && (
           <div className="flex shrink-0 items-center gap-1 text-[11px] font-semibold text-leaf-700">
@@ -151,17 +149,15 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
         </ul>
 
         {packaging && (
-          <div className="flex shrink-0 items-center gap-2 rounded-md border border-divider bg-paper-50 p-2.5">
+          <Card padding="sm" className="flex shrink-0 items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-full bg-sage-300/40 text-olive-900">
               <Package className="h-3.5 w-3.5" aria-hidden="true" />
             </span>
-            <p className="flex-1 text-[12px] font-semibold text-olive-900">
-              Embalagem de presente
-            </p>
+            <p className="flex-1 text-[12px] font-semibold text-olive-900">Embalagem de presente</p>
             <span className="text-[11px] font-semibold text-olive-900">
               +{formatBRL(GIFT_PACKAGING_PRICE)}
             </span>
-          </div>
+          </Card>
         )}
 
         <div className="flex shrink-0 flex-col gap-1 rounded-md bg-paper-100 p-3">

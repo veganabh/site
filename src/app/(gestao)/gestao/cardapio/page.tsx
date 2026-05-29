@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Plus, FolderCog } from "lucide-react";
 import { CardapioList } from "@/components/features/cardapio/cardapio-list";
 import { ImportCsvButton } from "@/components/admin/cardapio/import-csv-dialog";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Cardápio — Gestão Vegana BH",
@@ -25,21 +26,19 @@ export default function CardapioPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href="/gestao/cardapio/categorias"
-            className="inline-flex items-center gap-2 rounded-sm border border-divider bg-paper-50 px-4 py-2 text-cta text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
-          >
-            <FolderCog className="h-4 w-4" aria-hidden="true" />
-            Categorias
-          </Link>
+          <Button asChild variant="secondary">
+            <Link href="/gestao/cardapio/categorias">
+              <FolderCog className="h-4 w-4" aria-hidden="true" />
+              Categorias
+            </Link>
+          </Button>
           <ImportCsvButton />
-          <Link
-            href="/gestao/cardapio/novo"
-            className="inline-flex items-center gap-2 rounded-sm bg-olive-900 px-4 py-2 text-cta text-paper-50 transition hover:bg-olive-700"
-          >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Novo produto
-          </Link>
+          <Button asChild variant="primary">
+            <Link href="/gestao/cardapio/novo">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Novo produto
+            </Link>
+          </Button>
         </div>
       </div>
 

@@ -11,6 +11,7 @@
  */
 
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 import { formatDelta, isDeltaPositive } from "@/lib/dashboard-metrics";
 import type { DayMetrics } from "@/lib/dashboard-metrics";
 
@@ -37,12 +38,9 @@ function StatCard({
   const isPrimary = emphasis === "primary";
 
   return (
-    <div className="relative flex flex-col gap-2 overflow-hidden rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
+    <Card padding="none" className="relative flex flex-col gap-2 overflow-hidden p-4">
       {isPrimary && (
-        <span
-          aria-hidden="true"
-          className="absolute top-0 bottom-0 left-0 w-1 bg-leaf-500"
-        />
+        <span aria-hidden="true" className="absolute top-0 bottom-0 left-0 w-1 bg-leaf-500" />
       )}
       <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">
         {label}
@@ -60,7 +58,7 @@ function StatCard({
       ) : (
         <span className="text-caption text-olive-700/70">—</span>
       )}
-    </div>
+    </Card>
   );
 }
 

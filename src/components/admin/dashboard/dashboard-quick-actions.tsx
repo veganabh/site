@@ -9,6 +9,7 @@
 import Link from "next/link";
 import { Package, Tag, Bell, Gift, ClipboardList } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type QuickAction = {
   href: string;
@@ -31,14 +32,18 @@ export function DashboardQuickActions() {
       className="flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {ACTIONS.map(({ href, label, icon: Icon }) => (
-        <Link
+        <Button
           key={href}
-          href={href}
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-divider bg-paper-50 px-4 py-2 text-cta whitespace-nowrap text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+          asChild
+          variant="secondary"
+          size="md"
+          className="flex-1 whitespace-nowrap text-olive-700 hover:text-olive-900"
         >
-          <Icon className="h-4 w-4 shrink-0" aria-hidden="true" strokeWidth={1.75} />
-          {label}
-        </Link>
+          <Link href={href}>
+            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" strokeWidth={1.75} />
+            {label}
+          </Link>
+        </Button>
       ))}
     </nav>
   );

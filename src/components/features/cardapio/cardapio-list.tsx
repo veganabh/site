@@ -4,18 +4,26 @@ import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Pencil, Eye, EyeOff, Minus, Plus, Search, X, SlidersHorizontal, ListChecks } from "lucide-react";
+import {
+  Pencil,
+  Eye,
+  EyeOff,
+  Minus,
+  Plus,
+  Search,
+  X,
+  SlidersHorizontal,
+  ListChecks,
+} from "lucide-react";
 import { useMenuStore } from "@/stores/menu-store";
 import { formatBRL } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 import type { Product } from "@/types/product";
 import { useActiveCategories } from "@/stores/categories-store";
 import { CardapioStatsStrip } from "@/components/admin/cardapio/cardapio-stats-strip";
 import { BulkEditBar } from "@/components/admin/cardapio/bulk-edit-bar";
-import {
-  setStockAction,
-  toggleActiveProductAction,
-} from "@/server/actions/products";
+import { setStockAction, toggleActiveProductAction } from "@/server/actions/products";
 
 type StockFilter = "todos" | "esgotado" | "baixo" | "ok";
 type StatusFilter = "todos" | "ativos" | "inativos";
@@ -176,7 +184,7 @@ export function CardapioList() {
       <CardapioStatsStrip products={products} />
 
       {/* Busca + toggle de filtros */}
-      <div className="flex flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-3">
+      <Card padding="sm" className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-0 flex-1">
             <Search
@@ -270,10 +278,7 @@ export function CardapioList() {
             </FilterGroup>
 
             <FilterGroup label="Estoque">
-              <FilterChip
-                active={stockFilter === "todos"}
-                onClick={() => setStockFilter("todos")}
-              >
+              <FilterChip active={stockFilter === "todos"} onClick={() => setStockFilter("todos")}>
                 Todos
               </FilterChip>
               <FilterChip
@@ -335,11 +340,14 @@ export function CardapioList() {
             )}
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Seções por categoria */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-divider bg-paper-50 p-10 text-center">
+        <Card
+          padding="none"
+          className="flex flex-col items-center gap-2 border-dashed p-10 text-center"
+        >
           <p className="text-body-sm font-semibold text-olive-900">Nenhum produto encontrado</p>
           <p className="text-caption text-olive-700">
             Ajuste os filtros ou limpe a busca para ver o cardápio completo.
@@ -351,7 +359,7 @@ export function CardapioList() {
           >
             Limpar filtros
           </button>
-        </div>
+        </Card>
       ) : (
         <div className="flex flex-col gap-4">
           {actionError && (
@@ -493,16 +501,13 @@ function CategorySection({
   const allSelected = categoryIds.length > 0 && categoryIds.every((id) => selectedIds.has(id));
 
   return (
-    <section
-      className={cn(
-        "overflow-hidden rounded-lg border border-divider bg-paper-50",
-        dimmed && "opacity-70",
-      )}
-    >
+    <Card as="section" padding="none" className={cn("overflow-hidden", dimmed && "opacity-70")}>
       {/* Cabeçalho da categoria */}
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-divider bg-paper-100 px-4 py-2">
         <div className="flex items-center gap-2">
-          <h2 className={cn("text-body-sm font-bold", dimmed ? "text-olive-700" : "text-olive-900")}>
+          <h2
+            className={cn("text-body-sm font-bold", dimmed ? "text-olive-700" : "text-olive-900")}
+          >
             {categoryLabel}
           </h2>
           <span className="rounded-pill bg-paper-50 px-2 py-0 text-[10px] leading-4 font-semibold text-olive-700">
@@ -705,6 +710,6 @@ function CategorySection({
           </tbody>
         </table>
       </div>
-    </section>
+    </Card>
   );
 }

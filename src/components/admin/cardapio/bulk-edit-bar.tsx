@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Tag, Boxes, FolderInput, Eye, EyeOff, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useActiveCategories } from "@/stores/categories-store";
 import {
   Select,
@@ -19,11 +20,7 @@ import {
   bulkSetCategoryProductsAction,
   bulkUpdatePriceProductsAction,
 } from "@/server/actions/products";
-import {
-  PRICE_BULK_MODES,
-  type PriceBulkMode,
-  type BulkActionResult,
-} from "@/lib/products-bulk";
+import { PRICE_BULK_MODES, type PriceBulkMode, type BulkActionResult } from "@/lib/products-bulk";
 
 type ActivePanel = "price" | "stock" | "category" | "delete" | null;
 
@@ -94,9 +91,24 @@ export function BulkEditBar({ selectedIds, onClearSelection }: BulkEditBarProps)
           </span>
 
           <div className="flex flex-wrap items-center gap-1.5">
-            <BarButton icon={Tag} label="Preço" active={panel === "price"} onClick={() => togglePanel("price")} />
-            <BarButton icon={Boxes} label="Estoque" active={panel === "stock"} onClick={() => togglePanel("stock")} />
-            <BarButton icon={FolderInput} label="Categoria" active={panel === "category"} onClick={() => togglePanel("category")} />
+            <BarButton
+              icon={Tag}
+              label="Preço"
+              active={panel === "price"}
+              onClick={() => togglePanel("price")}
+            />
+            <BarButton
+              icon={Boxes}
+              label="Estoque"
+              active={panel === "stock"}
+              onClick={() => togglePanel("stock")}
+            />
+            <BarButton
+              icon={FolderInput}
+              label="Categoria"
+              active={panel === "category"}
+              onClick={() => togglePanel("category")}
+            />
             <BarButton
               icon={Eye}
               label="Ativar"
@@ -127,7 +139,10 @@ export function BulkEditBar({ selectedIds, onClearSelection }: BulkEditBarProps)
         </div>
 
         {error && (
-          <p role="alert" className="rounded-sm border border-terra-500 bg-terra-500/10 px-3 py-2 text-caption text-terra-700">
+          <p
+            role="alert"
+            className="rounded-sm border border-terra-500 bg-terra-500/10 px-3 py-2 text-caption text-terra-700"
+          >
             {error}
           </p>
         )}
@@ -164,8 +179,9 @@ export function BulkEditBar({ selectedIds, onClearSelection }: BulkEditBarProps)
                 className={inputClass}
               />
             </label>
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="sm"
               disabled={isPending || !priceValue}
               onClick={() =>
                 run(() =>
@@ -176,10 +192,9 @@ export function BulkEditBar({ selectedIds, onClearSelection }: BulkEditBarProps)
                   }),
                 )
               }
-              className="h-9 rounded-md bg-olive-900 px-4 text-cta text-paper-50 transition hover:bg-olive-700 disabled:opacity-50"
             >
               Aplicar
-            </button>
+            </Button>
           </div>
         )}
 
@@ -198,18 +213,18 @@ export function BulkEditBar({ selectedIds, onClearSelection }: BulkEditBarProps)
                 className={inputClass}
               />
             </label>
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="sm"
               disabled={isPending || stockValue === ""}
               onClick={() =>
                 run(() =>
                   bulkSetStockProductsAction({ ids: selectedIds, value: Number(stockValue) }),
                 )
               }
-              className="h-9 rounded-md bg-olive-900 px-4 text-cta text-paper-50 transition hover:bg-olive-700 disabled:opacity-50"
             >
               Aplicar a {count}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -217,7 +232,9 @@ export function BulkEditBar({ selectedIds, onClearSelection }: BulkEditBarProps)
         {panel === "category" && (
           <div className="flex flex-wrap items-end gap-2 border-t border-divider pt-2">
             <label className="flex min-w-[200px] flex-1 flex-col gap-1">
-              <span className="text-caption font-semibold text-olive-700">Mover para categoria</span>
+              <span className="text-caption font-semibold text-olive-700">
+                Mover para categoria
+              </span>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
                   <SelectValue placeholder="Escolha a categoria" />
@@ -231,16 +248,16 @@ export function BulkEditBar({ selectedIds, onClearSelection }: BulkEditBarProps)
                 </SelectContent>
               </Select>
             </label>
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="sm"
               disabled={isPending || !category}
               onClick={() =>
                 run(() => bulkSetCategoryProductsAction({ ids: selectedIds, category }))
               }
-              className="h-9 rounded-md bg-olive-900 px-4 text-cta text-paper-50 transition hover:bg-olive-700 disabled:opacity-50"
             >
               Mover {count}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -251,21 +268,17 @@ export function BulkEditBar({ selectedIds, onClearSelection }: BulkEditBarProps)
               Excluir <strong>{count}</strong> {count === 1 ? "produto" : "produtos"}? Eles somem do
               cardápio (site e produção). Reversível só via banco.
             </p>
-            <button
-              type="button"
-              onClick={() => setPanel(null)}
-              className="h-9 rounded-md border border-divider px-4 text-cta text-olive-700 transition hover:bg-paper-100"
-            >
+            <Button variant="secondary" size="sm" onClick={() => setPanel(null)}>
               Cancelar
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
               disabled={isPending}
               onClick={() => run(() => bulkDeleteProductsAction(selectedIds))}
-              className="h-9 rounded-md bg-terra-500 px-4 text-cta text-paper-50 transition hover:bg-terra-700 disabled:opacity-50"
             >
               Excluir {count}
-            </button>
+            </Button>
           </div>
         )}
       </div>

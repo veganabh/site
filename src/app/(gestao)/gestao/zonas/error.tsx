@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type ErrorProps = {
   error: Error & { digest?: string };
@@ -22,13 +23,9 @@ export default function ZonasError({ error, reset }: ErrorProps) {
           Não foi possível carregar o módulo de zonas. Tente novamente.
         </p>
       </div>
-      <button
-        type="button"
-        onClick={reset}
-        className="rounded-sm bg-olive-900 px-4 py-2 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-olive-700"
-      >
+      <Button variant="primary" size="sm" onClick={reset}>
         Tentar novamente
-      </button>
+      </Button>
     </div>
   );
 }

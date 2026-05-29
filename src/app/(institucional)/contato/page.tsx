@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MessageCircle, MapPin, Clock } from "lucide-react";
 import { STORE_LOCATION } from "@/lib/store-location";
+import { Card } from "@/components/ui/card";
 
 /** Lucide 1.x removeu brand icons — Instagram vai como SVG inline. */
 function InstagramGlyph(props: React.SVGProps<SVGSVGElement>) {
@@ -31,10 +32,7 @@ export const metadata: Metadata = {
 export default function ContatoPage() {
   const waLink = `https://wa.me/${STORE_LOCATION.whatsappNumber}?text=Oi!%20Vim%20pelo%20site%20da%20Veg.ana.`;
   const igLink = `https://instagram.com/${STORE_LOCATION.instagramHandle.replace(/^@/, "")}`;
-  const waPretty = STORE_LOCATION.whatsappNumber.replace(
-    /^55(\d{2})(\d{5})(\d{4})$/,
-    "($1) $2-$3",
-  );
+  const waPretty = STORE_LOCATION.whatsappNumber.replace(/^55(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
 
   return (
     <article className="flex flex-col gap-6">
@@ -76,7 +74,7 @@ export default function ContatoPage() {
         </a>
       </div>
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-divider bg-paper-50 p-4">
+      <Card as="section" padding="none" className="flex flex-col gap-3 p-4">
         <div className="flex items-start gap-3">
           <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-olive-700" aria-hidden="true" />
           <div>
@@ -92,12 +90,12 @@ export default function ContatoPage() {
           <div>
             <p className="text-[14px] font-bold text-olive-900">Atendimento</p>
             <p className="text-body-sm text-olive-700">
-              Pedidos pelo site a qualquer hora. Atendimento no WhatsApp durante o dia — pode
-              mandar mensagem que a gente responde assim que possível.
+              Pedidos pelo site a qualquer hora. Atendimento no WhatsApp durante o dia — pode mandar
+              mensagem que a gente responde assim que possível.
             </p>
           </div>
         </div>
-      </section>
+      </Card>
     </article>
   );
 }
