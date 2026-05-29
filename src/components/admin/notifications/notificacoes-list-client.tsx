@@ -7,10 +7,10 @@
  * Ações: editar (link) + excluir (com confirmação inline).
  */
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, Megaphone, Rocket, AlertCircle, BookOpen, Eye, MousePointerClick } from "lucide-react";
+import { Plus, Pencil, Trash2, Megaphone, Rocket, AlertCircle, BookOpen, Eye, MousePointerClick, Search, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { deleteNotificationAction } from "@/server/actions/notifications";
@@ -28,6 +28,12 @@ const TYPE_LABELS: Record<NotificationType, string> = {
   content: "Conteúdo",
 };
 
+const AUDIENCE_LABEL: Record<string, string> = {
+  all: "Ambos",
+  authed: "Só clientes com conta",
+  guest: "Só visitantes",
+};
+
 const TYPE_ICONS: Record<NotificationType, React.ElementType> = {
   promo: Megaphone,
   launch: Rocket,
@@ -42,10 +48,34 @@ const TYPE_CLASSES: Record<NotificationType, string> = {
   content: "text-olive-700",
 };
 
-function isActive(n: Notification): boolean {
-  const now = new Date();
-  return new Date(n.publishedAt) <= now && new Date(n.expiresAt) > now;
+type NotifStatus = "agendada" | "ativa" | "expirada";
+
+/**
+ * 3 estados (antes só ativa/inativa, que marcava agendada como "inativa"):
+ * - agendada: publishedAt no futuro
+ * - ativa: dentro da janela publishedAt..expiresAt
+ * - expirada: passou de expiresAt
+ */
+function statusOf(n: Notification): NotifStatus {
+  const now = Date.now();
+  const pub = new Date(n.publishedAt).getTime();
+  const exp = new Date(n.expiresAt).getTime();
+  if (pub > now) return "agendada";
+  if (exp <= now) return "expirada";
+  return "ativa";
 }
+
+const STATUS_LABEL: Record<NotifStatus, string> = {
+  agendada: "Agendada",
+  ativa: "Ativa",
+  expirada: "Expirada",
+};
+
+const STATUS_BADGE: Record<NotifStatus, string> = {
+  ativa: "bg-leaf-500/15 text-leaf-700",
+  agendada: "bg-info/15 text-info",
+  expirada: "bg-paper-100 text-olive-700/60",
+};
 
 function formatDate(iso: string): string {
   return new Intl.DateTimeFormat("pt-BR", {
@@ -111,7 +141,39 @@ type Props = {
   statsById: Record<string, NotifStats>;
 };
 
+const STATUS_FILTERS: (NotifStatus | "todas")[] = ["todas", "agendada", "ativa", "expirada"];
+const STATUS_FILTER_LABEL: Record<NotifStatus | "todas", string> = {
+  todas: "Todas",
+  agendada: "Agendadas",
+  ativa: "Ativas",
+  expirada: "Expiradas",
+};
+
+const TYPE_FILTERS: (NotificationType | "todos")[] = [
+  "todos",
+  "promo",
+  "launch",
+  "operational",
+  "content",
+];
+
 export function NotificacoesListClient({ notifications, statsById }: Props) {
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<NotifStatus | "todas">("todas");
+  const [typeFilter, setTypeFilter] = useState<NotificationType | "todos">("todos");
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return notifications.filter((n) => {
+      if (q && !n.title.toLowerCase().includes(q) && !n.body.toLowerCase().includes(q)) {
+        return false;
+      }
+      if (statusFilter !== "todas" && statusOf(n) !== statusFilter) return false;
+      if (typeFilter !== "todos" && n.type !== typeFilter) return false;
+      return true;
+    });
+  }, [notifications, query, statusFilter, typeFilter]);
+
   if (notifications.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-lg border border-divider bg-paper-50 py-16 text-center">
@@ -129,14 +191,68 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
   }
 
   return (
-    <div
-      role="list"
-      aria-label="Lista de notificações"
-      className="flex flex-col divide-y divide-divider rounded-lg border border-divider bg-paper-50"
-    >
-      {notifications.map((n) => {
+    <div className="flex flex-col gap-3">
+      {/* Barra de filtro */}
+      <div className="flex flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-3">
+        <div className="relative">
+          <Search
+            className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-olive-700"
+            aria-hidden="true"
+          />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar por título ou mensagem..."
+            aria-label="Buscar notificação"
+            className="w-full rounded-sm border border-divider bg-paper-50 py-1.5 pr-9 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/60 focus:border-olive-700 focus:outline-none"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              aria-label="Limpar busca"
+              className="absolute top-1/2 right-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-olive-700 hover:bg-paper-100"
+            >
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          {STATUS_FILTERS.map((s) => (
+            <FilterChip key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)}>
+              {STATUS_FILTER_LABEL[s]}
+            </FilterChip>
+          ))}
+          <span aria-hidden="true" className="mx-1 h-4 w-px bg-divider" />
+          {TYPE_FILTERS.map((t) => (
+            <FilterChip key={t} active={typeFilter === t} onClick={() => setTypeFilter(t)}>
+              {t === "todos" ? "Todos os tipos" : TYPE_LABELS[t]}
+            </FilterChip>
+          ))}
+        </div>
+
+        <span className="text-caption text-olive-700">
+          <span className="font-semibold text-olive-900">{filtered.length}</span> de{" "}
+          {notifications.length}
+        </span>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-divider bg-paper-50 p-10 text-center">
+          <p className="text-body-sm font-semibold text-olive-900">Nenhuma notificação encontrada.</p>
+          <p className="text-caption text-olive-700">Ajuste a busca ou os filtros.</p>
+        </div>
+      ) : (
+        <div
+          role="list"
+          aria-label="Lista de notificações"
+          className="flex flex-col divide-y divide-divider rounded-lg border border-divider bg-paper-50"
+        >
+          {filtered.map((n) => {
         const Icon = TYPE_ICONS[n.type];
-        const active = isActive(n);
+        const status = statusOf(n);
         const stats = statsById[n.id] ?? { reads: 0, clicks: 0, ctr: null };
         const ctrLabel = stats.ctr === null ? "—" : `${Math.round(stats.ctr * 100)}%`;
 
@@ -163,18 +279,16 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
                 <span
                   className={cn(
                     "inline-flex h-5 items-center rounded-full px-2 text-[10px] font-bold uppercase tracking-wide",
-                    active
-                      ? "bg-leaf-500/15 text-leaf-700"
-                      : "bg-paper-100 text-olive-700/60",
+                    STATUS_BADGE[status],
                   )}
                 >
-                  {active ? "Ativa" : "Inativa"}
+                  {STATUS_LABEL[status]}
                 </span>
                 <span className="text-[11px] font-medium text-olive-700/70">
                   {TYPE_LABELS[n.type]}
                 </span>
                 <span className="text-[11px] text-olive-700/50">
-                  {n.audience === "all" ? "Todos" : "Só logados"}
+                  {AUDIENCE_LABEL[n.audience] ?? n.audience}
                 </span>
               </div>
 
@@ -213,8 +327,38 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
               <DeleteButton id={n.id} title={n.title} />
             </div>
           </div>
-        );
-      })}
+            );
+          })}
+        </div>
+      )}
     </div>
+  );
+}
+
+// ── FilterChip ────────────────────────────────────────────────────────────────
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "rounded-pill border px-2.5 py-0.5 text-[11px] font-semibold transition-colors",
+        active
+          ? "border-olive-900 bg-olive-900 text-paper-50"
+          : "border-divider bg-paper-50 text-olive-700 hover:bg-paper-100",
+      )}
+    >
+      {children}
+    </button>
   );
 }

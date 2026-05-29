@@ -316,20 +316,49 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_anon_reads: {
+        Row: {
+          anon_id: string
+          notification_id: string
+          read_at: string
+        }
+        Insert: {
+          anon_id: string
+          notification_id: string
+          read_at?: string
+        }
+        Update: {
+          anon_id?: string
+          notification_id?: string
+          read_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_anon_reads_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_clicks: {
         Row: {
+          anon_id: string | null
           clicked_at: string
           id: string
           notification_id: string
           profile_id: string | null
         }
         Insert: {
+          anon_id?: string | null
           clicked_at?: string
           id?: string
           notification_id: string
           profile_id?: string | null
         }
         Update: {
+          anon_id?: string | null
           clicked_at?: string
           id?: string
           notification_id?: string
@@ -382,6 +411,7 @@ export type Database = {
         Row: {
           audience: string
           body: string
+          coupon_code: string | null
           created_at: string
           created_by: string | null
           cta_href: string | null
@@ -396,6 +426,7 @@ export type Database = {
         Insert: {
           audience?: string
           body: string
+          coupon_code?: string | null
           created_at?: string
           created_by?: string | null
           cta_href?: string | null
@@ -410,6 +441,7 @@ export type Database = {
         Update: {
           audience?: string
           body?: string
+          coupon_code?: string | null
           created_at?: string
           created_by?: string | null
           cta_href?: string | null

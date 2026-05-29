@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Users, Repeat, TrendingUp, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
@@ -84,7 +85,12 @@ export function ClientesDashboard({ analytics }: { analytics: CustomerAnalytics 
               {rows.map((c) => (
                 <tr key={c.phone} className="border-b border-divider transition-colors last:border-0 hover:bg-paper-100/50">
                   <td className="px-3 py-2">
-                    <span className="block truncate text-caption font-semibold text-olive-900">{c.name}</span>
+                    <Link
+                      href={`/gestao/clientes/${encodeURIComponent(c.phone)}`}
+                      className="block truncate text-caption font-semibold text-olive-900 hover:underline"
+                    >
+                      {c.name}
+                    </Link>
                     <span className="text-caption text-olive-700/70">{c.phone}</span>
                   </td>
                   <td className="px-3 py-2 text-caption text-olive-900">{c.orders}</td>

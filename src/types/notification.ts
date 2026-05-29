@@ -7,7 +7,7 @@
 
 export type NotificationType = "promo" | "launch" | "operational" | "content";
 
-export type NotificationAudience = "all" | "authed";
+export type NotificationAudience = "all" | "authed" | "guest";
 
 export type Notification = {
   id: string;
@@ -16,6 +16,8 @@ export type Notification = {
   body: string;
   ctaLabel?: string;
   ctaHref?: string;
+  /** Cupom opcional — se presente, o CTA aplica este código no carrinho. */
+  couponCode?: string | null;
   audience: NotificationAudience;
   publishedAt: string;
   expiresAt: string;
@@ -34,6 +36,7 @@ export type NotificationInput = {
   body: string;
   ctaLabel?: string | null;
   ctaHref?: string | null;
+  couponCode?: string | null;
   audience: NotificationAudience;
   publishedAt: string;
   expiresAt: string;

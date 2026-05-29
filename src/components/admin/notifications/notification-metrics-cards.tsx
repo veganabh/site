@@ -34,9 +34,9 @@ export function NotificationMetricsCards({ metrics }: { metrics: NotificationMet
   return (
     <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
       <MetricCard
-        label="Enviadas"
+        label="Criadas"
         value={String(metrics.totalNotifications)}
-        hint="notificações criadas"
+        hint="broadcasts no painel"
         icon={Send}
       />
       <MetricCard

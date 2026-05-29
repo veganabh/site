@@ -12,6 +12,7 @@ type NotificationRow = {
   body: string;
   cta_label: string | null;
   cta_href: string | null;
+  coupon_code: string | null;
   audience: string;
   published_at: string;
   expires_at: string;
@@ -28,6 +29,7 @@ function notificationFromRow(row: NotificationRow): Notification {
     body: row.body,
     ctaLabel: row.cta_label ?? undefined,
     ctaHref: row.cta_href ?? undefined,
+    couponCode: row.coupon_code ?? null,
     audience: row.audience as Notification["audience"],
     publishedAt: row.published_at,
     expiresAt: row.expires_at,
@@ -140,16 +142,19 @@ function countByNotification(rows: { notification_id: string }[] | null): Map<st
 export async function getNotificationMetrics(): Promise<NotificationMetrics> {
   const supabase = await createSupabaseServerClient();
 
-  const [readsRes, clicksRes, notifCountRes] = await Promise.all([
+  const [readsRes, anonReadsRes, clicksRes, notifCountRes] = await Promise.all([
     supabase.from("notification_reads").select("notification_id"),
+    supabase.from("notification_anon_reads").select("notification_id"),
     supabase.from("notification_clicks").select("notification_id"),
     supabase.from("notifications").select("*", { count: "exact", head: true }),
   ]);
 
-  const readsBy = countByNotification(readsRes.data);
+  // Leituras = logado (notification_reads) + anônimo (notification_anon_reads).
+  const allReads = [...(readsRes.data ?? []), ...(anonReadsRes.data ?? [])];
+  const readsBy = countByNotification(allReads);
   const clicksBy = countByNotification(clicksRes.data);
 
-  const totalReads = readsRes.data?.length ?? 0;
+  const totalReads = allReads.length;
   const totalClicks = clicksRes.data?.length ?? 0;
   const totalNotifications = notifCountRes.count ?? 0;
 

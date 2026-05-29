@@ -31,8 +31,9 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const AUDIENCE_LABELS: Record<string, string> = {
-  all: "Todos (incluindo visitantes)",
+  all: "Ambos",
   authed: "Só clientes com conta",
+  guest: "Só visitantes",
 };
 
 // ── Helpers de data ───────────────────────────────────────────────────────────
@@ -93,15 +94,19 @@ function FormField({ label, htmlFor, error, hint, required, children }: FormFiel
 
 // ── NotificacaoForm ───────────────────────────────────────────────────────────
 
-type NotificacaoFormProps =
-  | { mode: "nova" }
-  | { mode: "editar"; notification: Notification };
+export type CouponOption = { code: string; label: string };
+
+type NotificacaoFormProps = {
+  /** Cupons ativos disponíveis pra anexar à notificação. */
+  coupons: CouponOption[];
+} & ({ mode: "nova" } | { mode: "editar"; notification: Notification });
 
 export function NotificacaoForm(props: NotificacaoFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
 
+  const { coupons } = props;
   const notification = props.mode === "editar" ? props.notification : null;
 
   const {
@@ -118,6 +123,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
           body: notification.body,
           ctaLabel: notification.ctaLabel ?? null,
           ctaHref: notification.ctaHref ?? null,
+          couponCode: notification.couponCode ?? null,
           audience: notification.audience,
           publishedAt: toDatetimeLocal(notification.publishedAt),
           expiresAt: toDatetimeLocal(notification.expiresAt),
@@ -291,6 +297,32 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
                 errors.ctaHref && "border-terra-500",
               )}
             />
+          </FormField>
+        </div>
+
+        {/* Cupom anexado — CTA aplica no carrinho ao clicar */}
+        <div className="mt-4 border-t border-divider pt-4">
+          <FormField
+            label="Cupom no CTA"
+            htmlFor="couponCode"
+            error={errors.couponCode?.message}
+            hint="Se escolher, clicar no botão aplica o cupom no carrinho do cliente automaticamente."
+          >
+            <select
+              id="couponCode"
+              {...register("couponCode")}
+              className={cn(
+                "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900",
+                "focus:border-olive-500 focus:outline-none focus:ring-2 focus:ring-olive-500/20",
+              )}
+            >
+              <option value="">Nenhum (CTA só navega pelo link)</option>
+              {coupons.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.code} — {c.label}
+                </option>
+              ))}
+            </select>
           </FormField>
         </div>
       </div>

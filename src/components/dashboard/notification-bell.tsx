@@ -18,12 +18,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import * as Popover from "@radix-ui/react-popover";
-import { Bell, BellOff, Megaphone, Rocket, AlertCircle, BookOpen, X } from "lucide-react";
+import { Bell, BellOff, Megaphone, Rocket, AlertCircle, BookOpen, X, Ticket } from "lucide-react";
+import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/hooks/use-notifications";
 import { trackNotificationClickAction } from "@/server/actions/notifications";
 import { captureEvent } from "@/lib/analytics";
+import { getAnonId } from "@/lib/anon-id";
+import { useCartStore } from "@/stores/cart-store";
 import type { Notification, NotificationType } from "@/types/notification";
 
 // ── Helpers de tipo ───────────────────────────────────────────────────────────
@@ -115,13 +118,15 @@ function NotificationItem({ notification, onRead, onCtaClick }: NotificationItem
           {notification.body}
         </p>
 
-        {notification.ctaHref && notification.ctaLabel && (
+        {(notification.couponCode || (notification.ctaHref && notification.ctaLabel)) && (
           <button
             type="button"
             onClick={() => onCtaClick(notification)}
-            className="mt-1.5 inline-flex h-7 items-center rounded-pill bg-terra-700 px-3 text-[11px] font-semibold text-paper-50 transition-colors hover:bg-terra-500"
+            className="mt-1.5 inline-flex h-7 items-center gap-1 rounded-pill bg-terra-700 px-3 text-[11px] font-semibold text-paper-50 transition-colors hover:bg-terra-500"
           >
-            {notification.ctaLabel}
+            {notification.couponCode && <Ticket className="h-3 w-3" aria-hidden="true" />}
+            {notification.ctaLabel ||
+              (notification.couponCode ? `Usar ${notification.couponCode}` : "")}
           </button>
         )}
       </div>
@@ -149,13 +154,36 @@ export function NotificationBell() {
 
   // Clique no CTA: registra clique (dedup por usuário) + fecha + navega
   // programaticamente (Link dentro do popover era cancelado ao desmontar).
-  const handleCtaClick = (notification: Notification) => {
-    void trackNotificationClickAction(notification.id);
+  const handleCtaClick = async (notification: Notification) => {
+    // Sempre passa anonId; o server usa profile_id se logado, anon_id se não.
+    void trackNotificationClickAction(notification.id, getAnonId());
     captureEvent("notification_cta_clicked", {
       notificationId: notification.id,
       type: notification.type,
+      coupon: notification.couponCode ?? undefined,
     });
     setOpen(false);
+
+    // Cupom anexado → aplica no carrinho + feedback visual (toast).
+    if (notification.couponCode) {
+      const { items, applyCoupon } = useCartStore.getState();
+      const subtotalCents = Math.round(
+        items.reduce((s, i) => s + i.product.price_site * i.quantity, 0) * 100,
+      );
+      const res = await applyCoupon(notification.couponCode, subtotalCents);
+      if (res.ok) {
+        toast.success(`Cupom ${notification.couponCode} aplicado ao carrinho`, {
+          icon: <Ticket className="h-4 w-4" />,
+        });
+      } else {
+        toast.message(`Cupom ${notification.couponCode}`, {
+          description: res.message || "Adicione itens ao carrinho para usar.",
+        });
+      }
+      router.push(notification.ctaHref || "/carrinho");
+      return;
+    }
+
     if (notification.ctaHref) router.push(notification.ctaHref);
   };
 
