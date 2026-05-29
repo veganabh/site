@@ -56,12 +56,22 @@ export function CategoryCircles({ active = "all", basePath, className }: Categor
   }, [products]);
 
   const categoryItems: Item[] = useMemo(() => {
+    // Só escondemos categoria vazia quando TEMOS dados de produto. Se o menu
+    // store ainda não hidratou (ex: visitante anônimo sem produtos carregados),
+    // mostramos as categorias reais normalmente em vez de sumir com tudo.
+    const hasProductData = products.length > 0;
+
     const real = categories
       .map((c) => {
-        const s = statsBySlug.get(c.slug) ?? { total: 0, inStock: 0 };
-        return { c, total: s.total, available: s.inStock > 0 };
+        const s = statsBySlug.get(c.slug);
+        return {
+          c,
+          total: s?.total ?? 0,
+          // sem dados → trata como disponível (não cinza).
+          available: s ? s.inStock > 0 : true,
+        };
       })
-      .filter((x) => x.total > 0)
+      .filter((x) => !hasProductData || x.total > 0)
       // disponíveis primeiro; preserva sort_order dentro de cada grupo (sort estável).
       .sort((a, b) => Number(b.available) - Number(a.available));
 
@@ -75,7 +85,7 @@ export function CategoryCircles({ active = "all", basePath, className }: Categor
         available,
       })),
     ];
-  }, [categories, statsBySlug, basePath]);
+  }, [categories, statsBySlug, products.length, basePath]);
 
   const collectionItems: Item[] = collections.map((c) => ({
     slug: c.slug,
