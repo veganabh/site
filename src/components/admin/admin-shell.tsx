@@ -2,6 +2,7 @@
 
 import { AdminSidebar, useAdminDrawer } from "@/components/admin/admin-sidebar";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
+import { useOrdersRealtime } from "@/hooks/use-orders-realtime";
 
 type AdminShellProps = {
   children: React.ReactNode;
@@ -26,6 +27,7 @@ type AdminShellProps = {
  */
 export function AdminShell({ children, pageTitle }: AdminShellProps) {
   const { drawerOpen, openDrawer, closeDrawer } = useAdminDrawer();
+  useOrdersRealtime();
 
   return (
     <div className="flex min-h-screen bg-paper-100/50">
