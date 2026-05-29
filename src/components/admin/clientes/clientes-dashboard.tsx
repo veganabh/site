@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Users, Repeat, TrendingUp, DollarSign } from "lucide-react";
+import { Users, Repeat, TrendingUp, DollarSign, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
 import {
@@ -34,6 +34,29 @@ export function ClientesDashboard({ analytics }: { analytics: CustomerAnalytics 
     [analytics.customers, filter],
   );
 
+  // Exporta contatos do recorte atual (CSV) — pra win-back via WhatsApp.
+  const exportCsv = () => {
+    const header = "nome,telefone,segmento,pedidos,ltv,dias_desde_ultimo";
+    const lines = rows.map((c) =>
+      [
+        `"${c.name.replace(/"/g, '""')}"`,
+        c.phone,
+        SEGMENT_LABELS[c.segment],
+        c.orders,
+        c.totalSpent.toFixed(2),
+        c.recencyDays,
+      ].join(","),
+    );
+    const csv = [header, ...lines].join("\n");
+    const blob = new Blob([`﻿${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `clientes-${filter}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="flex flex-col gap-5">
       {/* Cards globais */}
@@ -49,16 +72,28 @@ export function ClientesDashboard({ analytics }: { analytics: CustomerAnalytics 
         <MetricCard label="Receita total" value={formatBRL(analytics.totalRevenue)} hint="pedidos realizados" icon={DollarSign} />
       </div>
 
-      {/* Filtro de segmento */}
-      <div className="flex flex-wrap gap-1.5">
-        <SegChip active={filter === "todos"} onClick={() => setFilter("todos")}>
-          Todos ({analytics.totalCustomers})
-        </SegChip>
-        {SEGMENT_ORDER.map((seg) => (
-          <SegChip key={seg} active={filter === seg} onClick={() => setFilter(seg)}>
-            {SEGMENT_LABELS[seg]} ({analytics.segmentCounts[seg]})
+      {/* Filtro de segmento + exportar */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-1.5">
+          <SegChip active={filter === "todos"} onClick={() => setFilter("todos")}>
+            Todos ({analytics.totalCustomers})
           </SegChip>
-        ))}
+          {SEGMENT_ORDER.map((seg) => (
+            <SegChip key={seg} active={filter === seg} onClick={() => setFilter(seg)}>
+              {SEGMENT_LABELS[seg]} ({analytics.segmentCounts[seg]})
+            </SegChip>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={exportCsv}
+          disabled={rows.length === 0}
+          title="Exportar contatos do recorte atual (CSV) — pra win-back via WhatsApp"
+          className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-divider bg-paper-50 px-3 text-caption font-semibold text-olive-700 transition-colors hover:bg-paper-100 disabled:opacity-50"
+        >
+          <Download className="h-3.5 w-3.5" aria-hidden="true" />
+          Exportar contatos
+        </button>
       </div>
 
       {/* Tabela */}

@@ -45,6 +45,7 @@ const baseProductSchema = z.object({
   gramatura_g: z.coerce.number().int().positive("Informe a gramatura."),
   price_site: z.coerce.number().positive("Preço site inválido."),
   price_ifood: z.coerce.number().positive("Preço iFood inválido."),
+  cost: z.coerce.number().nonnegative("Custo inválido.").default(0),
   attributes: z.array(z.enum(PRODUCT_ATTRIBUTES)).default([]),
   tags: z.array(z.enum(PRODUCT_TAGS)).default([]),
   contains: z.array(z.enum(PRODUCT_CONTAINS)).default([]),
@@ -99,6 +100,7 @@ export async function createProductAction(
       gramatura_g: data.gramatura_g,
       price_site_cents: reaisToCents(data.price_site),
       price_ifood_cents: reaisToCents(data.price_ifood),
+      cost_cents: reaisToCents(data.cost),
       attributes: data.attributes,
       tags: data.tags,
       contains: data.contains,
@@ -152,6 +154,7 @@ export async function updateProductAction(
   if (data.gramatura_g !== undefined) patch.gramatura_g = data.gramatura_g;
   if (data.price_site !== undefined) patch.price_site_cents = reaisToCents(data.price_site);
   if (data.price_ifood !== undefined) patch.price_ifood_cents = reaisToCents(data.price_ifood);
+  if (data.cost !== undefined) patch.cost_cents = reaisToCents(data.cost);
   if (data.attributes !== undefined) patch.attributes = data.attributes;
   if (data.tags !== undefined) patch.tags = data.tags;
   if (data.contains !== undefined) patch.contains = data.contains;

@@ -720,6 +720,7 @@ export type Database = {
           attributes: string[]
           category: string
           contains: string[]
+          cost_cents: number
           created_at: string
           deleted_at: string | null
           description: string
@@ -748,6 +749,7 @@ export type Database = {
           attributes?: string[]
           category: string
           contains?: string[]
+          cost_cents?: number
           created_at?: string
           deleted_at?: string | null
           description?: string
@@ -776,6 +778,7 @@ export type Database = {
           attributes?: string[]
           category?: string
           contains?: string[]
+          cost_cents?: number
           created_at?: string
           deleted_at?: string | null
           description?: string
