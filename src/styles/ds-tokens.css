@@ -60,11 +60,18 @@
   --text-price-big: 2rem;
   --text-price-big--line-height: 1;
 
-  /* === RADIUS === */
+  /* === RADIUS ===
+   * Padronizado: todo card usa o raio sutil (0.5rem), igual ao CTA "Novo
+   * produto". md/lg/xl/2xl/3xl colapsam pro mesmo valor — hierarquia de raio
+   * abandonada de propósito (decisão UX). xs (detalhe fino) e pill (full)
+   * ficam de fora. */
   --radius-xs: 0.25rem;
   --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.5rem;
+  --radius-3xl: 0.5rem;
   --radius-pill: 9999px;
 
   /* === SHADOWS === */

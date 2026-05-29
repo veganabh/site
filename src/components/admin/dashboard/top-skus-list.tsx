@@ -18,7 +18,7 @@ type TopSkusListProps = {
 export function TopSkusList({ skus, thumbs }: TopSkusListProps) {
   if (skus.length === 0) {
     return (
-      <div className="flex flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
+      <div className="flex h-full flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
         <h2 className="text-body-sm font-bold text-olive-900">Top produtos do dia</h2>
         <p className="text-caption text-olive-700">Nenhum pedido registrado hoje ainda.</p>
       </div>
@@ -26,7 +26,7 @@ export function TopSkusList({ skus, thumbs }: TopSkusListProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
+    <div className="flex h-full flex-col gap-3 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
       <h2 className="text-body-sm font-bold text-olive-900">Top produtos do dia</h2>
 
       <ol className="flex flex-col gap-2">

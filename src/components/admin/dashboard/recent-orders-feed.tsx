@@ -20,7 +20,7 @@ export function RecentOrdersFeed() {
   const recent = getRecentOrders(orders, 5);
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
+    <div className="flex h-full flex-col gap-3 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
       <h2 className="text-body-sm font-bold text-olive-900">Pedidos recentes</h2>
 
       {recent.length === 0 ? (
@@ -67,7 +67,7 @@ export function RecentOrdersFeed() {
 
       <Link
         href="/gestao/pedidos"
-        className="text-center text-caption font-semibold text-olive-700 underline-offset-2 hover:underline"
+        className="mt-auto text-center text-caption font-semibold text-olive-700 underline-offset-2 hover:underline"
       >
         Ver todos os pedidos
       </Link>
