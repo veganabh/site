@@ -5,6 +5,8 @@ import { Plus, Tag, Pencil, Trash2, ToggleLeft, ToggleRight, Search, X } from "l
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import type { Coupon, CouponType } from "@/types/coupon";
 import { useAdminCouponsStore } from "@/stores/admin-coupons-store";
 import { computeCouponStatus } from "@/lib/coupon-status";
@@ -12,10 +14,7 @@ import { isExhaustedByUses } from "@/lib/coupons-metrics";
 import { CouponFormDialog } from "@/components/admin/coupons/coupon-form-dialog";
 import { CouponDeleteDialog } from "@/components/admin/coupons/coupon-delete-dialog";
 import { CouponsStatsStrip } from "@/components/admin/coupons/coupons-stats-strip";
-import {
-  softDeleteCouponAction,
-  toggleCouponStatusAction,
-} from "@/server/actions/coupons";
+import { softDeleteCouponAction, toggleCouponStatusAction } from "@/server/actions/coupons";
 
 // ── Helpers de formatação ─────────────────────────────────────────────────────
 
@@ -187,14 +186,10 @@ export function CuponsClient() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h2 font-bold text-olive-900">Cupons</h1>
-        <button
-          type="button"
-          onClick={handleOpenCreate}
-          className="inline-flex h-9 items-center gap-2 rounded-md bg-olive-900 px-4 text-body-sm font-semibold text-paper-50 transition hover:bg-olive-700"
-        >
+        <Button variant="primary" size="sm" onClick={handleOpenCreate}>
           <Plus className="h-4 w-4" aria-hidden="true" />
           Novo cupom
-        </button>
+        </Button>
       </div>
 
       {/* Strip de métricas */}
@@ -312,9 +307,7 @@ export function CuponsClient() {
                         {formatUses(coupon)}
                       </td>
 
-                      <td className="py-2 pr-4 text-olive-700">
-                        {formatDate(coupon.validUntil)}
-                      </td>
+                      <td className="py-2 pr-4 text-olive-700">{formatDate(coupon.validUntil)}</td>
 
                       <td className="py-2 pr-4">
                         <span
@@ -390,10 +383,7 @@ export function CuponsClient() {
               const isLocked = status === "EXPIRADO" || status === "ESGOTADO";
 
               return (
-                <div
-                  key={coupon.id}
-                  className="flex flex-col gap-2 rounded-md border border-divider bg-paper-50 p-3"
-                >
+                <Card key={coupon.id} padding="sm" className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <code className="rounded bg-paper-100 px-1.5 py-0 font-mono text-[10px] text-olive-900">
                       {coupon.code}
@@ -470,7 +460,7 @@ export function CuponsClient() {
                       <Trash2 className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                     </button>
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>
@@ -498,9 +488,7 @@ export function CuponsClient() {
         aria-live="polite"
         aria-atomic="true"
         className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-pill px-4 py-2 text-body-sm font-semibold shadow-md transition-all duration-300 ${
-          toast.state.kind === "error"
-            ? "bg-terra-700 text-paper-50"
-            : "bg-olive-900 text-paper-50"
+          toast.state.kind === "error" ? "bg-terra-700 text-paper-50" : "bg-olive-900 text-paper-50"
         } ${toast.state.kind === "idle" ? "pointer-events-none translate-y-2 opacity-0" : "translate-y-0 opacity-100"}`}
       >
         {toast.state.kind === "idle" ? "" : toast.state.message}

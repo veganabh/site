@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, Eye, MousePointerClick } from "lucide-react";
 
 import { AdminGate } from "@/components/features/admin-gate";
+import { Card } from "@/components/ui/card";
 import { formatBRL } from "@/lib/format";
 import { buildCustomerAnalytics, SEGMENT_LABELS } from "@/lib/customer-metrics";
 import { listAllOrders } from "@/server/orders";
@@ -78,13 +79,18 @@ export default async function ClienteDetalhePage({ params }: PageProps) {
 
         {/* Pedidos */}
         <section className="flex flex-col gap-2">
-          <h2 className="text-body-sm font-bold text-olive-900">Pedidos ({customerOrders.length})</h2>
-          <div className="overflow-x-auto rounded-lg border border-divider bg-paper-50 shadow-sm">
+          <h2 className="text-body-sm font-bold text-olive-900">
+            Pedidos ({customerOrders.length})
+          </h2>
+          <Card padding="none" className="overflow-x-auto">
             <table className="w-full min-w-[480px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-divider">
                   {["#", "Data", "Total", "Status", "Canal"].map((h) => (
-                    <th key={h} className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase">
+                    <th
+                      key={h}
+                      className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase"
+                    >
                       {h}
                     </th>
                   ))}
@@ -93,38 +99,51 @@ export default async function ClienteDetalhePage({ params }: PageProps) {
               <tbody>
                 {customerOrders.map((o) => (
                   <tr key={o.id} className="border-b border-divider last:border-0">
-                    <td className="px-3 py-2 text-caption font-semibold text-olive-900">#{o.orderNumber}</td>
-                    <td className="px-3 py-2 text-caption text-olive-700">{formatDateTime(o.createdAt)}</td>
-                    <td className="px-3 py-2 text-caption font-semibold text-olive-900">{formatBRL(o.total)}</td>
+                    <td className="px-3 py-2 text-caption font-semibold text-olive-900">
+                      #{o.orderNumber}
+                    </td>
+                    <td className="px-3 py-2 text-caption text-olive-700">
+                      {formatDateTime(o.createdAt)}
+                    </td>
+                    <td className="px-3 py-2 text-caption font-semibold text-olive-900">
+                      {formatBRL(o.total)}
+                    </td>
                     <td className="px-3 py-2 text-caption text-olive-700">{o.status}</td>
-                    <td className="px-3 py-2 text-caption text-olive-700">{o.source === "site" ? "Site" : "iFood"}</td>
+                    <td className="px-3 py-2 text-caption text-olive-700">
+                      {o.source === "site" ? "Site" : "iFood"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </Card>
         </section>
 
         {/* Log de notificações */}
         <section className="flex flex-col gap-2">
           <h2 className="text-body-sm font-bold text-olive-900">Engajamento em notificações</h2>
           {!profileId ? (
-            <div className="rounded-lg border border-dashed border-divider bg-paper-50 p-6 text-center">
+            <Card padding="none" className="border-dashed p-6 text-center">
               <p className="text-caption text-olive-700">
                 Cliente sem conta — leitura/clique de notificação só é rastreado por conta logada.
               </p>
-            </div>
+            </Card>
           ) : notifLog.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-divider bg-paper-50 p-6 text-center">
-              <p className="text-caption text-olive-700">Nenhuma interação com notificações ainda.</p>
-            </div>
+            <Card padding="none" className="border-dashed p-6 text-center">
+              <p className="text-caption text-olive-700">
+                Nenhuma interação com notificações ainda.
+              </p>
+            </Card>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-divider bg-paper-50 shadow-sm">
+            <Card padding="none" className="overflow-x-auto">
               <table className="w-full min-w-[480px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-divider">
                     {["Notificação", "Abriu", "Clicou no CTA"].map((h) => (
-                      <th key={h} className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase">
+                      <th
+                        key={h}
+                        className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase"
+                      >
                         {h}
                       </th>
                     ))}
@@ -134,7 +153,9 @@ export default async function ClienteDetalhePage({ params }: PageProps) {
                   {notifLog.map((e) => (
                     <tr key={e.notificationId} className="border-b border-divider last:border-0">
                       <td className="px-3 py-2">
-                        <span className="block truncate text-caption font-semibold text-olive-900">{e.title}</span>
+                        <span className="block truncate text-caption font-semibold text-olive-900">
+                          {e.title}
+                        </span>
                       </td>
                       <td className="px-3 py-2 text-caption text-olive-700">
                         {e.readAt ? (
@@ -149,7 +170,10 @@ export default async function ClienteDetalhePage({ params }: PageProps) {
                       <td className="px-3 py-2 text-caption text-olive-700">
                         {e.clickedAt ? (
                           <span className="inline-flex items-center gap-1">
-                            <MousePointerClick className="h-3.5 w-3.5 text-terra-700" aria-hidden="true" />
+                            <MousePointerClick
+                              className="h-3.5 w-3.5 text-terra-700"
+                              aria-hidden="true"
+                            />
                             {formatDateTime(e.clickedAt)}
                           </span>
                         ) : (
@@ -160,7 +184,7 @@ export default async function ClienteDetalhePage({ params }: PageProps) {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </Card>
           )}
         </section>
       </div>
@@ -170,9 +194,11 @@ export default async function ClienteDetalhePage({ params }: PageProps) {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
-      <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">{label}</span>
+    <Card padding="none" className="flex flex-col gap-1 p-4">
+      <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">
+        {label}
+      </span>
       <span className="text-h4 font-bold text-olive-900">{value}</span>
-    </div>
+    </Card>
   );
 }

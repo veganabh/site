@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { ProductPhoto } from "@/components/features/product-photo";
 import { EmptyCartAnimation } from "@/components/features/empty-cart-animation";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatBRL, formatCEP } from "@/lib/format";
 import { lookupCEP } from "@/lib/cep";
@@ -331,7 +332,7 @@ function StepResumo() {
         >
           Valores
         </h2>
-        <div className="rounded-2xl border border-divider bg-paper-50 p-4">
+        <Card padding="none" className="p-4">
           <dl className="flex flex-col gap-2 text-body-sm">
             <div className="flex justify-between">
               <dt className="text-olive-700">Subtotal</dt>
@@ -354,7 +355,7 @@ function StepResumo() {
               <dd className="text-h3 font-bold text-olive-900 tabular-nums">{formatBRL(total)}</dd>
             </div>
           </dl>
-        </div>
+        </Card>
       </section>
 
       {/* CTA desktop inline — mobile usa sticky bar */}
@@ -1393,7 +1394,7 @@ function StepPagamento() {
         </section>
       )}
 
-      <div className="flex flex-col gap-1.5 rounded-2xl border border-divider bg-paper-50 px-4 py-3">
+      <Card padding="none" className="flex flex-col gap-1.5 px-4 py-3">
         {couponDiscount > 0 && (
           <div className="flex items-center justify-between text-[12px]">
             <span className="text-olive-700">Subtotal</span>
@@ -1412,7 +1413,7 @@ function StepPagamento() {
           <span className="text-body-sm font-semibold text-olive-900">Total</span>
           <span className="text-h3 font-bold text-olive-900 tabular-nums">{formatBRL(total)}</span>
         </div>
-      </div>
+      </Card>
 
       {error ? (
         <div
@@ -1804,9 +1805,11 @@ function GuestIdentityCard() {
   }
 
   return (
-    <section
+    <Card
+      as="section"
       aria-labelledby="guest-identity-title"
-      className="flex flex-col gap-3 rounded-2xl border border-divider bg-paper-50 p-4"
+      padding="none"
+      className="flex flex-col gap-3 p-4"
     >
       <div className="flex items-start gap-3">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-terra-500/10 text-terra-700">
@@ -1895,6 +1898,6 @@ function GuestIdentityCard() {
           Tudo certo — pode seguir pro endereço.
         </p>
       )}
-    </section>
+    </Card>
   );
 }

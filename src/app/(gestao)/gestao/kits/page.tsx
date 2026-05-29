@@ -7,12 +7,11 @@ import { cn } from "@/lib/utils";
 import { resolveKitIcon } from "@/lib/kit-icons";
 import { useGiftKitsStore } from "@/stores/gift-kits-store";
 import type { GiftKitTemplate } from "@/types/gift-kit";
-import {
-  deleteGiftKitAction,
-  toggleActiveGiftKitAction,
-} from "@/server/actions/gift-kits";
+import { deleteGiftKitAction, toggleActiveGiftKitAction } from "@/server/actions/gift-kits";
 import { KitFormDialog } from "@/components/admin/kits/kit-form-dialog";
 import { KitDeleteDialog } from "@/components/admin/kits/kit-delete-dialog";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -79,14 +78,10 @@ export default function KitsPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h2 font-bold text-olive-900">Kits de presente</h1>
-        <button
-          type="button"
-          onClick={handleOpenCreate}
-          className="inline-flex h-9 items-center gap-2 rounded-md bg-olive-900 px-4 text-body-sm font-semibold text-paper-50 transition hover:bg-olive-700"
-        >
+        <Button variant="primary" size="sm" onClick={handleOpenCreate}>
           <Plus className="h-4 w-4" aria-hidden="true" />
           Novo kit
-        </button>
+        </Button>
       </div>
 
       {/* Conteúdo */}
@@ -94,9 +89,7 @@ export default function KitsPage() {
         /* Empty state */
         <div className="flex flex-col items-center gap-3 py-16 text-center text-olive-700">
           <Gift className="h-8 w-8 opacity-30" aria-hidden="true" />
-          <p className="text-body-sm">
-            Nenhum kit cadastrado — crie o primeiro.
-          </p>
+          <p className="text-body-sm">Nenhum kit cadastrado — crie o primeiro.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -106,9 +99,12 @@ export default function KitsPage() {
             const totalEligible = countEligibleProducts(kit);
 
             return (
-              <article
+              <Card
+                as="article"
                 key={kit.id}
-                className="flex flex-col overflow-hidden rounded-lg border border-divider bg-paper-50 shadow-sm transition-shadow hover:shadow-md"
+                padding="none"
+                interactive
+                className="flex flex-col overflow-hidden"
               >
                 {/* Thumbnail */}
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-paper-100">
@@ -132,7 +128,7 @@ export default function KitsPage() {
                       "absolute top-2 left-2 inline-flex items-center rounded-pill px-2 py-0.5 text-[10px] leading-4 font-semibold shadow-sm backdrop-blur-sm",
                       kit.active
                         ? "bg-leaf-700 text-paper-50"
-                        : "bg-paper-50/90 text-olive-700 ring-1 ring-inset ring-divider",
+                        : "bg-paper-50/90 text-olive-700 ring-1 ring-divider ring-inset",
                     )}
                   >
                     {kit.active ? "Ativo" : "Inativo"}
@@ -144,7 +140,7 @@ export default function KitsPage() {
                   {/* Nome + tagline */}
                   <div>
                     <h3 className="text-body-sm font-semibold text-olive-900">{kit.name}</h3>
-                    <p className="mt-0.5 text-caption italic text-olive-700">{kit.tagline}</p>
+                    <p className="mt-0.5 text-caption text-olive-700 italic">{kit.tagline}</p>
                   </div>
 
                   {/* Preço */}
@@ -162,8 +158,8 @@ export default function KitsPage() {
 
                   {/* Resumo de slots */}
                   <p className="text-caption text-olive-700">
-                    {kit.slots.length} slot{kit.slots.length !== 1 ? "s" : ""} ·{" "}
-                    {totalEligible} produto{totalEligible !== 1 ? "s" : ""}{" "}
+                    {kit.slots.length} slot{kit.slots.length !== 1 ? "s" : ""} · {totalEligible}{" "}
+                    produto{totalEligible !== 1 ? "s" : ""}{" "}
                     {totalEligible !== 1 ? "elegíveis" : "elegível"}
                   </p>
 
@@ -183,7 +179,9 @@ export default function KitsPage() {
                     <button
                       type="button"
                       onClick={() => handleToggle(kit)}
-                      aria-label={kit.active ? `Desativar kit ${kit.name}` : `Ativar kit ${kit.name}`}
+                      aria-label={
+                        kit.active ? `Desativar kit ${kit.name}` : `Ativar kit ${kit.name}`
+                      }
                       className="flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
                     >
                       {kit.active ? (
@@ -208,18 +206,14 @@ export default function KitsPage() {
                     </button>
                   </div>
                 </div>
-              </article>
+              </Card>
             );
           })}
         </div>
       )}
 
       {/* Modais */}
-      <KitFormDialog
-        open={formOpen}
-        kit={editingKit ?? undefined}
-        onClose={handleCloseForm}
-      />
+      <KitFormDialog open={formOpen} kit={editingKit ?? undefined} onClose={handleCloseForm} />
 
       <KitDeleteDialog
         kit={deletingKit}

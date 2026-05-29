@@ -10,11 +10,24 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, Megaphone, Rocket, AlertCircle, BookOpen, Eye, MousePointerClick, Search, X } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Megaphone,
+  Rocket,
+  AlertCircle,
+  BookOpen,
+  Eye,
+  MousePointerClick,
+  Search,
+  X,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { deleteNotificationAction } from "@/server/actions/notifications";
 import type { Notification, NotificationType } from "@/types/notification";
+import { Card } from "@/components/ui/card";
 
 /** Stats por notificação (espelha NotificationStats do server — type inline evita import server-only). */
 type NotifStats = { reads: number; clicks: number; ctr: number | null };
@@ -176,7 +189,7 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
 
   if (notifications.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border border-divider bg-paper-50 py-16 text-center">
+      <Card padding="none" className="flex flex-col items-center gap-3 py-16 text-center">
         <Megaphone className="h-10 w-10 text-olive-700/20" strokeWidth={1.25} />
         <p className="text-body-sm text-olive-700">Nenhuma notificação cadastrada.</p>
         <Link
@@ -186,14 +199,14 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
           <Plus className="h-3.5 w-3.5" aria-hidden="true" />
           Criar a primeira
         </Link>
-      </div>
+      </Card>
     );
   }
 
   return (
     <div className="flex flex-col gap-3">
       {/* Barra de filtro */}
-      <div className="flex flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-3">
+      <Card padding="sm" className="flex flex-col gap-2">
         <div className="relative">
           <Search
             className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-olive-700"
@@ -237,99 +250,102 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
           <span className="font-semibold text-olive-900">{filtered.length}</span> de{" "}
           {notifications.length}
         </span>
-      </div>
+      </Card>
 
       {filtered.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-divider bg-paper-50 p-10 text-center">
-          <p className="text-body-sm font-semibold text-olive-900">Nenhuma notificação encontrada.</p>
+        <Card padding="none" className="border-dashed p-10 text-center">
+          <p className="text-body-sm font-semibold text-olive-900">
+            Nenhuma notificação encontrada.
+          </p>
           <p className="text-caption text-olive-700">Ajuste a busca ou os filtros.</p>
-        </div>
+        </Card>
       ) : (
-        <div
+        <Card
+          padding="none"
           role="list"
           aria-label="Lista de notificações"
-          className="flex flex-col divide-y divide-divider rounded-lg border border-divider bg-paper-50"
+          className="flex flex-col divide-y divide-divider"
         >
           {filtered.map((n) => {
-        const Icon = TYPE_ICONS[n.type];
-        const status = statusOf(n);
-        const stats = statsById[n.id] ?? { reads: 0, clicks: 0, ctr: null };
-        const ctrLabel = stats.ctr === null ? "—" : `${Math.round(stats.ctr * 100)}%`;
+            const Icon = TYPE_ICONS[n.type];
+            const status = statusOf(n);
+            const stats = statsById[n.id] ?? { reads: 0, clicks: 0, ctr: null };
+            const ctrLabel = stats.ctr === null ? "—" : `${Math.round(stats.ctr * 100)}%`;
 
-        return (
-          <div
-            key={n.id}
-            role="listitem"
-            className="flex items-start gap-4 px-4 py-3"
-          >
-            {/* Ícone tipo */}
-            <span
-              className={cn(
-                "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-divider bg-paper-100",
-                TYPE_CLASSES[n.type],
-              )}
-              aria-hidden="true"
-            >
-              <Icon className="h-4 w-4" strokeWidth={1.75} />
-            </span>
-
-            {/* Conteúdo */}
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
+            return (
+              <div key={n.id} role="listitem" className="flex items-start gap-4 px-4 py-3">
+                {/* Ícone tipo */}
                 <span
                   className={cn(
-                    "inline-flex h-5 items-center rounded-full px-2 text-[10px] font-bold uppercase tracking-wide",
-                    STATUS_BADGE[status],
+                    "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-divider bg-paper-100",
+                    TYPE_CLASSES[n.type],
                   )}
+                  aria-hidden="true"
                 >
-                  {STATUS_LABEL[status]}
+                  <Icon className="h-4 w-4" strokeWidth={1.75} />
                 </span>
-                <span className="text-[11px] font-medium text-olive-700/70">
-                  {TYPE_LABELS[n.type]}
-                </span>
-                <span className="text-[11px] text-olive-700/50">
-                  {AUDIENCE_LABEL[n.audience] ?? n.audience}
-                </span>
+
+                {/* Conteúdo */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={cn(
+                        "inline-flex h-5 items-center rounded-full px-2 text-[10px] font-bold tracking-wide uppercase",
+                        STATUS_BADGE[status],
+                      )}
+                    >
+                      {STATUS_LABEL[status]}
+                    </span>
+                    <span className="text-[11px] font-medium text-olive-700/70">
+                      {TYPE_LABELS[n.type]}
+                    </span>
+                    <span className="text-[11px] text-olive-700/50">
+                      {AUDIENCE_LABEL[n.audience] ?? n.audience}
+                    </span>
+                  </div>
+
+                  <p className="mt-0.5 line-clamp-1 text-body-sm font-semibold text-olive-900">
+                    {n.title}
+                  </p>
+                  <p className="mt-0.5 line-clamp-1 text-caption text-olive-700">{n.body}</p>
+
+                  <p className="mt-1 text-[10px] text-olive-700/50">
+                    {formatDate(n.publishedAt)} → {formatDate(n.expiresAt)}
+                  </p>
+
+                  {/* Métricas por notificação */}
+                  <div className="mt-1.5 flex flex-wrap items-center gap-3 text-caption text-olive-700">
+                    <span className="inline-flex items-center gap-1">
+                      <Eye className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
+                      {stats.reads} {stats.reads === 1 ? "leitura" : "leituras"}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <MousePointerClick
+                        className="h-3.5 w-3.5"
+                        strokeWidth={1.75}
+                        aria-hidden="true"
+                      />
+                      {stats.clicks} {stats.clicks === 1 ? "clique" : "cliques"}
+                    </span>
+                    <span className="font-semibold text-olive-900">CTR {ctrLabel}</span>
+                  </div>
+                </div>
+
+                {/* Ações */}
+                <div className="flex shrink-0 items-center gap-1">
+                  <Link
+                    href={`/gestao/notificacoes/${n.id}`}
+                    aria-label={`Editar notificação "${n.title}"`}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+                  >
+                    <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                  <DeleteButton id={n.id} title={n.title} />
+                </div>
               </div>
-
-              <p className="mt-0.5 text-body-sm font-semibold text-olive-900 line-clamp-1">
-                {n.title}
-              </p>
-              <p className="mt-0.5 text-caption text-olive-700 line-clamp-1">{n.body}</p>
-
-              <p className="mt-1 text-[10px] text-olive-700/50">
-                {formatDate(n.publishedAt)} → {formatDate(n.expiresAt)}
-              </p>
-
-              {/* Métricas por notificação */}
-              <div className="mt-1.5 flex flex-wrap items-center gap-3 text-caption text-olive-700">
-                <span className="inline-flex items-center gap-1">
-                  <Eye className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
-                  {stats.reads} {stats.reads === 1 ? "leitura" : "leituras"}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <MousePointerClick className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
-                  {stats.clicks} {stats.clicks === 1 ? "clique" : "cliques"}
-                </span>
-                <span className="font-semibold text-olive-900">CTR {ctrLabel}</span>
-              </div>
-            </div>
-
-            {/* Ações */}
-            <div className="flex shrink-0 items-center gap-1">
-              <Link
-                href={`/gestao/notificacoes/${n.id}`}
-                aria-label={`Editar notificação "${n.title}"`}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
-              >
-                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-              </Link>
-              <DeleteButton id={n.id} title={n.title} />
-            </div>
-          </div>
             );
           })}
-        </div>
+        </Card>
       )}
     </div>
   );

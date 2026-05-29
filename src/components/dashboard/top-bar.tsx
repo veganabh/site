@@ -7,6 +7,7 @@ import { LogIn, LogOut, UserCog } from "lucide-react";
 import { ActiveOrderChip } from "@/components/dashboard/active-order-chip";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { SearchBar } from "@/components/dashboard/search-bar";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth/use-session";
 import { useAdminSettingsStore } from "@/stores/admin-settings-store";
@@ -125,13 +126,12 @@ export function TopBar({ className }: TopBarProps) {
             </div>
           </details>
         ) : (
-          <Link
-            href="/login"
-            className="ml-0.5 inline-flex h-9 items-center gap-1.5 rounded-pill bg-olive-900 px-3.5 text-[13px] font-semibold text-paper-50 transition-colors hover:bg-olive-700"
-          >
-            <LogIn className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="hidden sm:inline">Entrar</span>
-          </Link>
+          <Button asChild variant="primary" size="sm" className="ml-0.5 rounded-pill px-3.5">
+            <Link href="/login">
+              <LogIn className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="hidden sm:inline">Entrar</span>
+            </Link>
+          </Button>
         )}
       </div>
     </header>

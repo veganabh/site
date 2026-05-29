@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Star, Truck } from "lucide-react";
 import { ProductPhoto } from "@/components/features/product-photo";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
 import { useCartStore } from "@/stores/cart-store";
@@ -35,11 +36,11 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
   const isLowStock = !isSoldOut && product.stock <= product.lowStockThreshold;
 
   return (
-    <article
-      className={cn(
-        "group relative flex flex-col overflow-hidden rounded-md border border-divider bg-paper-50 transition-shadow md:hover:shadow-md",
-        className,
-      )}
+    <Card
+      as="article"
+      padding="none"
+      interactive
+      className={cn("group relative flex flex-col overflow-hidden", className)}
     >
       <div className="relative block aspect-[4/3] overflow-hidden bg-paper-100">
         <ProductPhoto
@@ -129,6 +130,6 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
           </div>
         </div>
       </div>
-    </article>
+    </Card>
   );
 }

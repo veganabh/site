@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, Copy, Loader2, RefreshCw, AlertTriangle } from "lucide-react";
 
 import { formatBRL } from "@/lib/format";
+import { Card } from "@/components/ui/card";
 
 type Props = {
   orderId: string;
@@ -125,24 +126,30 @@ export function PixPaymentPanel({
 
   if (status === "failed" || status === "refunded") {
     return (
-      <section
+      <Card
+        as="section"
         aria-label="Cobrança PIX expirada"
-        className="flex flex-col items-center gap-2 rounded-2xl border border-divider bg-paper-50 p-5 text-center"
+        padding="md"
+        className="flex flex-col items-center gap-2 text-center"
       >
         <AlertTriangle className="h-6 w-6 text-terra-700" aria-hidden="true" />
-        <p className="text-body-sm font-semibold text-olive-900">PIX automático indisponível no momento</p>
+        <p className="text-body-sm font-semibold text-olive-900">
+          PIX automático indisponível no momento
+        </p>
         <p className="text-[12px] text-olive-700">
           A Veg.ana vai te chamar no WhatsApp pra enviar o PIX manualmente ou combinar pagamento na
           entrega.
         </p>
-      </section>
+      </Card>
     );
   }
 
   return (
-    <section
+    <Card
+      as="section"
       aria-label="Pagamento via PIX"
-      className="flex flex-col gap-4 rounded-2xl border border-divider bg-paper-50 p-4 md:p-5"
+      padding="none"
+      className="flex flex-col gap-4 p-4 md:p-5"
     >
       <header className="flex flex-col gap-1">
         <h2 className="text-body-sm font-semibold text-olive-900">Pague com PIX</h2>
@@ -158,17 +165,14 @@ export function PixPaymentPanel({
       </header>
 
       <div className="flex flex-col items-center gap-3">
-        <div
-          aria-hidden={expired}
-          className="rounded-2xl border border-divider bg-paper-50 p-2"
-        >
+        <Card aria-hidden={expired} padding="none" className="p-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={brCodeBase64}
             alt="QR Code para pagamento via PIX"
             className="h-44 w-44 rounded-xl"
           />
-        </div>
+        </Card>
 
         <div
           role="status"
@@ -176,12 +180,15 @@ export function PixPaymentPanel({
           className="flex items-center gap-2 text-[12px] text-olive-700"
         >
           {expired ? (
-            <span className="font-semibold text-terra-700">O QR expirou. Chame a Veg.ana no WhatsApp pra gerar um novo.</span>
+            <span className="font-semibold text-terra-700">
+              O QR expirou. Chame a Veg.ana no WhatsApp pra gerar um novo.
+            </span>
           ) : (
             <>
               <Loader2 className="h-3.5 w-3.5 animate-spin text-leaf-700" aria-hidden="true" />
               <span>
-                Aguardando pagamento — expira em <strong className="tabular-nums">{formatRemaining(remainingMs)}</strong>
+                Aguardando pagamento — expira em{" "}
+                <strong className="tabular-nums">{formatRemaining(remainingMs)}</strong>
               </span>
             </>
           )}
@@ -233,7 +240,7 @@ export function PixPaymentPanel({
           Não conseguimos checar o status agora. A confirmação pode demorar alguns segundos a mais.
         </p>
       ) : null}
-    </section>
+    </Card>
   );
 }
 

@@ -8,6 +8,7 @@ import {
   addressTypeLabel,
 } from "@/components/checkout/checkout-steps";
 import { formatBRL } from "@/lib/format";
+import { Card } from "@/components/ui/card";
 import { useAddressStore } from "@/stores/address-store";
 import type { Address } from "@/stores/address-store";
 import { removeAddressAction } from "@/server/profile/address-actions";
@@ -48,9 +49,11 @@ export function AddressManager() {
   }
 
   return (
-    <section
+    <Card
+      as="section"
       aria-labelledby="perfil-enderecos-titulo"
-      className="flex flex-col gap-3 rounded-2xl border border-divider bg-paper-50 p-4 md:p-5"
+      padding="none"
+      className="flex flex-col gap-3 p-4 md:p-5"
     >
       <header className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
@@ -73,10 +76,13 @@ export function AddressManager() {
       </header>
 
       {addresses.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-divider bg-paper-50 p-6 text-center">
+        <Card
+          padding="none"
+          className="flex flex-col items-center gap-2 border-dashed p-6 text-center"
+        >
           <MapPin className="h-6 w-6 text-olive-700" aria-hidden="true" />
           <p className="text-body-sm text-olive-700">Nenhum endereço salvo ainda.</p>
-        </div>
+        </Card>
       ) : (
         <ul className="flex flex-col gap-2" aria-label="Endereços salvos">
           {addresses.map((address) => (
@@ -178,6 +184,6 @@ export function AddressManager() {
           </div>
         </div>
       )}
-    </section>
+    </Card>
   );
 }

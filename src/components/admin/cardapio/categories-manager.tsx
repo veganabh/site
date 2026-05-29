@@ -4,6 +4,8 @@ import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, Check, X, ArrowUp, ArrowDown, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useCategoriesStore } from "@/stores/categories-store";
 import { useMenuStore } from "@/stores/menu-store";
 import type { Category } from "@/types/category";
@@ -62,16 +64,22 @@ export function CategoriesManager() {
   const handleCreate = () => {
     const name = newName.trim();
     if (!name) return;
-    run(() => createCategoryAction({ name }), () => setNewName(""));
+    run(
+      () => createCategoryAction({ name }),
+      () => setNewName(""),
+    );
   };
 
   const handleRename = (id: string) => {
     const name = editingName.trim();
     if (!name) return;
-    run(() => updateCategoryAction({ id, name }), () => {
-      setEditingId(null);
-      setEditingName("");
-    });
+    run(
+      () => updateCategoryAction({ id, name }),
+      () => {
+        setEditingId(null);
+        setEditingName("");
+      },
+    );
   };
 
   const move = (index: number, dir: -1 | 1) => {
@@ -85,7 +93,7 @@ export function CategoriesManager() {
   return (
     <div className="flex flex-col gap-4">
       {/* Criar nova */}
-      <div className="flex flex-col gap-2 rounded-lg border border-divider bg-paper-50 p-3">
+      <Card padding="sm" className="flex flex-col gap-2">
         <span className="text-caption font-semibold text-olive-700">Nova categoria</span>
         <div className="flex items-center gap-2">
           <input
@@ -95,30 +103,36 @@ export function CategoriesManager() {
             placeholder="ex: Tortas, Salgados, Sazonais..."
             className={inputClass}
           />
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="sm"
             disabled={isPending || !newName.trim()}
             onClick={handleCreate}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-olive-900 px-4 text-cta text-paper-50 transition hover:bg-olive-700 disabled:opacity-50"
+            className="shrink-0"
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
             Adicionar
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
 
       {error && (
-        <p role="alert" className="rounded-sm border border-terra-500 bg-terra-500/10 px-3 py-2 text-body-sm text-terra-700">
+        <p
+          role="alert"
+          className="rounded-sm border border-terra-500 bg-terra-500/10 px-3 py-2 text-body-sm text-terra-700"
+        >
           {error}
         </p>
       )}
 
       {/* Lista */}
       {sorted.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-divider bg-paper-50 p-8 text-center">
+        <Card padding="none" className="border-dashed p-8 text-center">
           <p className="text-body-sm font-semibold text-olive-900">Nenhuma categoria.</p>
-          <p className="text-caption text-olive-700">Crie a primeira acima para organizar o cardápio.</p>
-        </div>
+          <p className="text-caption text-olive-700">
+            Crie a primeira acima para organizar o cardápio.
+          </p>
+        </Card>
       ) : (
         <ul className="flex flex-col gap-1.5">
           {sorted.map((cat, index) => (
@@ -150,7 +164,10 @@ export function CategoriesManager() {
               onRequestDelete={() => setConfirmDeleteId(cat.id)}
               onCancelDelete={() => setConfirmDeleteId(null)}
               onConfirmDelete={() =>
-                run(() => deleteCategoryAction(cat.id), () => setConfirmDeleteId(null))
+                run(
+                  () => deleteCategoryAction(cat.id),
+                  () => setConfirmDeleteId(null),
+                )
               }
             />
           ))}
@@ -243,7 +260,9 @@ function CategoryRow({
           />
         ) : (
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <span className="truncate text-body-sm font-semibold text-olive-900">{category.name}</span>
+            <span className="truncate text-body-sm font-semibold text-olive-900">
+              {category.name}
+            </span>
             <span className="shrink-0 rounded-pill bg-paper-100 px-2 py-0 text-[10px] leading-4 font-semibold text-olive-700">
               {productCount} {productCount === 1 ? "produto" : "produtos"}
             </span>
@@ -268,8 +287,16 @@ function CategoryRow({
             </>
           ) : (
             <>
-              <IconBtn label={category.active ? "Ocultar" : "Mostrar"} onClick={onToggleActive} disabled={isPending}>
-                {category.active ? <Eye className="h-4 w-4" aria-hidden="true" /> : <EyeOff className="h-4 w-4" aria-hidden="true" />}
+              <IconBtn
+                label={category.active ? "Ocultar" : "Mostrar"}
+                onClick={onToggleActive}
+                disabled={isPending}
+              >
+                {category.active ? (
+                  <Eye className="h-4 w-4" aria-hidden="true" />
+                ) : (
+                  <EyeOff className="h-4 w-4" aria-hidden="true" />
+                )}
               </IconBtn>
               <IconBtn label="Renomear" onClick={onStartEdit}>
                 <Pencil className="h-4 w-4" aria-hidden="true" />
@@ -288,24 +315,30 @@ function CategoryRow({
           <p className="flex-1 text-caption text-olive-900">
             Excluir <strong>{category.name}</strong>?
             {productCount > 0 && (
-              <> {productCount} {productCount === 1 ? "produto fica" : "produtos ficam"} sem categoria (aparecem em &quot;Sem categoria&quot;).</>
+              <>
+                {" "}
+                {productCount} {productCount === 1 ? "produto fica" : "produtos ficam"} sem
+                categoria (aparecem em &quot;Sem categoria&quot;).
+              </>
             )}
           </p>
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={onCancelDelete}
-            className="h-8 rounded-md border border-divider px-3 text-caption font-semibold text-olive-700 transition hover:bg-paper-100"
+            className="h-8 text-caption"
           >
             Cancelar
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
             disabled={isPending}
             onClick={onConfirmDelete}
-            className="h-8 rounded-md bg-terra-500 px-3 text-caption font-semibold text-paper-50 transition hover:bg-terra-700 disabled:opacity-50"
+            className="h-8 text-caption"
           >
             Excluir
-          </button>
+          </Button>
         </div>
       )}
     </li>

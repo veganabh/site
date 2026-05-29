@@ -2,6 +2,7 @@
 
 import { useMenuStore } from "@/stores/menu-store";
 import { ProdutoForm } from "@/components/features/cardapio/produto-form";
+import { Card } from "@/components/ui/card";
 import Link from "next/link";
 
 type Props = {
@@ -17,7 +18,7 @@ export function ProdutoEditWrapper({ id }: Props) {
 
   if (!product) {
     return (
-      <div className="rounded-lg border border-divider bg-paper-50 p-8 text-center">
+      <Card padding="none" className="p-8 text-center">
         <p className="text-body text-olive-700">Produto não encontrado.</p>
         <Link
           href="/gestao/cardapio"
@@ -25,7 +26,7 @@ export function ProdutoEditWrapper({ id }: Props) {
         >
           Voltar ao cardápio
         </Link>
-      </div>
+      </Card>
     );
   }
 

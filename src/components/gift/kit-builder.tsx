@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
+import { Card } from "@/components/ui/card";
 import { useMenuStore } from "@/stores/menu-store";
 import { ProductPhoto } from "@/components/features/product-photo";
 import { useCartStore } from "@/stores/cart-store";
@@ -192,8 +193,7 @@ export function KitBuilder({ slug }: KitBuilderProps) {
   const slotFilled = currentSlot ? slotPicks.length === currentSlot.qty : true;
 
   const recipientCepOk = !sendToRecipient || recipientCepCovered === true;
-  const personalizationValid =
-    (!sendToRecipient || isRecipientValid(recipient)) && recipientCepOk;
+  const personalizationValid = (!sendToRecipient || isRecipientValid(recipient)) && recipientCepOk;
 
   const canAdvance = currentSlot ? slotFilled : personalizationValid;
 
@@ -521,9 +521,11 @@ function PersonalizationStep({
         subtitle={`fita + papel premium · +${formatBRL(GIFT_PACKAGING_PRICE)}`}
       />
 
-      <section
+      <Card
+        as="section"
         aria-labelledby="kit-msg-titulo"
-        className="flex flex-col gap-2 rounded-xl border border-divider bg-paper-50 p-4"
+        padding="none"
+        className="flex flex-col gap-2 p-4"
       >
         <div className="flex items-start gap-2">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sage-300/40 text-olive-900">
@@ -552,7 +554,7 @@ function PersonalizationStep({
             {cardMessage.length}/{GIFT_CARD_MESSAGE_MAX}
           </span>
         </div>
-      </section>
+      </Card>
 
       <ToggleCard
         active={sendToRecipient}
@@ -668,9 +670,11 @@ function RecipientForm({
         : null;
 
   return (
-    <section
+    <Card
+      as="section"
       aria-label="Dados do destinatário"
-      className="flex flex-col gap-3 rounded-xl border border-divider bg-paper-50 p-4"
+      padding="none"
+      className="flex flex-col gap-3 p-4"
     >
       <div className="grid gap-3 sm:grid-cols-2">
         <TextField
@@ -763,7 +767,7 @@ function RecipientForm({
           placeholder="MG"
         />
       </div>
-    </section>
+    </Card>
   );
 }
 

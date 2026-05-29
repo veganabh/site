@@ -11,6 +11,7 @@
  */
 
 import Link from "next/link";
+import { Card } from "@/components/ui/card";
 import { useAdminOrdersStore } from "@/stores/admin-orders-store";
 import { OrderStatusBadge } from "@/components/features/order-status-badge";
 import { getRecentOrders, formatRelativeTime } from "@/lib/dashboard-metrics";
@@ -20,7 +21,7 @@ export function RecentOrdersFeed() {
   const recent = getRecentOrders(orders, 5);
 
   return (
-    <div className="flex h-full flex-col gap-3 rounded-lg border border-divider bg-paper-50 p-4 shadow-sm">
+    <Card padding="none" className="flex h-full flex-col gap-3 p-4">
       <h2 className="text-body-sm font-bold text-olive-900">Pedidos recentes</h2>
 
       {recent.length === 0 ? (
@@ -71,6 +72,6 @@ export function RecentOrdersFeed() {
       >
         Ver todos os pedidos
       </Link>
-    </div>
+    </Card>
   );
 }

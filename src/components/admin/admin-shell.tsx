@@ -3,6 +3,7 @@
 import { AdminSidebar, useAdminDrawer } from "@/components/admin/admin-sidebar";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { useOrdersRealtime } from "@/hooks/use-orders-realtime";
+import { Card } from "@/components/ui/card";
 
 type AdminShellProps = {
   children: React.ReactNode;
@@ -37,12 +38,12 @@ export function AdminShell({ children, pageTitle }: AdminShellProps) {
       {/* Área principal com card arredondado */}
       <div className="mx-auto flex w-full flex-1 flex-col">
         <div className="mx-auto flex w-full flex-1 flex-col px-2 py-2 md:px-3 md:py-3">
-          <div className="flex w-full flex-1 flex-col rounded-lg border border-divider bg-paper-50 shadow-sm">
+          <Card padding="none" className="flex w-full flex-1 flex-col">
             <AdminTopbar onMenuOpen={openDrawer} pageTitle={pageTitle} />
             <main className="min-w-0 flex-1 px-3 pt-3 pb-8 md:px-5 md:pt-4 md:pb-10">
               <div className="mx-auto w-full max-w-screen-2xl">{children}</div>
             </main>
-          </div>
+          </Card>
         </div>
       </div>
     </div>

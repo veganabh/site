@@ -7,9 +7,9 @@ import { canTransitionTo, isTerminal } from "@/types/order";
 import { useAdminOrdersStore } from "@/stores/admin-orders-store";
 import { useDeliveryPersonsStore } from "@/stores/delivery-persons-store";
 import { formatBRL } from "@/lib/format";
-import { cn } from "@/lib/utils";
 import { CancelReasonDialog } from "@/components/features/cancel-reason-dialog";
 import { Dialog, DialogContent, DialogClose, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -304,29 +304,31 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                   <div className="flex flex-col gap-2">
                     {/* Ação primária por status */}
                     {order.status === "NOVO" && (
-                      <button
-                        type="button"
+                      <Button
+                        variant="primary"
+                        size="md"
+                        className="w-full"
                         onClick={() => {
                           acceptOrder(order.id);
                           onClose();
                         }}
-                        className="w-full rounded-sm bg-olive-900 py-3 text-cta font-semibold text-paper-50 transition hover:bg-olive-700"
                       >
                         Aceitar pedido
-                      </button>
+                      </Button>
                     )}
 
                     {order.status === "PREPARANDO" && (
-                      <button
-                        type="button"
+                      <Button
+                        variant="primary"
+                        size="md"
+                        className="w-full"
                         onClick={() => {
                           markReady(order.id);
                           onClose();
                         }}
-                        className="w-full rounded-sm bg-olive-900 py-3 text-cta font-semibold text-paper-50 transition hover:bg-olive-700"
                       >
                         Marcar como pronto
-                      </button>
+                      </Button>
                     )}
 
                     {order.status === "PRONTO" && (

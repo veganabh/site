@@ -4,6 +4,7 @@ import { OrderDetailPanel } from "@/components/dashboard/order-detail-panel";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { Footer } from "@/components/layout/footer";
 import { MiniCartBar } from "@/components/layout/mini-cart-bar";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 type DashboardShellProps = {
@@ -30,13 +31,13 @@ export function DashboardShell({
       <Sidebar />
       <div className="mx-auto flex w-full flex-1 flex-col pb-44 md:pb-0">
         <div className="mx-auto flex w-full flex-1 flex-col px-2 py-2 md:px-3 md:py-3">
-          <div className="mx-auto flex w-full flex-1 flex-col rounded-lg border border-divider bg-paper-50 shadow-sm">
+          <Card padding="none" className="mx-auto flex w-full flex-1 flex-col">
             <TopBar />
             <div className="flex min-w-0 flex-1 flex-col xl:flex-row">
               <main className="min-w-0 flex-1 px-3 pt-3 pb-8 md:px-5 md:pt-4">{children}</main>
               {rightPanel ?? (showOrderPanel && <OrderDetailPanel />)}
             </div>
-          </div>
+          </Card>
         </div>
         <Footer />
       </div>

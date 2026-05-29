@@ -7,18 +7,17 @@ import { createSupabaseServerClient } from "@/server/supabase/server";
 import { getOrderById } from "@/server/orders";
 import { formatBRL } from "@/lib/format";
 import { PixPaymentPanel } from "@/components/checkout/pix-payment-panel";
+import { Card } from "@/components/ui/card";
 
 type PaymentRow = {
   status: "pending" | "paid" | "failed" | "refunded";
   provider: "abacatepay" | "manual";
-  raw_payload:
-    | {
-        brCode?: string;
-        brCodeBase64?: string;
-        expiresAt?: string;
-        devMode?: boolean;
-      }
-    | null;
+  raw_payload: {
+    brCode?: string;
+    brCodeBase64?: string;
+    expiresAt?: string;
+    devMode?: boolean;
+  } | null;
 };
 
 export const metadata: Metadata = {
@@ -34,11 +33,7 @@ export const metadata: Metadata = {
  * com QR PIX manual ou combina pagamento na entrega. Quando AbacatePay
  * liberar, esta página passa a renderizar QR Code direto.
  */
-export default async function ObrigadoPage({
-  params,
-}: {
-  params: Promise<{ orderId: string }>;
-}) {
+export default async function ObrigadoPage({ params }: { params: Promise<{ orderId: string }> }) {
   const { orderId } = await params;
 
   const supabase = await createSupabaseServerClient();
@@ -82,7 +77,7 @@ export default async function ObrigadoPage({
         }
       : null;
 
-  const fallback = payment?.provider === "manual" || (payment === null);
+  const fallback = payment?.provider === "manual" || payment === null;
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-5 pt-4 pb-10">
@@ -134,9 +129,11 @@ export default async function ObrigadoPage({
         </section>
       ) : null}
 
-      <section
+      <Card
+        as="section"
         aria-label="Resumo do pedido"
-        className="flex flex-col gap-3 rounded-2xl border border-divider bg-paper-50 p-4 md:p-5"
+        padding="none"
+        className="flex flex-col gap-3 p-4 md:p-5"
       >
         <h2 className="inline-flex items-center gap-2 text-body-sm font-semibold text-olive-900">
           <Package className="h-4 w-4" aria-hidden="true" />
@@ -188,7 +185,7 @@ export default async function ObrigadoPage({
             </dd>
           </div>
         </dl>
-      </section>
+      </Card>
 
       <section
         aria-label="Próximo passo"

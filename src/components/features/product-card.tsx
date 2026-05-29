@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { PriceDisplay } from "@/components/features/price-display";
 import { ATTRIBUTE_LABEL } from "@/lib/product-meta";
 import type { Product } from "@/types/product";
@@ -21,11 +23,11 @@ export function ProductCard({ product, onAdd, className }: ProductCardProps) {
   const visibleAttrs = product.attributes.slice(0, 2);
 
   return (
-    <article
-      className={cn(
-        "flex flex-col gap-3 rounded-md border border-divider bg-white p-4 shadow-sm transition-shadow hover:shadow-md",
-        className,
-      )}
+    <Card
+      as="article"
+      padding="none"
+      interactive
+      className={cn("flex flex-col gap-3 p-4", className)}
     >
       <div className="relative aspect-square overflow-hidden rounded-sm bg-paper-100">
         <Image
@@ -56,21 +58,18 @@ export function ProductCard({ product, onAdd, className }: ProductCardProps) {
       <PriceDisplay priceSite={product.price_site} priceIfood={product.price_ifood} />
 
       <div className="mt-auto flex flex-col gap-2">
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="md"
           onClick={onAdd ? () => onAdd(product) : undefined}
           disabled={addDisabled}
           aria-disabled={addDisabled}
-          className={cn(
-            "rounded-sm bg-olive-900 px-6 py-3 text-cta font-semibold text-paper-50 transition-colors",
-            "hover:bg-olive-700",
-            "disabled:cursor-not-allowed disabled:bg-sage-300 disabled:text-olive-900",
-          )}
+          className={cn(addDisabled && "disabled:bg-sage-300 disabled:text-olive-900")}
         >
           Adicionar
-        </button>
+        </Button>
         {addDisabled && <p className="text-caption text-olive-700">Carrinho em breve.</p>}
       </div>
-    </article>
+    </Card>
   );
 }
