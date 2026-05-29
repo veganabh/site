@@ -72,7 +72,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: "Sistema",
     items: [
       { href: "/gestao/zonas", label: "Zonas", icon: MapPin },
-      { href: "/gestao/relatorios", label: "Relatórios", icon: BarChart2, disabled: true },
+      { href: "/gestao/relatorios", label: "Relatórios", icon: BarChart2 },
       { href: "/gestao/configuracoes", label: "Configurações", icon: SlidersHorizontal },
     ],
   },

@@ -41,6 +41,7 @@ type ProductRow = {
   gramatura_g: number;
   price_site_cents: number;
   price_ifood_cents: number;
+  cost_cents: number;
   attributes: string[];
   tags: string[];
   contains: string[];
@@ -68,6 +69,7 @@ export function productFromRow(row: ProductRow): Product {
     gramatura_g: row.gramatura_g,
     price_site: centsToReais(row.price_site_cents),
     price_ifood: centsToReais(row.price_ifood_cents),
+    cost: centsToReais(row.cost_cents),
     attributes: row.attributes as ProductAttribute[],
     tags: row.tags as ProductTag[],
     contains: row.contains.length ? (row.contains as ProductContains[]) : undefined,
@@ -582,6 +584,7 @@ export function productToInsert(product: Omit<Product, "id">): Omit<ProductRow, 
     description: product.description,
     category: product.category,
     gramatura_g: product.gramatura_g,
+    cost_cents: reaisToCents(product.cost ?? 0),
     price_site_cents: reaisToCents(product.price_site),
     price_ifood_cents: reaisToCents(product.price_ifood),
     attributes: [...product.attributes],

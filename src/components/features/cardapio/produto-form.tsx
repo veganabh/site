@@ -46,6 +46,7 @@ const produtoSchema = z.object({
   gramatura_g: positiveNum("Informe a gramatura.", 0),
   price_site: positiveNum("Preço inválido."),
   price_ifood: positiveNum("Preço iFood inválido."),
+  cost: nonNegativeNum("Custo inválido."),
   photo_url: z.string().optional(),
   photo_alt: z.string().optional(),
   active: z.boolean(),
@@ -77,6 +78,7 @@ export function ProdutoForm(props: ProdutoFormProps) {
           gramatura_g: String(props.product.gramatura_g),
           price_site: String(props.product.price_site),
           price_ifood: String(props.product.price_ifood),
+          cost: String(props.product.cost ?? 0),
           photo_url: props.product.photo.url,
           photo_alt: props.product.photo.alt,
           active: props.product.active,
@@ -90,6 +92,7 @@ export function ProdutoForm(props: ProdutoFormProps) {
           gramatura_g: "230",
           price_site: "",
           price_ifood: "",
+          cost: "0",
           photo_url: "",
           photo_alt: "",
           active: true,
@@ -157,6 +160,7 @@ export function ProdutoForm(props: ProdutoFormProps) {
         gramatura_g: Number(values.gramatura_g),
         price_site: Number(values.price_site),
         price_ifood: Number(values.price_ifood),
+        cost: Number(values.cost),
         photo_url: values.photo_url ?? "",
         photo_alt: values.photo_alt ?? values.name,
         active: values.active,
@@ -258,6 +262,21 @@ export function ProdutoForm(props: ProdutoFormProps) {
             min={0}
             placeholder="18.90"
             className={inputClass(!!errors.price_ifood)}
+          />
+        </Field>
+
+        <Field
+          label="Custo / CPV (R$)"
+          error={errors.cost?.message}
+          hint="Custo de produção por unidade. Usado pra calcular margem em Relatórios."
+        >
+          <input
+            {...register("cost")}
+            type="number"
+            step="0.01"
+            min={0}
+            placeholder="6.50"
+            className={inputClass(!!errors.cost)}
           />
         </Field>
       </div>

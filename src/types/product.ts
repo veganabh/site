@@ -49,6 +49,8 @@ export type Product = {
   gramatura_g: number;
   price_site: number;
   price_ifood: number;
+  /** CPV — custo de produção por unidade (reais). 0 = não informado. */
+  cost?: number;
   attributes: readonly ProductAttribute[];
   tags: readonly ProductTag[];
   photo: ProductPhoto;
