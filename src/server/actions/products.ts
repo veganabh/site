@@ -42,7 +42,7 @@ const baseProductSchema = z.object({
   name: z.string().trim().min(2, "Nome precisa ter pelo menos 2 caracteres.").max(120),
   description: z.string().trim().min(10, "Descrição muito curta.").max(2000),
   category: z.string().min(1, "Selecione a categoria."),
-  gramatura_g: z.coerce.number().int().positive("Informe a gramatura."),
+  gramatura_g: z.coerce.number().int().nonnegative("Gramatura inválida.").default(0),
   price_site: z.coerce.number().positive("Preço site inválido."),
   price_ifood: z.coerce.number().positive("Preço iFood inválido."),
   cost: z.coerce.number().nonnegative("Custo inválido.").default(0),

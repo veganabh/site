@@ -277,9 +277,11 @@ export function parseProductCsv(raw: string): ParsedCsv {
     if (custoRaw && (!Number.isFinite(custo) || custo < 0))
       errors.push("custo: número >= 0.");
 
-    const pesoG = parseNumberCell(get("peso_g"));
-    if (!Number.isInteger(pesoG) || pesoG <= 0)
-      errors.push("peso_g: inteiro maior que 0.");
+    // peso é opcional — produto pode subir sem gramatura (preenche depois).
+    const pesoRaw = get("peso_g");
+    const pesoG = pesoRaw ? parseNumberCell(pesoRaw) : 0;
+    if (pesoRaw && (!Number.isInteger(pesoG) || pesoG < 0))
+      errors.push("peso_g: inteiro >= 0 (ou vazio).");
 
     const serveRaw = get("serve_ate");
     let serveAte: number | undefined;

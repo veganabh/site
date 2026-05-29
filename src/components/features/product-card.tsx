@@ -48,7 +48,9 @@ export function ProductCard({ product, onAdd, className }: ProductCardProps) {
       <div className="flex flex-col gap-1">
         <h3 className="text-h3 font-semibold text-olive-900">{product.name}</h3>
         <p className="line-clamp-2 text-body-sm text-olive-700">{product.description}</p>
-        <p className="text-caption text-olive-700">{product.gramatura_g}g</p>
+        {product.gramatura_g > 0 && (
+          <p className="text-caption text-olive-700">{product.gramatura_g}g</p>
+        )}
       </div>
 
       <PriceDisplay priceSite={product.price_site} priceIfood={product.price_ifood} />

@@ -39,11 +39,19 @@ const nonNegativeNum = (msg: string) =>
     return !isNaN(n) && n >= 0;
   }, msg);
 
+// Campo numérico opcional: vazio é aceito (vira 0 no submit).
+const optionalNonNegativeNum = (msg: string) =>
+  z.string().refine((v) => {
+    if (v.trim() === "") return true;
+    const n = Number(v);
+    return !isNaN(n) && n >= 0;
+  }, msg);
+
 const produtoSchema = z.object({
   name: z.string().min(2, "Nome precisa ter pelo menos 2 caracteres."),
   description: z.string().min(10, "Descrição muito curta."),
   category: z.string().min(1, "Selecione a categoria."),
-  gramatura_g: positiveNum("Informe a gramatura.", 0),
+  gramatura_g: optionalNonNegativeNum("Gramatura inválida."),
   price_site: positiveNum("Preço inválido."),
   price_ifood: positiveNum("Preço iFood inválido."),
   cost: nonNegativeNum("Custo inválido."),
@@ -89,7 +97,7 @@ export function ProdutoForm(props: ProdutoFormProps) {
           name: "",
           description: "",
           category: "",
-          gramatura_g: "230",
+          gramatura_g: "",
           price_site: "",
           price_ifood: "",
           cost: "0",
@@ -231,12 +239,12 @@ export function ProdutoForm(props: ProdutoFormProps) {
           />
         </Field>
 
-        <Field label="Gramatura (g)" error={errors.gramatura_g?.message}>
+        <Field label="Gramatura (g) · opcional" error={errors.gramatura_g?.message}>
           <input
             {...register("gramatura_g")}
             type="number"
-            min={1}
-            placeholder="230"
+            min={0}
+            placeholder="opcional"
             className={inputClass(!!errors.gramatura_g)}
           />
         </Field>
