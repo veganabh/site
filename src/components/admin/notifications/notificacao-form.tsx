@@ -13,12 +13,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { cn } from "@/lib/utils";
-import { notificationInputSchema, NOTIFICATION_TYPES, NOTIFICATION_AUDIENCES } from "@/lib/notifications/schema";
-import type { NotificationInputSchema, NotificationFormInput } from "@/lib/notifications/schema";
+import { Input, TextArea } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
-  createNotificationAction,
-  updateNotificationAction,
-} from "@/server/actions/notifications";
+  notificationInputSchema,
+  NOTIFICATION_TYPES,
+  NOTIFICATION_AUDIENCES,
+} from "@/lib/notifications/schema";
+import type { NotificationInputSchema, NotificationFormInput } from "@/lib/notifications/schema";
+import { createNotificationAction, updateNotificationAction } from "@/server/actions/notifications";
 import type { Notification } from "@/types/notification";
 
 // ── Labels ────────────────────────────────────────────────────────────────────
@@ -79,7 +82,11 @@ function FormField({ label, htmlFor, error, hint, required, children }: FormFiel
     <div className="flex flex-col gap-1.5">
       <label htmlFor={htmlFor} className="text-body-sm font-semibold text-olive-900">
         {label}
-        {required && <span className="ml-1 text-terra-500" aria-hidden="true">*</span>}
+        {required && (
+          <span className="ml-1 text-terra-500" aria-hidden="true">
+            *
+          </span>
+        )}
       </label>
       {children}
       {hint && !error && <p className="text-caption text-olive-700/70">{hint}</p>}
@@ -178,7 +185,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
             {...register("type")}
             className={cn(
               "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 transition-colors",
-              "focus:border-olive-500 focus:outline-none focus:ring-2 focus:ring-olive-500/20",
+              "focus:border-olive-500 focus:ring-2 focus:ring-olive-500/20 focus:outline-none",
               errors.type && "border-terra-500",
             )}
           >
@@ -196,7 +203,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
             {...register("audience")}
             className={cn(
               "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 transition-colors",
-              "focus:border-olive-500 focus:outline-none focus:ring-2 focus:ring-olive-500/20",
+              "focus:border-olive-500 focus:ring-2 focus:ring-olive-500/20 focus:outline-none",
               errors.audience && "border-terra-500",
             )}
           >
@@ -217,17 +224,13 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
         hint={`${titleValue.length}/80 caracteres`}
         required
       >
-        <input
+        <Input
           id="title"
           type="text"
           maxLength={80}
           placeholder="ex: 20% off em todos os bolos esse final de semana"
           {...register("title")}
-          className={cn(
-            "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/40",
-            "focus:border-olive-500 focus:outline-none focus:ring-2 focus:ring-olive-500/20",
-            errors.title && "border-terra-500",
-          )}
+          hasError={!!errors.title}
         />
       </FormField>
 
@@ -239,25 +242,21 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
         hint={`${bodyValue.length}/280 caracteres — aparece no sino, truncado em 2 linhas`}
         required
       >
-        <textarea
+        <TextArea
           id="body"
           rows={3}
           maxLength={280}
           placeholder="ex: Use o cupom VERDE20 no checkout. Válido de sexta a domingo."
           {...register("body")}
-          className={cn(
-            "w-full resize-none rounded-md border border-divider bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 placeholder:text-olive-700/40",
-            "focus:border-olive-500 focus:outline-none focus:ring-2 focus:ring-olive-500/20",
-            errors.body && "border-terra-500",
-          )}
+          hasError={!!errors.body}
+          className="resize-none"
         />
       </FormField>
 
       {/* CTA opcional */}
       <div className="rounded-md border border-divider p-4">
         <p className="mb-3 text-body-sm font-semibold text-olive-900">
-          Botão de ação{" "}
-          <span className="font-normal text-olive-700/70">(opcional)</span>
+          Botão de ação <span className="font-normal text-olive-700/70">(opcional)</span>
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField
@@ -266,17 +265,13 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
             error={errors.ctaLabel?.message}
             hint="Máx 40 caracteres"
           >
-            <input
+            <Input
               id="ctaLabel"
               type="text"
               maxLength={40}
               placeholder="ex: Ver promoção"
               {...register("ctaLabel")}
-              className={cn(
-                "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/40",
-                "focus:border-olive-500 focus:outline-none focus:ring-2 focus:ring-olive-500/20",
-                errors.ctaLabel && "border-terra-500",
-              )}
+              hasError={!!errors.ctaLabel}
             />
           </FormField>
 
@@ -286,16 +281,12 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
             error={errors.ctaHref?.message}
             hint="Deve começar com / (ex: /cardapio)"
           >
-            <input
+            <Input
               id="ctaHref"
               type="text"
               placeholder="ex: /cardapio"
               {...register("ctaHref")}
-              className={cn(
-                "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/40",
-                "focus:border-olive-500 focus:outline-none focus:ring-2 focus:ring-olive-500/20",
-                errors.ctaHref && "border-terra-500",
-              )}
+              hasError={!!errors.ctaHref}
             />
           </FormField>
         </div>
@@ -313,7 +304,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
               {...register("couponCode")}
               className={cn(
                 "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900",
-                "focus:border-olive-500 focus:outline-none focus:ring-2 focus:ring-olive-500/20",
+                "focus:border-olive-500 focus:ring-2 focus:ring-olive-500/20 focus:outline-none",
               )}
             >
               <option value="">Nenhum (CTA só navega pelo link)</option>
@@ -335,15 +326,11 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
           error={errors.publishedAt?.message}
           required
         >
-          <input
+          <Input
             id="publishedAt"
             type="datetime-local"
             {...register("publishedAt")}
-            className={cn(
-              "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900",
-              "focus:border-olive-500 focus:outline-none focus:ring-2 focus:ring-olive-500/20",
-              errors.publishedAt && "border-terra-500",
-            )}
+            hasError={!!errors.publishedAt}
           />
         </FormField>
 
@@ -353,15 +340,11 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
           error={errors.expiresAt?.message}
           required
         >
-          <input
+          <Input
             id="expiresAt"
             type="datetime-local"
             {...register("expiresAt")}
-            className={cn(
-              "h-10 w-full rounded-md border border-divider bg-paper-50 px-3 text-body-sm text-olive-900",
-              "focus:border-olive-500 focus:outline-none focus:ring-2 focus:ring-olive-500/20",
-              errors.expiresAt && "border-terra-500",
-            )}
+            hasError={!!errors.expiresAt}
           />
         </FormField>
       </div>
@@ -378,24 +361,22 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
 
       {/* Ações */}
       <div className="flex items-center justify-end gap-3 border-t border-divider pt-4">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="inline-flex h-10 items-center rounded-pill border border-divider bg-paper-50 px-5 text-[13px] font-medium text-olive-700 transition-colors hover:bg-paper-100"
-        >
+        <Button type="button" variant="secondary" size="sm" onClick={() => router.back()}>
           Cancelar
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
+          variant="primary"
+          size="sm"
+          isLoading={isPending}
           disabled={isPending}
-          className="inline-flex h-10 items-center rounded-pill bg-olive-900 px-5 text-[13px] font-semibold text-paper-50 transition-colors hover:bg-olive-700 disabled:opacity-60"
         >
           {isPending
             ? "Salvando…"
             : props.mode === "editar"
               ? "Salvar alterações"
               : "Publicar notificação"}
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -15,12 +15,10 @@ import { z } from "zod";
 import Image from "next/image";
 import type { Product } from "@/types/product";
 import { useActiveCategories } from "@/stores/categories-store";
-import { cn } from "@/lib/utils";
-import {
-  createProductAction,
-  updateProductAction,
-} from "@/server/actions/products";
+import { createProductAction, updateProductAction } from "@/server/actions/products";
 import { uploadProductPhotoAction } from "@/server/actions/upload-product-photo";
+import { Input, TextArea } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const ACCEPTED_IMAGE_TYPES = "image/jpeg,image/png,image/webp";
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
@@ -200,20 +198,21 @@ export function ProdutoForm(props: ProdutoFormProps) {
       noValidate
     >
       <Field label="Nome do produto" error={errors.name?.message}>
-        <input
+        <Input
           {...register("name")}
           type="text"
           placeholder="Ex: Bolo no Pote — Brigadeiro"
-          className={inputClass(!!errors.name)}
+          hasError={!!errors.name}
         />
       </Field>
 
       <Field label="Descrição" error={errors.description?.message}>
-        <textarea
+        <TextArea
           {...register("description")}
           rows={3}
           placeholder="Descreva os ingredientes e o que torna este produto especial."
-          className={cn(inputClass(!!errors.description), "resize-y")}
+          hasError={!!errors.description}
+          className="resize-y"
         />
       </Field>
 
@@ -240,36 +239,36 @@ export function ProdutoForm(props: ProdutoFormProps) {
         </Field>
 
         <Field label="Gramatura (g) · opcional" error={errors.gramatura_g?.message}>
-          <input
+          <Input
             {...register("gramatura_g")}
             type="number"
             min={0}
             placeholder="opcional"
-            className={inputClass(!!errors.gramatura_g)}
+            hasError={!!errors.gramatura_g}
           />
         </Field>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Preço no site (R$)" error={errors.price_site?.message}>
-          <input
+          <Input
             {...register("price_site")}
             type="number"
             step="0.01"
             min={0}
             placeholder="17.90"
-            className={inputClass(!!errors.price_site)}
+            hasError={!!errors.price_site}
           />
         </Field>
 
         <Field label="Preço no iFood (R$)" error={errors.price_ifood?.message}>
-          <input
+          <Input
             {...register("price_ifood")}
             type="number"
             step="0.01"
             min={0}
             placeholder="18.90"
-            className={inputClass(!!errors.price_ifood)}
+            hasError={!!errors.price_ifood}
           />
         </Field>
 
@@ -278,13 +277,13 @@ export function ProdutoForm(props: ProdutoFormProps) {
           error={errors.cost?.message}
           hint="Custo de produção por unidade. Usado pra calcular margem em Relatórios."
         >
-          <input
+          <Input
             {...register("cost")}
             type="number"
             step="0.01"
             min={0}
             placeholder="6.50"
-            className={inputClass(!!errors.cost)}
+            hasError={!!errors.cost}
           />
         </Field>
       </div>
@@ -296,13 +295,13 @@ export function ProdutoForm(props: ProdutoFormProps) {
           error={errors.stock?.message}
           hint="Quantidade disponível para venda. 0 = esgotado."
         >
-          <input
+          <Input
             {...register("stock")}
             type="number"
             min={0}
             step={1}
             placeholder="0"
-            className={inputClass(!!errors.stock)}
+            hasError={!!errors.stock}
           />
         </Field>
 
@@ -311,13 +310,13 @@ export function ProdutoForm(props: ProdutoFormProps) {
           error={errors.lowStockThreshold?.message}
           hint="Aviso aparece quando o estoque chegar neste número."
         >
-          <input
+          <Input
             {...register("lowStockThreshold")}
             type="number"
             min={1}
             step={1}
             placeholder="3"
-            className={inputClass(!!errors.lowStockThreshold)}
+            hasError={!!errors.lowStockThreshold}
           />
         </Field>
       </div>
@@ -337,18 +336,16 @@ export function ProdutoForm(props: ProdutoFormProps) {
             disabled={isUploading}
             className="hidden"
           />
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="sm"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="rounded-sm border border-divider bg-paper-100 px-4 py-2 text-cta text-olive-900 transition hover:bg-paper-50 disabled:opacity-60"
+            isLoading={isUploading}
           >
-            {isUploading
-              ? "Enviando..."
-              : previewUrl
-                ? "Trocar imagem"
-                : "Enviar imagem"}
-          </button>
+            {isUploading ? "Enviando..." : previewUrl ? "Trocar imagem" : "Enviar imagem"}
+          </Button>
           {previewUrl && (
             <div className="relative h-24 w-24 overflow-hidden rounded-md border border-divider bg-paper-100">
               <Image
@@ -367,11 +364,11 @@ export function ProdutoForm(props: ProdutoFormProps) {
       </Field>
 
       <Field label="Texto alternativo da foto" error={errors.photo_alt?.message}>
-        <input
+        <Input
           {...register("photo_alt")}
           type="text"
           placeholder="Bolo de cenoura com cobertura de brigadeiro em prato claro"
-          className={inputClass(!!errors.photo_alt)}
+          hasError={!!errors.photo_alt}
         />
       </Field>
 
@@ -397,25 +394,26 @@ export function ProdutoForm(props: ProdutoFormProps) {
       )}
 
       <div className="flex flex-wrap gap-3 pt-2">
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          isLoading={isPending}
           disabled={isSubmitting || isPending || isUploading}
-          className="rounded-sm bg-olive-900 px-6 py-2.5 text-cta text-paper-50 transition hover:bg-olive-700 disabled:opacity-60"
         >
           {isPending
             ? "Salvando..."
             : props.mode === "novo"
               ? "Adicionar produto"
               : "Salvar alterações"}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="secondary"
           onClick={() => router.push("/gestao/cardapio")}
           disabled={isPending}
-          className="rounded-sm border border-divider bg-paper-100 px-6 py-2.5 text-cta text-olive-900 transition hover:bg-paper-100 disabled:opacity-60"
         >
           Cancelar
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -439,13 +437,5 @@ function Field({
       {children}
       {error && <p className="text-caption text-terra-700">{error}</p>}
     </div>
-  );
-}
-
-function inputClass(hasError: boolean) {
-  return cn(
-    "w-full rounded-sm border bg-paper-50 px-3 py-2.5 text-body-sm text-olive-900 outline-none transition",
-    "placeholder:text-olive-500 focus:ring-2 focus:ring-olive-900/20",
-    hasError ? "border-terra-500 focus:ring-terra-500/30" : "border-divider",
   );
 }
