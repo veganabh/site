@@ -87,7 +87,7 @@ const STATUS_LABEL: Record<NotifStatus, string> = {
 const STATUS_BADGE: Record<NotifStatus, string> = {
   ativa: "bg-leaf-500/15 text-leaf-700",
   agendada: "bg-info/15 text-info",
-  expirada: "bg-paper-100 text-olive-700/60",
+  expirada: "bg-paper-100 text-olive-700",
 };
 
 function formatDate(iso: string): string {
@@ -190,7 +190,7 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
   if (notifications.length === 0) {
     return (
       <Card padding="none" className="flex flex-col items-center gap-3 py-16 text-center">
-        <Megaphone className="h-10 w-10 text-olive-700/20" strokeWidth={1.25} />
+        <Megaphone className="h-10 w-10 text-olive-700" strokeWidth={1.25} />
         <p className="text-body-sm text-olive-700">Nenhuma notificação cadastrada.</p>
         <Link
           href="/gestao/notificacoes/nova"
@@ -218,7 +218,7 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por título ou mensagem..."
             aria-label="Buscar notificação"
-            className="w-full rounded-sm border border-divider bg-paper-50 py-1.5 pr-9 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/60 focus:border-olive-700 focus:outline-none"
+            className="w-full rounded-sm border border-divider bg-paper-50 py-1.5 pr-9 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700 focus:border-olive-700 focus:outline-none"
           />
           {query && (
             <button
@@ -296,10 +296,10 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
                     >
                       {STATUS_LABEL[status]}
                     </span>
-                    <span className="text-micro font-medium text-olive-700/70">
+                    <span className="text-micro font-medium text-olive-700">
                       {TYPE_LABELS[n.type]}
                     </span>
-                    <span className="text-micro text-olive-700/50">
+                    <span className="text-micro text-olive-700">
                       {AUDIENCE_LABEL[n.audience] ?? n.audience}
                     </span>
                   </div>
@@ -309,7 +309,7 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
                   </p>
                   <p className="mt-0.5 line-clamp-1 text-caption text-olive-700">{n.body}</p>
 
-                  <p className="mt-1 text-micro text-olive-700/50">
+                  <p className="mt-1 text-micro text-olive-700">
                     {formatDate(n.publishedAt)} → {formatDate(n.expiresAt)}
                   </p>
 

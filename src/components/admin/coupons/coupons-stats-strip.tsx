@@ -55,7 +55,7 @@ function Pill({ label, value, hint, emphasis = "default" }: PillProps) {
         <span
           className={cn(
             "leading-tight",
-            isPrimary ? "text-caption text-olive-700" : "text-micro text-olive-700/70",
+            isPrimary ? "text-caption text-olive-700" : "text-micro text-olive-700",
           )}
         >
           {hint}

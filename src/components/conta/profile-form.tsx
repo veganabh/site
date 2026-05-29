@@ -178,9 +178,7 @@ export function ProfileForm() {
             Atualizado.
           </p>
         ) : (
-          <span className="text-caption text-olive-700/70">
-            {dirty ? "Alterações pendentes" : ""}
-          </span>
+          <span className="text-caption text-olive-700">{dirty ? "Alterações pendentes" : ""}</span>
         )}
 
         <Button
@@ -213,14 +211,14 @@ function Field({ label, icon: Icon, inputProps, errors, hint }: FieldProps) {
       </span>
       <div className="relative">
         <Icon
-          className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700/60"
+          className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700"
           aria-hidden="true"
         />
         <Input
           {...inputProps}
           aria-invalid={Boolean(errors?.length)}
           hasError={Boolean(errors?.length)}
-          className={cn("pr-3 pl-9", inputProps.disabled && "bg-paper-100 text-olive-700/70")}
+          className={cn("pr-3 pl-9", inputProps.disabled && "bg-paper-100 text-olive-700")}
         />
       </div>
       {errors?.length ? (
@@ -228,7 +226,7 @@ function Field({ label, icon: Icon, inputProps, errors, hint }: FieldProps) {
           {errors[0]}
         </span>
       ) : hint ? (
-        <span className="text-micro text-olive-700/60">{hint}</span>
+        <span className="text-micro text-olive-700">{hint}</span>
       ) : null}
     </label>
   );

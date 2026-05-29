@@ -158,7 +158,7 @@ export default function PedidosPage() {
               placeholder="Buscar por #ID ou nome"
               className={cn(
                 "h-8 w-52 rounded-sm border border-divider bg-paper-50 pr-3 pl-8",
-                "text-caption text-olive-900 placeholder:text-olive-700/50",
+                "text-caption text-olive-900 placeholder:text-olive-700",
                 "focus:border-olive-900 focus:outline-none",
               )}
             />
@@ -229,7 +229,7 @@ export default function PedidosPage() {
                 <span
                   className={cn(
                     "flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-micro leading-none font-bold",
-                    colOrders.length > 0 ? col.badgeActiveClass : "bg-paper-50 text-olive-700/60",
+                    colOrders.length > 0 ? col.badgeActiveClass : "bg-paper-50 text-olive-700",
                   )}
                   aria-label={`${colOrders.length} ${colOrders.length === 1 ? "pedido" : "pedidos"}`}
                 >
@@ -240,7 +240,7 @@ export default function PedidosPage() {
               {/* Cards */}
               <div className="flex flex-col gap-2 overflow-y-auto">
                 {colOrders.length === 0 ? (
-                  <p className="px-3 py-4 text-center text-micro text-olive-700/60">
+                  <p className="px-3 py-4 text-center text-micro text-olive-700">
                     {col.emptyLabel}
                   </p>
                 ) : (

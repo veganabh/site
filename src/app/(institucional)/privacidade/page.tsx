@@ -22,7 +22,7 @@ export default function PrivacidadePage() {
           A gente coleta o mínimo pra entregar seu doce e cuidar do atendimento. Aqui está, sem
           letra miúda, o que guardamos e o que você pode fazer com isso.
         </p>
-        <p className="text-caption text-olive-700/80">Última atualização: {updatedAt}</p>
+        <p className="text-caption text-olive-700">Última atualização: {updatedAt}</p>
       </header>
 
       <Section title="Quem é responsável">

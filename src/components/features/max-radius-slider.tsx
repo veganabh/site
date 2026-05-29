@@ -94,7 +94,7 @@ export function MaxRadiusSlider({ onMutationSuccess, onMutationError }: MaxRadiu
         />
       </Slider.Root>
 
-      <div className="flex justify-between text-micro text-olive-700/70">
+      <div className="flex justify-between text-micro text-olive-700">
         <span>0</span>
         <span>2,5 km</span>
         <span>5 km</span>

@@ -166,9 +166,7 @@ export function OrderCard({ order, onOpen, className }: OrderCardProps) {
       <div className="flex flex-col gap-0">
         <p className="truncate text-caption font-semibold text-olive-900">{order.customerName}</p>
         {ordinal > 1 && (
-          <p className="text-micro leading-tight text-olive-700/70">
-            {ordinalPtBR(ordinal)} pedido
-          </p>
+          <p className="text-micro leading-tight text-olive-700">{ordinalPtBR(ordinal)} pedido</p>
         )}
         <p className="mt-0.5 text-micro text-olive-700">
           {formatTime(order.createdAt)} · {itemCount} {itemCount === 1 ? "item" : "itens"}

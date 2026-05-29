@@ -96,15 +96,13 @@ function NotificationItem({ notification, onRead, onCtaClick }: NotificationItem
       {/* Conteúdo */}
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-micro font-semibold tracking-wide text-olive-700/70 uppercase">
-            {label}
-          </p>
+          <p className="text-micro font-semibold tracking-wide text-olive-700 uppercase">{label}</p>
           {!notification.read && (
             <button
               type="button"
               aria-label={`Marcar "${notification.title}" como lida`}
               onClick={() => onRead(notification.id)}
-              className="shrink-0 text-olive-700/50 transition-colors hover:text-olive-900"
+              className="shrink-0 text-olive-700 transition-colors hover:text-olive-900"
             >
               <X className="h-3 w-3" aria-hidden="true" />
             </button>
@@ -267,11 +265,7 @@ export function NotificationBell() {
 
             {!isLoading && !hasNotifications && (
               <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
-                <BellOff
-                  className="h-8 w-8 text-olive-700/30"
-                  aria-hidden="true"
-                  strokeWidth={1.25}
-                />
+                <BellOff className="h-8 w-8 text-olive-700" aria-hidden="true" strokeWidth={1.25} />
                 <p className="text-caption text-olive-700">Sem novidades por enquanto.</p>
               </div>
             )}

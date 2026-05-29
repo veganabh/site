@@ -119,7 +119,7 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
                 </div>
 
                 {slotPicks.length === 0 ? (
-                  <p className="text-micro text-olive-700/70 italic">a escolher</p>
+                  <p className="text-micro text-olive-700 italic">a escolher</p>
                 ) : (
                   <ul className="flex flex-col gap-1.5">
                     {Array.from(slotCounts.entries()).map(([productId, count]) => {
@@ -169,9 +169,7 @@ export function KitPicksPanel({ className }: KitPicksPanelProps) {
             </span>
             <span className="font-semibold text-olive-900">{formatBRL(finalPrice)}</span>
           </div>
-          <p className="text-micro text-olive-700/70">
-            Continue o passo a passo pra finalizar o kit.
-          </p>
+          <p className="text-micro text-olive-700">Continue o passo a passo pra finalizar o kit.</p>
         </div>
       </div>
     </aside>

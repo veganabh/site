@@ -158,7 +158,7 @@ function CategoryChip({ item, active, tier }: CategoryChipProps) {
       className={cn(
         "flex h-14 w-14 items-center justify-center rounded-sm border-2 transition-all md:h-16 md:w-16",
         !item.available
-          ? "border-divider bg-paper-100 text-olive-700/35"
+          ? "border-divider bg-paper-100 text-olive-700"
           : active
             ? "border-terra-500 bg-olive-900 text-paper-50 shadow-md"
             : isPrimary
@@ -179,7 +179,7 @@ function CategoryChip({ item, active, tier }: CategoryChipProps) {
       className={cn(
         "line-clamp-2 w-[4.75rem] text-center text-micro leading-tight font-semibold",
         !item.available
-          ? "text-olive-700/40"
+          ? "text-olive-700"
           : active
             ? "text-terra-700"
             : isPrimary
@@ -201,7 +201,7 @@ function CategoryChip({ item, active, tier }: CategoryChipProps) {
       >
         {iconBox}
         {label}
-        <span className="text-micro font-medium tracking-wide text-olive-700/45 uppercase">
+        <span className="text-micro font-medium tracking-wide text-olive-700 uppercase">
           sem estoque
         </span>
       </div>

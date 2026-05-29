@@ -23,7 +23,7 @@ function MetricCard({ label, value, hint, icon: Icon }: MetricCardProps) {
         <span className="text-caption font-semibold tracking-wide uppercase">{label}</span>
       </div>
       <span className="text-h4 font-bold text-olive-900">{value}</span>
-      <span className="text-caption text-olive-700/70">{hint ?? " "}</span>
+      <span className="text-caption text-olive-700">{hint ?? " "}</span>
     </Card>
   );
 }

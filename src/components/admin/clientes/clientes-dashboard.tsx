@@ -157,7 +157,7 @@ export function ClientesDashboard({ analytics }: { analytics: CustomerAnalytics 
                     >
                       {c.name}
                     </Link>
-                    <span className="text-caption text-olive-700/70">{c.phone}</span>
+                    <span className="text-caption text-olive-700">{c.phone}</span>
                   </td>
                   <td className="px-3 py-2 text-caption text-olive-900">{c.orders}</td>
                   <td className="px-3 py-2 text-caption font-semibold text-olive-900">
@@ -210,7 +210,7 @@ function MetricCard({
         <span className="text-caption font-semibold tracking-wide uppercase">{label}</span>
       </div>
       <span className="text-h4 font-bold text-olive-900">{value}</span>
-      <span className="text-caption text-olive-700/70">{hint}</span>
+      <span className="text-caption text-olive-700">{hint}</span>
     </Card>
   );
 }

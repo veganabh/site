@@ -56,7 +56,7 @@ function StatCard({
           {delta} vs ontem
         </span>
       ) : (
-        <span className="text-caption text-olive-700/70">—</span>
+        <span className="text-caption text-olive-700">—</span>
       )}
     </Card>
   );

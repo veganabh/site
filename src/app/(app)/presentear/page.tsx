@@ -41,12 +41,12 @@ export default async function PresentearPage() {
             Doces que viajam bonito
             <br className="hidden md:block" /> até quem você gosta.
           </h1>
-          <p className="max-w-xl text-body-sm text-paper-50/80 md:text-body-sm">
+          <p className="max-w-xl text-body-sm text-paper-50 md:text-body-sm">
             Monte um kit com os sabores da pessoa, deixe uma mensagem no cartão e a gente entrega na
             casa dela. Sem lactose, sem ovo, sem stress.
           </p>
 
-          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-caption text-paper-50/85">
+          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-caption text-paper-50">
             <li className="inline-flex items-center gap-1.5">
               <Package className="h-3.5 w-3.5 text-terra-500" aria-hidden="true" />
               embalagem pra presente

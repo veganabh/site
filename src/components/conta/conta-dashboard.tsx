@@ -186,7 +186,7 @@ function SavingsHero({ totalSavings, totalSpent, totalOrders, aCaminho }: Saving
         </p>
 
         {!isEmpty && (
-          <p className="text-caption text-paper-50/70 md:text-body-sm">
+          <p className="text-caption text-paper-50 md:text-body-sm">
             de <span className="font-semibold text-paper-50">{formatBRL(totalSpent)}</span> em{" "}
             {totalOrders} {totalOrders === 1 ? "pedido" : "pedidos"}
             {aCaminho > 0 && (
@@ -206,14 +206,14 @@ function SavingsHero({ totalSavings, totalSpent, totalOrders, aCaminho }: Saving
             <p className="text-body font-semibold text-paper-50">
               Seu primeiro pedido ainda não saiu.
             </p>
-            <p className="text-body-sm text-paper-50/70">
+            <p className="text-body-sm text-paper-50">
               Assim que ele chegar, a gente começa a contar a grana que você deixou no bolso.
             </p>
           </div>
         ) : (
           <p
             key={index}
-            className="text-body-sm text-paper-50/85"
+            className="text-body-sm text-paper-50"
             style={{ animation: "fade-in-up 450ms ease-out" }}
           >
             Com essa grana, {phrases[index]}.
@@ -506,7 +506,7 @@ function ContaAnonLanding() {
             <br className="hidden md:block" /> Vale pra sempre.
           </p>
 
-          <p className="text-caption text-paper-50/75 md:text-body-sm">
+          <p className="text-caption text-paper-50 md:text-body-sm">
             Sem letras miúdas — só pra gente te reconhecer no próximo bolo.
           </p>
 

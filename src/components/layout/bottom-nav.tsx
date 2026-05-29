@@ -66,7 +66,7 @@ export function BottomNav() {
                   "flex h-10 items-center justify-center gap-2 rounded-full transition-all duration-300 ease-out",
                   active
                     ? "bg-paper-50 px-4 text-olive-900"
-                    : "w-10 text-paper-50/55 hover:text-paper-50",
+                    : "w-10 text-paper-50 hover:text-paper-50",
                 )}
               >
                 <Icon

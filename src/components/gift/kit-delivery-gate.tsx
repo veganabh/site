@@ -158,7 +158,7 @@ export function KitDeliveryGate({ open, kit, onClose }: KitDeliveryGateProps) {
               value={cepInput}
               onChange={(e) => setCepInput(formatCepInput(e.target.value))}
               maxLength={9}
-              className="h-10 min-w-0 flex-1 rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus:border-olive-900 focus:outline-none"
+              className="h-10 min-w-0 flex-1 rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700 focus:border-olive-900 focus:outline-none"
             />
             <button
               type="submit"

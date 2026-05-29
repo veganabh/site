@@ -89,7 +89,7 @@ function FormField({ label, htmlFor, error, hint, required, children }: FormFiel
         )}
       </label>
       {children}
-      {hint && !error && <p className="text-caption text-olive-700/70">{hint}</p>}
+      {hint && !error && <p className="text-caption text-olive-700">{hint}</p>}
       {error && (
         <p role="alert" className="text-caption text-terra-700">
           {error}
@@ -256,7 +256,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
       {/* CTA opcional */}
       <div className="rounded-sm border border-divider p-4">
         <p className="mb-3 text-body-sm font-semibold text-olive-900">
-          Botão de ação <span className="font-normal text-olive-700/70">(opcional)</span>
+          Botão de ação <span className="font-normal text-olive-700">(opcional)</span>
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField

@@ -230,7 +230,7 @@ function StepCircle({
       aria-label={`${label}: pendente`}
       className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-divider bg-paper-100"
     >
-      <Circle className="h-3 w-3 text-olive-500/40" aria-hidden="true" />
+      <Circle className="h-3 w-3 text-olive-500" aria-hidden="true" />
     </span>
   );
 }

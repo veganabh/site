@@ -94,7 +94,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
         <div role="alert" className="rounded-sm bg-terra-700 px-4 py-3 text-paper-50">
           <p className="text-body-sm font-bold">Pedido cancelado</p>
           {order.cancelReason && (
-            <p className="mt-0.5 text-caption text-paper-50/85">{order.cancelReason}</p>
+            <p className="mt-0.5 text-caption text-paper-50">{order.cancelReason}</p>
           )}
         </div>
       )}
@@ -134,7 +134,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                 <p
                   className={cn(
                     "text-body-sm leading-snug font-semibold",
-                    isActive ? "text-terra-700" : isDone ? "text-olive-900" : "text-olive-700/50",
+                    isActive ? "text-terra-700" : isDone ? "text-olive-900" : "text-olive-700",
                   )}
                 >
                   {STATUS_LABEL[step]}
@@ -144,13 +144,13 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                   <p
                     className={cn(
                       "mt-0.5 text-caption tabular-nums",
-                      isDone || isActive ? "text-olive-700" : "text-olive-700/40",
+                      isDone || isActive ? "text-olive-700" : "text-olive-700",
                     )}
                   >
                     {formatTime(historyEntry.at)}
                   </p>
                 ) : (
-                  <p className="mt-0.5 text-caption text-olive-700/30">—</p>
+                  <p className="mt-0.5 text-caption text-olive-700">—</p>
                 )}
 
                 {/* Card entregador quando A_CAMINHO */}
@@ -182,7 +182,7 @@ export function OrderTimeline({ order }: OrderTimelineProps) {
                   <button
                     type="button"
                     disabled
-                    className="mt-2 cursor-not-allowed rounded-full border border-divider bg-paper-100 px-3 py-1 text-micro font-semibold text-olive-700/50"
+                    className="mt-2 cursor-not-allowed rounded-full border border-divider bg-paper-100 px-3 py-1 text-micro font-semibold text-olive-700"
                     title="Em breve"
                   >
                     Avaliar pedido

@@ -209,7 +209,7 @@ export function CuponsClient() {
           aria-label="Buscar cupom por código"
           className={cn(
             "h-8 w-full rounded-sm border border-divider bg-paper-50 pr-8 pl-8",
-            "text-caption text-olive-900 placeholder:text-olive-700/50",
+            "text-caption text-olive-900 placeholder:text-olive-700",
             "focus:border-olive-900 focus:outline-none",
           )}
         />

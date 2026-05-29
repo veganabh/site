@@ -546,7 +546,7 @@ function PersonalizationStep({
           rows={3}
           maxLength={GIFT_CARD_MESSAGE_MAX}
           placeholder="Ex: Pra você, que cuidou de mim sem cobrar nada. Aproveita cada pedaço."
-          className="w-full resize-none rounded-sm border border-divider bg-paper-50 p-3 text-body-sm text-olive-900 placeholder:text-olive-700/50"
+          className="w-full resize-none rounded-sm border border-divider bg-paper-50 p-3 text-body-sm text-olive-900 placeholder:text-olive-700"
         />
         <div className="flex items-center justify-between text-micro text-olive-700">
           <span>Até {GIFT_CARD_MESSAGE_MAX} caracteres</span>
@@ -801,7 +801,7 @@ function TextField({
         placeholder={placeholder}
         inputMode={inputMode}
         className={cn(
-          "h-10 w-full rounded-sm border bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50",
+          "h-10 w-full rounded-sm border bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700",
           statusTone === "ok" && "border-leaf-500",
           statusTone === "error" && "border-terra-500",
           statusTone === "loading" && "border-divider",
@@ -881,7 +881,7 @@ function StickyCta({ canAdvance, isLastStep, slotCounter, finalPrice, onNext }: 
             "ml-auto inline-flex h-11 items-center gap-2 rounded-full px-5 text-body-sm font-bold transition-transform active:scale-[0.98]",
             canAdvance
               ? "bg-terra-500 text-paper-50 shadow-sm"
-              : "cursor-not-allowed bg-sage-300 text-paper-50/80",
+              : "cursor-not-allowed bg-sage-300 text-paper-50",
           )}
         >
           {isLastStep ? "Adicionar ao carrinho" : "Próximo"}

@@ -111,7 +111,7 @@ function StepIndicator({ current }: { current: Exclude<CheckoutStep, "confirmado
                 "flex h-7 items-center gap-1.5 rounded-full font-semibold transition-all",
                 isActive && "bg-olive-900 px-2.5 text-paper-50",
                 isDone && "cursor-pointer px-1 text-olive-900 hover:bg-paper-100",
-                !isActive && !isDone && "px-1 text-olive-700/50",
+                !isActive && !isDone && "px-1 text-olive-700",
               )}
             >
               <span
@@ -119,7 +119,7 @@ function StepIndicator({ current }: { current: Exclude<CheckoutStep, "confirmado
                   "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-micro font-bold",
                   isActive && "bg-paper-50 text-olive-900",
                   isDone && "bg-leaf-500 text-paper-50",
-                  !isActive && !isDone && "bg-paper-100 text-olive-700/60",
+                  !isActive && !isDone && "bg-paper-100 text-olive-700",
                 )}
               >
                 {isDone ? (
@@ -413,12 +413,12 @@ function SavingsHero({ savings }: { savings: number }) {
         <p className="text-h1 leading-none font-extrabold tracking-tight text-paper-50 md:text-display">
           {formatBRL(savings)}
         </p>
-        <p className="text-caption text-paper-50/70">
+        <p className="text-caption text-paper-50">
           comparado ao iFood — direto aqui sai mais em conta.
         </p>
         <p
           key={index}
-          className="mt-1 text-body-sm text-paper-50/85"
+          className="mt-1 text-body-sm text-paper-50"
           style={{ animation: "fade-in-up 450ms ease-out" }}
         >
           Com essa grana, {phrases[index]}.
@@ -1033,7 +1033,7 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
               className={cn(
                 "inline-flex h-10 flex-1 items-center justify-center rounded-full px-4 text-body-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500",
                 pending
-                  ? "cursor-wait bg-sage-300 text-paper-50/80"
+                  ? "cursor-wait bg-sage-300 text-paper-50"
                   : "bg-olive-900 text-paper-50 hover:bg-terra-500",
               )}
             >
@@ -1388,7 +1388,7 @@ function StepPagamento() {
             aria-hidden="true"
             className="flex h-40 w-40 items-center justify-center rounded-sm border-2 border-dashed border-divider bg-paper-100"
           >
-            <QrCode className="h-10 w-10 text-olive-500/40" />
+            <QrCode className="h-10 w-10 text-olive-500" />
           </div>
           <p className="text-center text-body-sm text-olive-700">QR Code gerado ao confirmar</p>
         </section>
@@ -1441,7 +1441,7 @@ function StepPagamento() {
         className={cn(
           "hidden h-11 items-center justify-center gap-2 rounded-full px-6 text-body-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex",
           isPending
-            ? "cursor-wait bg-sage-300 text-paper-50/80"
+            ? "cursor-wait bg-sage-300 text-paper-50"
             : "bg-terra-500 text-paper-50 hover:bg-terra-700",
         )}
       >
@@ -1616,7 +1616,7 @@ function CartItemCompact({ item }: { item: CartItem }) {
           <div className="flex items-baseline gap-1.5 text-micro">
             <span className="font-semibold text-olive-900 tabular-nums">{formatBRL(unitSite)}</span>
             {unitIfood > unitSite && (
-              <span className="text-olive-700/60 tabular-nums line-through">
+              <span className="text-olive-700 tabular-nums line-through">
                 {formatBRL(unitIfood)}
               </span>
             )}
@@ -1722,7 +1722,7 @@ function KitCartItemCompact({ kit }: { kit: KitCartItem }) {
             {formatBRL(linePrice)}
           </span>
           {lineSavings > 0 && (
-            <span className="text-micro text-olive-700/60 tabular-nums line-through">
+            <span className="text-micro text-olive-700 tabular-nums line-through">
               iFood {formatBRL(lineAnchor)}
             </span>
           )}
@@ -1832,7 +1832,7 @@ function GuestIdentityCard() {
           </span>
           <div className="relative">
             <User
-              className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700/60"
+              className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700"
               aria-hidden="true"
             />
             <input
@@ -1841,7 +1841,7 @@ function GuestIdentityCard() {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               placeholder="Ana"
-              className="h-10 w-full rounded-sm border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+              className="h-10 w-full rounded-sm border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700 focus-visible:outline-2 focus-visible:outline-olive-500"
             />
           </div>
         </label>
@@ -1852,7 +1852,7 @@ function GuestIdentityCard() {
           </span>
           <div className="relative">
             <Mail
-              className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700/60"
+              className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700"
               aria-hidden="true"
             />
             <input
@@ -1861,7 +1861,7 @@ function GuestIdentityCard() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="ana@exemplo.com"
-              className="h-10 w-full rounded-sm border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+              className="h-10 w-full rounded-sm border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700 focus-visible:outline-2 focus-visible:outline-olive-500"
             />
           </div>
         </label>
@@ -1872,7 +1872,7 @@ function GuestIdentityCard() {
           </span>
           <div className="relative">
             <Phone
-              className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700/60"
+              className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-olive-700"
               aria-hidden="true"
             />
             <input
@@ -1882,7 +1882,7 @@ function GuestIdentityCard() {
               value={phone}
               onChange={(e) => setPhone(formatPhone(e.target.value))}
               placeholder="(31) 99999-9999"
-              className="h-10 w-full rounded-sm border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus-visible:outline-2 focus-visible:outline-olive-500"
+              className="h-10 w-full rounded-sm border border-divider bg-paper-50 pr-3 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700 focus-visible:outline-2 focus-visible:outline-olive-500"
             />
           </div>
         </label>

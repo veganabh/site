@@ -20,7 +20,7 @@ export default function TermosPage() {
           As regras de quem pede com a gente, em português de gente. Ao fazer um pedido, você
           concorda com o que está aqui.
         </p>
-        <p className="text-caption text-olive-700/80">Última atualização: {updatedAt}</p>
+        <p className="text-caption text-olive-700">Última atualização: {updatedAt}</p>
       </header>
 
       <Section title="Sobre a Veg.ana">

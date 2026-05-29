@@ -175,7 +175,7 @@ function SidebarContent({ onClose, collapsed = false, onToggleCollapse }: Sideba
               // Rail: divisor no lugar do rótulo (exceto antes do 1º grupo)
               sectionIndex > 0 && <span aria-hidden="true" className="my-1 h-px w-7 bg-divider" />
             ) : (
-              <span className="px-3 pb-1 text-micro font-semibold tracking-wide text-olive-700/60 uppercase">
+              <span className="px-3 pb-1 text-micro font-semibold tracking-wide text-olive-700 uppercase">
                 {section.label}
               </span>
             )}

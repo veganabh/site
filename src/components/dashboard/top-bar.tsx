@@ -95,7 +95,7 @@ export function TopBar({ className }: TopBarProps) {
               </span>
               <div className="hidden leading-tight md:block">
                 <p className="text-body-sm font-semibold text-olive-900">{user?.firstName}</p>
-                <p className="text-micro text-olive-900/60">{user?.city}</p>
+                <p className="text-micro text-olive-900">{user?.city}</p>
               </div>
             </summary>
 

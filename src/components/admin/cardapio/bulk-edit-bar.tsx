@@ -33,7 +33,7 @@ const PRICE_MODE_LABELS: Record<PriceBulkMode, string> = {
 };
 
 const inputClass =
-  "h-9 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700/50 focus:border-olive-500 focus:outline-none";
+  "h-9 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 placeholder:text-olive-700 focus:border-olive-500 focus:outline-none";
 
 type BulkEditBarProps = {
   selectedIds: string[];

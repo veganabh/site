@@ -197,14 +197,14 @@ export function CardapioList() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Buscar pelo nome do produto..."
               aria-label="Buscar produto pelo nome"
-              className="w-full rounded-sm border border-divider bg-paper-50 py-1.5 pr-9 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700/60 focus:border-olive-700 focus:outline-none"
+              className="w-full rounded-sm border border-divider bg-paper-50 py-1.5 pr-9 pl-9 text-body-sm text-olive-900 placeholder:text-olive-700 focus:border-olive-700 focus:outline-none"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
                 aria-label="Limpar busca"
-                className="absolute top-1/2 right-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-olive-700 hover:bg-paper-100"
+                className="absolute relative top-1/2 right-2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-olive-700 before:absolute before:-inset-2.5 before:content-[''] hover:bg-paper-100"
               >
                 <X className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
@@ -657,7 +657,7 @@ function CategorySection({
                         onClick={() => onAdjustStock(product.id, -1)}
                         disabled={product.stock === 0}
                         aria-label={`Remover 1 de ${product.name}`}
-                        className="flex h-6 w-6 items-center justify-center rounded-full border border-divider text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="relative flex h-6 w-6 items-center justify-center rounded-full border border-divider text-olive-700 transition-colors before:absolute before:-inset-2.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <Minus className="h-3 w-3" aria-hidden="true" />
                       </button>
@@ -665,7 +665,7 @@ function CategorySection({
                         type="button"
                         onClick={() => onAdjustStock(product.id, 1)}
                         aria-label={`Adicionar 1 a ${product.name}`}
-                        className="flex h-6 w-6 items-center justify-center rounded-full border border-divider text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+                        className="relative flex h-6 w-6 items-center justify-center rounded-full border border-divider text-olive-700 transition-colors before:absolute before:-inset-2.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
                       >
                         <Plus className="h-3 w-3" aria-hidden="true" />
                       </button>
@@ -700,7 +700,7 @@ function CategorySection({
                   <Link
                     href={`/gestao/cardapio/${product.id}`}
                     aria-label={`Editar ${product.name}`}
-                    className="flex h-7 w-7 items-center justify-center rounded-full text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+                    className="relative flex h-7 w-7 items-center justify-center rounded-full text-olive-700 transition-colors before:absolute before:-inset-2 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
                   >
                     <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                   </Link>
