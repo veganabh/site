@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 import { AddressesStoreHydrator } from "@/components/providers/addresses-store-hydrator";
@@ -82,6 +83,7 @@ export default async function RootLayout({
             <PostHogProvider>{children}</PostHogProvider>
           </AuthProvider>
         </QueryProvider>
+        <Toaster position="bottom-center" richColors closeButton />
       </body>
     </html>
   );

@@ -6,7 +6,7 @@
 import { z } from "zod";
 
 export const NOTIFICATION_TYPES = ["promo", "launch", "operational", "content"] as const;
-export const NOTIFICATION_AUDIENCES = ["all", "authed"] as const;
+export const NOTIFICATION_AUDIENCES = ["all", "authed", "guest"] as const;
 
 /**
  * Valida string de data parseável. Aceita tanto `datetime-local`
@@ -45,6 +45,13 @@ export const notificationInputSchema = z
       .transform((v) => v ?? null),
 
     audience: z.enum(NOTIFICATION_AUDIENCES, { message: "Público inválido." }),
+
+    couponCode: z
+      .string()
+      .trim()
+      .max(40, "Código de cupom muito longo.")
+      .nullish()
+      .transform((v) => (v ? v.toUpperCase() : null)),
 
     publishedAt: parseableDate("Data de publicação inválida."),
 

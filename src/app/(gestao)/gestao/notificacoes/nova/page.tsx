@@ -2,12 +2,18 @@ import type { Metadata } from "next";
 
 import { AdminGate } from "@/components/features/admin-gate";
 import { NotificacaoForm } from "@/components/admin/notifications/notificacao-form";
+import { listAdminCoupons } from "@/server/coupons";
 
 export const metadata: Metadata = {
   title: "Nova notificação — Gestão Veg.ana",
 };
 
-export default function NovaNotificacaoPage() {
+export default async function NovaNotificacaoPage() {
+  const coupons = await listAdminCoupons();
+  const activeCoupons = coupons
+    .filter((c) => c.status === "ATIVO")
+    .map((c) => ({ code: c.code, label: c.label }));
+
   return (
     <AdminGate>
       <div className="flex flex-col gap-6">
@@ -17,7 +23,7 @@ export default function NovaNotificacaoPage() {
             Preencha os campos e publique para exibir no sino dos clientes.
           </p>
         </div>
-        <NotificacaoForm mode="nova" />
+        <NotificacaoForm mode="nova" coupons={activeCoupons} />
       </div>
     </AdminGate>
   );

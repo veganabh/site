@@ -95,6 +95,13 @@ export function useNotifications(): UseNotificationsReturn {
           "@/server/actions/notifications"
         );
         await markNotificationReadAction(id);
+      } else {
+        // Anônimo: registra leitura no server por anon_id (dedup por dispositivo).
+        const { getAnonId } = await import("@/lib/anon-id");
+        const { markAnonNotificationReadAction } = await import(
+          "@/server/actions/notifications"
+        );
+        await markAnonNotificationReadAction([id], getAnonId());
       }
     },
     onMutate: async (id: string) => {
@@ -129,11 +136,18 @@ export function useNotifications(): UseNotificationsReturn {
   // markAllRead
   const markAllReadMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      if (isAuthed && ids.length) {
+      if (!ids.length) return;
+      if (isAuthed) {
         const { markAllNotificationsReadAction } = await import(
           "@/server/actions/notifications"
         );
         await markAllNotificationsReadAction(ids);
+      } else {
+        const { getAnonId } = await import("@/lib/anon-id");
+        const { markAnonNotificationReadAction } = await import(
+          "@/server/actions/notifications"
+        );
+        await markAnonNotificationReadAction(ids, getAnonId());
       }
     },
     onMutate: async (ids: string[]) => {
