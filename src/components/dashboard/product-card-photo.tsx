@@ -104,7 +104,8 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
           {product.name}
         </h3>
         <p className="text-[11px] text-olive-700">
-          {labelForCategory(product.category, categoryLabels)} · {product.gramatura_g}g
+          {labelForCategory(product.category, categoryLabels)}
+          {product.gramatura_g > 0 && ` · ${product.gramatura_g}g`}
           {product.serves !== undefined && ` · serve ${product.serves}`}
         </p>
 
