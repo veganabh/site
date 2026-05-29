@@ -125,11 +125,26 @@ export function CardapioList() {
     });
   }, [products, query, categoryFilter, stockFilter, statusFilter]);
 
+  // Disponibilidade por categoria: tem ≥1 item ativo em estoque? Calculada do
+  // conjunto COMPLETO de produtos (não do filtrado) — é propriedade da categoria.
+  const availableBySlug = useMemo(() => {
+    const m = new Map<string, boolean>();
+    for (const c of categories) m.set(c.slug, false);
+    for (const p of products) {
+      if (p.active && p.stock > 0) m.set(p.category, true);
+    }
+    return m;
+  }, [products, categories]);
+
   // ── Agrupamento por categoria (dinâmico) ───────────────────────────────
-  // Ordem = categorias ativas do store. Produtos cujo slug não bate em
-  // nenhuma categoria (órfãos — categoria deletada) caem no bucket "Outros".
+  // Ordem = categorias ativas do store, mas categorias SEM item em estoque vão
+  // pro fim (cinza). Produtos cujo slug não bate em nenhuma categoria (órfãos —
+  // categoria deletada) caem no bucket "Sem categoria".
   const grouped = useMemo(() => {
-    const order = categories.map((c) => c.slug);
+    const order = categories
+      .map((c) => c.slug)
+      // sort estável: disponíveis primeiro (preserva sort_order dentro do grupo).
+      .sort((a, b) => Number(availableBySlug.get(b)) - Number(availableBySlug.get(a)));
     const labelBySlug = new Map(categories.map((c) => [c.slug, c.name]));
     const map = new Map<string, Product[]>();
     for (const slug of order) map.set(slug, []);
@@ -141,7 +156,7 @@ export function CardapioList() {
     for (const list of map.values()) list.sort((a, b) => a.name.localeCompare(b.name));
     orphan.sort((a, b) => a.name.localeCompare(b.name));
     return { map, order, labelBySlug, orphan };
-  }, [filtered, categories]);
+  }, [filtered, categories, availableBySlug]);
 
   const activeFiltersCount =
     (categoryFilter !== "todas" ? 1 : 0) +
@@ -354,6 +369,7 @@ export function CardapioList() {
               <CategorySection
                 key={slug}
                 categoryLabel={grouped.labelBySlug.get(slug) ?? slug}
+                dimmed={!availableBySlug.get(slug)}
                 products={list}
                 selectionMode={selectionMode}
                 selectedIds={selectedIds}
@@ -376,6 +392,7 @@ export function CardapioList() {
             <CategorySection
               key="__orphan__"
               categoryLabel="Sem categoria"
+              dimmed={false}
               products={grouped.orphan}
               selectionMode={selectionMode}
               selectedIds={selectedIds}
@@ -448,6 +465,7 @@ function FilterChip({
 
 function CategorySection({
   categoryLabel,
+  dimmed,
   products,
   selectionMode,
   selectedIds,
@@ -457,6 +475,8 @@ function CategorySection({
   onAdjustStock,
 }: {
   categoryLabel: string;
+  /** Categoria sem nenhum item ativo em estoque → cinza + tag "sem estoque". */
+  dimmed: boolean;
   products: Product[];
   selectionMode: boolean;
   selectedIds: Set<string>;
@@ -473,14 +493,26 @@ function CategorySection({
   const allSelected = categoryIds.length > 0 && categoryIds.every((id) => selectedIds.has(id));
 
   return (
-    <section className="overflow-hidden rounded-lg border border-divider bg-paper-50">
+    <section
+      className={cn(
+        "overflow-hidden rounded-lg border border-divider bg-paper-50",
+        dimmed && "opacity-70",
+      )}
+    >
       {/* Cabeçalho da categoria */}
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-divider bg-paper-100 px-4 py-2">
         <div className="flex items-center gap-2">
-          <h2 className="text-body-sm font-bold text-olive-900">{categoryLabel}</h2>
+          <h2 className={cn("text-body-sm font-bold", dimmed ? "text-olive-700" : "text-olive-900")}>
+            {categoryLabel}
+          </h2>
           <span className="rounded-pill bg-paper-50 px-2 py-0 text-[10px] leading-4 font-semibold text-olive-700">
             {products.length} {products.length === 1 ? "produto" : "produtos"}
           </span>
+          {dimmed && (
+            <span className="rounded-pill bg-olive-900/8 px-1.5 py-0 text-[10px] leading-4 font-semibold tracking-wide text-olive-700 uppercase">
+              sem estoque
+            </span>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[10px] text-olive-700">{totalStock} em estoque</span>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { LayoutGrid, ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -8,6 +9,7 @@ import { resolveCollectionIcon } from "@/lib/collection-icons";
 import { iconForCategory } from "@/lib/category-icons";
 import { useCollectionsStore } from "@/stores/collections-store";
 import { useActiveCategories } from "@/stores/categories-store";
+import { useMenuStore } from "@/stores/menu-store";
 
 type CategoryCirclesProps = {
   /** Slug ativo — "all" | ProductCategory | collection slug */
@@ -21,45 +23,73 @@ type Item = {
   label: string;
   icon: LucideIcon;
   href: string;
+  /** false = sem item em estoque → cinza, não-clicável, tag "sem estoque". */
+  available: boolean;
 };
 
 /**
- * Chip bar com três blocos separados por divider:
- *   1. Categorias reais (Todos + ProductCategory)
+ * Chip bar com dois blocos separados por divider:
+ *   1. Categorias reais do cardápio (Todos + tabela `categories`, dinâmica)
  *   2. Super-coleções customizadas (Para Presentear, etc.) — `useCollectionsStore`
- *   3. Festa à vista? (rota /encomendas, tratamento destacado — TODO)
  *
- * Coleção com `routePath` aponta pra rota dedicada (ex: /presentear); demais
- * filtram a vitrine via `?col=<slug>`.
+ * Regras de categoria (derivadas do menu store, sem mexer no banco):
+ *   - Só aparece categoria que TEM produto no cardápio (total > 0).
+ *   - Categoria sem nenhum item ativo em estoque → cinza, não-clicável,
+ *     tag "sem estoque". Reativa sozinha quando algum item ganhar estoque.
+ *   - Disponíveis vêm primeiro; as "sem estoque" vão pro fim.
  */
 export function CategoryCircles({ active = "all", basePath, className }: CategoryCirclesProps) {
   const collections = useCollectionsStore((s) => s.collections);
   const categories = useActiveCategories();
+  const products = useMenuStore((s) => s.products);
 
-  // Categorias REAIS do cardápio (tabela `categories`, dinâmica). "Todos" fixo
-  // na frente; ícone inferido por palavra-chave (sem ícone no banco).
-  const categoryItems: Item[] = [
-    { slug: "all", label: "Todos", icon: LayoutGrid, href: basePath },
-    ...categories.map((c) => ({
-      slug: c.slug,
-      label: c.name,
-      icon: iconForCategory(`${c.slug} ${c.name}`),
-      href: `${basePath}?cat=${c.slug}`,
-    })),
-  ];
+  // total e em-estoque por slug de categoria.
+  const statsBySlug = useMemo(() => {
+    const m = new Map<string, { total: number; inStock: number }>();
+    for (const p of products) {
+      const cur = m.get(p.category) ?? { total: 0, inStock: 0 };
+      cur.total += 1;
+      if (p.active && p.stock > 0) cur.inStock += 1;
+      m.set(p.category, cur);
+    }
+    return m;
+  }, [products]);
+
+  const categoryItems: Item[] = useMemo(() => {
+    const real = categories
+      .map((c) => {
+        const s = statsBySlug.get(c.slug) ?? { total: 0, inStock: 0 };
+        return { c, total: s.total, available: s.inStock > 0 };
+      })
+      .filter((x) => x.total > 0)
+      // disponíveis primeiro; preserva sort_order dentro de cada grupo (sort estável).
+      .sort((a, b) => Number(b.available) - Number(a.available));
+
+    return [
+      { slug: "all", label: "Todos", icon: LayoutGrid, href: basePath, available: true },
+      ...real.map(({ c, available }) => ({
+        slug: c.slug,
+        label: c.name,
+        icon: iconForCategory(`${c.slug} ${c.name}`),
+        href: `${basePath}?cat=${c.slug}`,
+        available,
+      })),
+    ];
+  }, [categories, statsBySlug, basePath]);
 
   const collectionItems: Item[] = collections.map((c) => ({
     slug: c.slug,
     label: c.name,
     icon: resolveCollectionIcon(c.iconName),
     href: c.routePath ?? `${basePath}?col=${c.slug}`,
+    available: true,
   }));
 
   return (
     <div className={cn("relative", className)}>
       <nav
         aria-label="Categorias do cardápio"
-        className="flex items-end gap-2 overflow-x-auto scroll-smooth pr-6 [scrollbar-width:none] md:gap-3 md:pr-0 [&::-webkit-scrollbar]:hidden"
+        className="flex items-start gap-2 overflow-x-auto scroll-smooth pr-6 [scrollbar-width:none] md:gap-3 md:pr-0 [&::-webkit-scrollbar]:hidden"
       >
         {categoryItems.map((item) => (
           <CategoryChip key={item.slug} item={item} active={active === item.slug} tier="primary" />
@@ -75,10 +105,6 @@ export function CategoryCircles({ active = "all", basePath, className }: Categor
             tier="collection"
           />
         ))}
-
-        {/* TODO: rota /encomendas ainda não existe.
-            Reativar chip "Festa à vista?" (tier featured, terra-500) quando página for criada.
-            Histórico do markup: ver git blame deste bloco. */}
       </nav>
 
       {/* Fade edge: indica scroll horizontal escondido (só mobile) */}
@@ -110,46 +136,72 @@ type CategoryChipProps = {
 };
 
 /**
- * Tamanho uniforme em todas as tiers. Hierarquia sinalizada só por cor:
- *  - primary: paper-50 + border-divider (peso neutro)
- *  - collection: soft leaf bg (recua)
- *  - featured (Festa): terra-500 fill + shadow (destaque), inline acima
+ * Largura fixa + label em até 2 linhas (line-clamp) pra nomes longos não
+ * estourarem a régua. Indisponível (sem estoque) = cinza, não-clicável, tag.
  */
 function CategoryChip({ item, active, tier }: CategoryChipProps) {
   const Icon = item.icon;
   const isPrimary = tier === "primary";
 
-  return (
-    <Link
-      key={item.slug}
-      href={item.href}
-      aria-current={active ? "page" : undefined}
-      className="flex shrink-0 flex-col items-center gap-1.5"
-    >
-      <span
-        className={cn(
-          "flex h-14 w-14 items-center justify-center rounded-lg border-2 transition-all md:h-16 md:w-16",
-          active
+  const iconBox = (
+    <span
+      className={cn(
+        "flex h-14 w-14 items-center justify-center rounded-lg border-2 transition-all md:h-16 md:w-16",
+        !item.available
+          ? "border-divider bg-paper-100 text-olive-700/35"
+          : active
             ? "border-terra-500 bg-olive-900 text-paper-50 shadow-md"
             : isPrimary
               ? "border-divider bg-paper-50 text-olive-900 hover:border-terra-500"
               : "border-leaf-500/30 bg-leaf-500/8 text-leaf-700 hover:border-leaf-500/70",
-        )}
+      )}
+    >
+      <Icon className="h-5 w-5 md:h-6 md:w-6" aria-hidden="true" strokeWidth={active ? 2.25 : 1.9} />
+    </span>
+  );
+
+  const label = (
+    <span
+      className={cn(
+        "line-clamp-2 w-[4.75rem] text-center text-[11px] leading-tight font-semibold",
+        !item.available
+          ? "text-olive-700/40"
+          : active
+            ? "text-terra-700"
+            : isPrimary
+              ? "text-olive-900"
+              : "text-leaf-700",
+      )}
+    >
+      {item.label}
+    </span>
+  );
+
+  // Sem estoque: não-clicável (div), cinza, tag sutil.
+  if (!item.available) {
+    return (
+      <div
+        aria-disabled="true"
+        title="Sem estoque no momento"
+        className="flex shrink-0 cursor-not-allowed flex-col items-center gap-1.5 opacity-90"
       >
-        <Icon
-          className="h-5 w-5 md:h-6 md:w-6"
-          aria-hidden="true"
-          strokeWidth={active ? 2.25 : 1.9}
-        />
-      </span>
-      <span
-        className={cn(
-          "text-[12px] font-semibold whitespace-nowrap",
-          active ? "text-terra-700" : isPrimary ? "text-olive-900" : "text-leaf-700",
-        )}
-      >
-        {item.label}
-      </span>
+        {iconBox}
+        {label}
+        <span className="text-[9px] font-medium tracking-wide text-olive-700/45 uppercase">
+          sem estoque
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={item.href}
+      aria-current={active ? "page" : undefined}
+      className="flex shrink-0 flex-col items-center gap-1.5"
+    >
+      {iconBox}
+      {label}
     </Link>
   );
 }
