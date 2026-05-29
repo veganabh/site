@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutGrid, Cookie, CakeSlice, Candy, ChevronRight } from "lucide-react";
+import { LayoutGrid, ChevronRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { resolveCollectionIcon } from "@/lib/collection-icons";
+import { iconForCategory } from "@/lib/category-icons";
 import { useCollectionsStore } from "@/stores/collections-store";
+import { useActiveCategories } from "@/stores/categories-store";
 
 type CategoryCirclesProps = {
   /** Slug ativo — "all" | ProductCategory | collection slug */
@@ -22,22 +24,6 @@ type Item = {
 };
 
 /**
- * Categorias REAIS do cardápio — correspondem 1:1 a ProductCategory.
- * Não misturar com tags (favoritos/novidades) nem com super-coleções.
- */
-const buildCategoryItems = (basePath: string): Item[] => [
-  { slug: "all", label: "Todos", icon: LayoutGrid, href: basePath },
-  {
-    slug: "bolo-no-pote",
-    label: "Bolo no Pote",
-    icon: Cookie,
-    href: `${basePath}?cat=bolo-no-pote`,
-  },
-  { slug: "bolo", label: "Bolos", icon: CakeSlice, href: `${basePath}?cat=bolo` },
-  { slug: "docinho", label: "Docinhos", icon: Candy, href: `${basePath}?cat=docinho` },
-];
-
-/**
  * Chip bar com três blocos separados por divider:
  *   1. Categorias reais (Todos + ProductCategory)
  *   2. Super-coleções customizadas (Para Presentear, etc.) — `useCollectionsStore`
@@ -48,8 +34,20 @@ const buildCategoryItems = (basePath: string): Item[] => [
  */
 export function CategoryCircles({ active = "all", basePath, className }: CategoryCirclesProps) {
   const collections = useCollectionsStore((s) => s.collections);
+  const categories = useActiveCategories();
 
-  const categoryItems = buildCategoryItems(basePath);
+  // Categorias REAIS do cardápio (tabela `categories`, dinâmica). "Todos" fixo
+  // na frente; ícone inferido por palavra-chave (sem ícone no banco).
+  const categoryItems: Item[] = [
+    { slug: "all", label: "Todos", icon: LayoutGrid, href: basePath },
+    ...categories.map((c) => ({
+      slug: c.slug,
+      label: c.name,
+      icon: iconForCategory(`${c.slug} ${c.name}`),
+      href: `${basePath}?cat=${c.slug}`,
+    })),
+  ];
+
   const collectionItems: Item[] = collections.map((c) => ({
     slug: c.slug,
     label: c.name,

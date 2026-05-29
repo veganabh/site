@@ -4,7 +4,6 @@ import { HeroPromo } from "@/components/dashboard/hero-promo";
 import { DeliveryGate } from "@/components/dashboard/delivery-gate";
 import { CategoryCircles } from "@/components/dashboard/category-circles";
 import { ProductGridPhoto } from "@/components/dashboard/product-grid-photo";
-import { isProductCategory } from "@/lib/product-meta";
 import { getCollectionBySlug } from "@/server/collections";
 
 export const metadata: Metadata = {
@@ -19,7 +18,9 @@ type HomeProps = {
 
 export default async function Home({ searchParams }: HomeProps) {
   const { cat, col, q } = await searchParams;
-  const category = isProductCategory(cat) ? cat : undefined;
+  // Categoria é slug dinâmico (tabela `categories`) — aceita qualquer valor.
+  // Filtro é eq parametrizado no Supabase; slug inexistente só retorna vazio.
+  const category = cat?.trim() || undefined;
   const collection = col ? await getCollectionBySlug(col) : null;
   const query = q?.trim() || undefined;
 
