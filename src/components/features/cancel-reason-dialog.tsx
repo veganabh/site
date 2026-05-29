@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogClose, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { TextArea } from "@/components/ui/input";
 
 // ── Motivos pré-definidos ───────────────────────────────────────────────────
 
@@ -55,33 +57,20 @@ export function CancelReasonDialog({
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={(v) => !v && handleClose()}>
-      <Dialog.Portal>
-        {/* Overlay */}
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-olive-900/40 backdrop-blur-sm" />
+    <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
+      <DialogContent size="sm" aria-describedby="cancel-reason-description">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 px-6 pt-6">
+          <DialogTitle>{title}</DialogTitle>
+          <DialogClose
+            aria-label="Fechar"
+            className="rounded-sm p-1 text-olive-700 transition hover:bg-paper-100 hover:text-olive-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive-900"
+          >
+            <X className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+          </DialogClose>
+        </div>
 
-        {/* Dialog */}
-        <Dialog.Content
-          className={cn(
-            "fixed top-1/2 left-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2",
-            "rounded-lg border border-divider bg-paper-50 p-6 shadow-lg",
-            "focus:outline-none",
-          )}
-          aria-describedby="cancel-reason-description"
-        >
-          {/* Header */}
-          <div className="mb-5 flex items-start justify-between gap-3">
-            <Dialog.Title className="text-h3 font-bold text-olive-900">{title}</Dialog.Title>
-            <button
-              type="button"
-              onClick={handleClose}
-              className="rounded-sm p-1 text-olive-700 transition hover:bg-paper-100 hover:text-olive-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-olive-900"
-              aria-label="Fechar"
-            >
-              <X className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
-            </button>
-          </div>
-
+        <div className="px-6 pb-6">
           <p id="cancel-reason-description" className="mb-4 text-body-sm text-olive-700">
             Selecione o motivo do cancelamento.
           </p>
@@ -114,43 +103,33 @@ export function CancelReasonDialog({
 
           {/* Texto livre quando "Outro" */}
           {selected === "Outro" && (
-            <textarea
+            <TextArea
               value={customText}
               onChange={(e) => setCustomText(e.target.value)}
               placeholder="Descreva o motivo..."
               maxLength={200}
               rows={3}
-              className={cn(
-                "mb-4 w-full resize-none rounded-md border border-divider bg-paper-50 px-3 py-2",
-                "text-body-sm text-olive-900 placeholder:text-olive-700/50",
-                "focus:border-olive-900 focus:outline-none",
-              )}
+              className="mb-4 resize-none"
             />
           )}
 
           {/* Ações */}
           <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="flex-1 rounded-sm border border-divider bg-paper-50 py-2.5 text-cta text-olive-700 transition hover:bg-paper-100"
-            >
+            <Button type="button" variant="secondary" onClick={handleClose} className="flex-1">
               Voltar
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="danger"
               onClick={handleConfirm}
               disabled={!canConfirm}
-              className={cn(
-                "flex-1 rounded-sm py-2.5 text-cta font-semibold text-paper-50 transition",
-                canConfirm ? "bg-error hover:opacity-90" : "cursor-not-allowed bg-error/40",
-              )}
+              className="flex-1"
             >
               Confirmar cancelamento
-            </button>
+            </Button>
           </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
