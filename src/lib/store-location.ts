@@ -12,7 +12,7 @@
  * mas a rua é curta (~400m de extensão) portanto o desvio é ≤ 200m.
  * Re-geocodar quando OSM atualizar o número.
  *
- * WhatsApp: placeholder — confirmar número real com a proprietária antes de exibir.
+ * WhatsApp: número real da proprietária (E.164 sem "+").
  */
 export const STORE_LOCATION = {
   name: "Veg.ana Confeitaria",
@@ -24,8 +24,8 @@ export const STORE_LOCATION = {
   cep: "30220-310",
   lat: -19.9399643,
   lng: -43.9145917,
-  /** Número no formato E.164 sem "+". Placeholder até confirmar com a proprietária. */
-  whatsappNumber: "5531999999999",
+  /** Número real no formato E.164 sem "+". Fonte única — usar em todo link wa.me. */
+  whatsappNumber: "5531995180455",
   instagramHandle: "@vegana.bh",
 } as const;
 

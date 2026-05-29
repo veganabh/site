@@ -10,7 +10,7 @@
  * 8. badge "Esgotado" aparece quando stock === 0
  */
 import { describe, it, expect, beforeEach } from "vitest";
-import { renderHook, act, render, screen } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { useMenuStore } from "@/stores/menu-store";
 import { productFixtures } from "@/__fixtures__/products";
 import type { Product } from "@/types/product";

@@ -2,6 +2,7 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { TopBar } from "@/components/dashboard/top-bar";
 import { OrderDetailPanel } from "@/components/dashboard/order-detail-panel";
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { Footer } from "@/components/layout/footer";
 import { MiniCartBar } from "@/components/layout/mini-cart-bar";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +38,7 @@ export function DashboardShell({
             </div>
           </div>
         </div>
+        <Footer />
       </div>
       <MiniCartBar />
       <BottomNav />

@@ -1,7 +1,5 @@
 "use client";
 
-import { useRef } from "react";
-
 import type { Collection } from "@/types/collection";
 import { useCollectionsStore } from "@/stores/collections-store";
 
@@ -15,11 +13,8 @@ import { useCollectionsStore } from "@/stores/collections-store";
  * store. Sem flash, sem perder edits.
  */
 export function CollectionsStoreHydrator({ collections }: { collections: Collection[] }) {
-  const lastRef = useRef<Collection[] | null>(null);
-
-  if (lastRef.current !== collections) {
+  if (useCollectionsStore.getState().collections !== collections) {
     useCollectionsStore.setState({ collections });
-    lastRef.current = collections;
   }
 
   return null;
