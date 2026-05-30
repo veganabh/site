@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import * as RadioGroup from "@radix-ui/react-radio-group";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // ── Schema Zod ─────────────────────────────────────────────────────────────────
 
@@ -85,6 +92,7 @@ export function CouponFormDialog({
     setValue,
     setError,
     reset,
+    control,
     formState: { errors },
   } = useForm<CouponFormData>({
     resolver: zodResolver(couponFormSchema),
@@ -232,10 +240,6 @@ export function CouponFormDialog({
     { value: "FRETE_GRATIS", label: "Frete grátis" },
   ] as const;
 
-  // inputClass local compartilhado para o <select> (não coberto pelo primitivo Input)
-  const selectClass =
-    "h-11 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 outline-none transition focus:ring-2 focus:ring-olive-900/20 cursor-pointer";
-
   return (
     <Dialog
       open={open}
@@ -313,13 +317,24 @@ export function CouponFormDialog({
               <label htmlFor="type" className={labelClass}>
                 Tipo de desconto
               </label>
-              <select id="type" className={selectClass} {...register("type")}>
-                {typeOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                control={control}
+                name="type"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="type" hasError={!!errors.type}>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {typeOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             {watchedType !== "FRETE_GRATIS" && (

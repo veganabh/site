@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Plus, X } from "lucide-react";
@@ -25,6 +25,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input, TextArea } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // ── Schema Zod ─────────────────────────────────────────────────────────────────
 
@@ -84,10 +91,6 @@ type KitFormDialogProps = {
 const labelClass = "text-body-sm font-medium text-olive-900";
 
 const sectionHeadingClass = "text-body font-semibold text-olive-900 border-b border-divider pb-2";
-
-// inputClass local para <select> (não coberto pelo primitivo Input)
-const selectClass =
-  "h-11 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 outline-none transition focus:ring-2 focus:ring-olive-900/20 cursor-pointer";
 
 // ── Helper: gerar slug a partir do nome ───────────────────────────────────────
 
@@ -407,13 +410,24 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
                     >
                       <KitIcon className="h-5 w-5 text-olive-900" strokeWidth={1.75} />
                     </span>
-                    <select id="kit-icon" className={selectClass} {...register("iconName")}>
-                      {GIFT_KIT_ICON_NAMES.map((name) => (
-                        <option key={name} value={name}>
-                          {name}
-                        </option>
-                      ))}
-                    </select>
+                    <Controller
+                      control={control}
+                      name="iconName"
+                      render={({ field }) => (
+                        <Select value={field.value} onValueChange={field.onChange}>
+                          <SelectTrigger id="kit-icon" aria-label="Ícone do kit">
+                            <SelectValue placeholder="Selecione o ícone" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GIFT_KIT_ICON_NAMES.map((name) => (
+                              <SelectItem key={name} value={name}>
+                                {name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </div>
                 </div>
 
