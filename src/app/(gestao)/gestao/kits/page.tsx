@@ -170,7 +170,7 @@ export default function KitsPage() {
                       type="button"
                       onClick={() => handleOpenEdit(kit)}
                       aria-label={`Editar kit ${kit.name}`}
-                      className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+                      className="relative flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition before:absolute before:-inset-1.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
                     >
                       <Pencil className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                     </button>
@@ -182,7 +182,7 @@ export default function KitsPage() {
                       aria-label={
                         kit.active ? `Desativar kit ${kit.name}` : `Ativar kit ${kit.name}`
                       }
-                      className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+                      className="relative flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition before:absolute before:-inset-1.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
                     >
                       {kit.active ? (
                         <ToggleRight
@@ -200,7 +200,7 @@ export default function KitsPage() {
                       type="button"
                       onClick={() => handleDeleteRequest(kit)}
                       aria-label={`Excluir kit ${kit.name}`}
-                      className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition hover:bg-terra-500/10 hover:text-terra-700"
+                      className="relative flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition before:absolute before:-inset-1.5 before:content-[''] hover:bg-terra-500/10 hover:text-terra-700"
                     >
                       <Trash2 className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                     </button>

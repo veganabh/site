@@ -325,7 +325,7 @@ function CouponSheet({ onClose, subtotal }: { onClose: () => void; subtotal: num
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="inline-flex h-7 w-7 items-center justify-center rounded-full text-olive-700 transition-colors hover:bg-paper-100"
+            className="relative inline-flex h-7 w-7 items-center justify-center rounded-full text-olive-700 transition-colors before:absolute before:-inset-2 before:content-[''] hover:bg-paper-100"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>

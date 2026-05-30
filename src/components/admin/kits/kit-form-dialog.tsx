@@ -284,7 +284,7 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
           </div>
           <DialogClose
             aria-label="Fechar"
-            className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+            className="relative flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition before:absolute before:-inset-1.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </DialogClose>
@@ -563,7 +563,7 @@ export function KitFormDialog({ open, kit, onClose }: KitFormDialogProps) {
                             type="button"
                             onClick={() => remove(idx)}
                             aria-label={`Remover slot ${idx + 1}`}
-                            className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-terra-700"
+                            className="relative flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition before:absolute before:-inset-2 before:content-[''] hover:bg-paper-100 hover:text-terra-700"
                           >
                             <X className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>

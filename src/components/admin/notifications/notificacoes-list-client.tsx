@@ -113,7 +113,7 @@ function DeleteButton({ id, title }: { id: string; title: string }) {
         type="button"
         onClick={() => setConfirm(true)}
         aria-label={`Excluir notificação "${title}"`}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-terra-500/10 hover:text-terra-700"
+        className="relative inline-flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors before:absolute before:-inset-1.5 before:content-[''] hover:bg-terra-500/10 hover:text-terra-700"
       >
         <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
       </button>
@@ -336,7 +336,7 @@ export function NotificacoesListClient({ notifications, statsById }: Props) {
                   <Link
                     href={`/gestao/notificacoes/${n.id}`}
                     aria-label={`Editar notificação "${n.title}"`}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+                    className="relative inline-flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors before:absolute before:-inset-1.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
                   >
                     <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                   </Link>

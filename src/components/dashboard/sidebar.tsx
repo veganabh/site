@@ -98,7 +98,7 @@ export function Sidebar() {
             onClick={toggleExpanded}
             aria-label="Recolher menu"
             title="Recolher menu"
-            className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+            className="relative flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors before:absolute before:-inset-1.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
           >
             <ChevronsLeft className="h-4 w-4" aria-hidden="true" />
           </button>
