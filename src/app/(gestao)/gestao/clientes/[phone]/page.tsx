@@ -9,6 +9,7 @@ import { AdminGate } from "@/components/features/admin-gate";
 import { Card } from "@/components/ui/card";
 import { formatBRL } from "@/lib/format";
 import { buildCustomerAnalytics, SEGMENT_LABELS } from "@/lib/customer-metrics";
+import { buildAbandonmentMetrics } from "@/lib/order-insights";
 import { listAllOrders } from "@/server/orders";
 import { getProfileIdByPhone, getCustomerNotificationLog } from "@/server/customer-detail";
 
@@ -39,6 +40,8 @@ export default async function ClienteDetalhePage({ params }: PageProps) {
   const customerOrders = orders
     .filter((o) => o.customerPhone === phone)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const abandonment = buildAbandonmentMetrics(customerOrders);
 
   const profileId = await getProfileIdByPhone(phone);
   const notifLog = profileId ? await getCustomerNotificationLog(profileId) : [];
