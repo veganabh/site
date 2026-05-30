@@ -103,6 +103,57 @@ function StoreStatusBlock() {
   );
 }
 
+// ── Bloco A2 — Auto-aceitar pedidos ────────────────────────────────────────────
+
+function AutoAcceptBlock() {
+  const autoAccept = useAdminSettingsStore((s) => s.autoAccept);
+  const setAutoAccept = useAdminSettingsStore((s) => s.setAutoAccept);
+
+  return (
+    <Card as="section" padding="md" aria-labelledby="cfg-auto-title">
+      <header className="mb-4 flex flex-col gap-1">
+        <h2 id="cfg-auto-title" className="text-h3 text-olive-900">
+          Aceitar pedidos automaticamente
+        </h2>
+        <p className="text-body-sm text-olive-700">
+          Só entra pedido já pago. Com isso ligado, o pedido pago vai direto para
+          &ldquo;Preparando&rdquo;. Desligado, ele cai em &ldquo;Novos&rdquo; para você aceitar ou
+          recusar antes.
+        </p>
+      </header>
+
+      <div className="flex items-center justify-between gap-4">
+        <span
+          id="cfg-auto-label"
+          className={cn(
+            "text-body font-semibold",
+            autoAccept ? "text-olive-900" : "text-olive-700",
+          )}
+        >
+          {autoAccept
+            ? "Ligado · pago vai direto pra Preparando"
+            : "Desligado · você aceita cada pedido"}
+        </span>
+
+        <Toggle
+          checked={autoAccept}
+          onCheckedChange={(v) => {
+            setAutoAccept(v);
+            void updateStoreSettingsAction({ autoAccept: v });
+          }}
+          size="lg"
+          aria-labelledby="cfg-auto-label"
+        />
+      </div>
+
+      <p className="mt-3 text-caption text-olive-700">
+        Dica: ligue quando tiver estoque pronto e quiser agilizar. Desligue em dias de produção
+        apertada para conferir cada pedido.
+      </p>
+    </Card>
+  );
+}
+
 // ── Bloco B — Horário de funcionamento ────────────────────────────────────────
 
 function HoursBlock() {
@@ -330,6 +381,7 @@ export default function ConfiguracoesPage() {
 
       {/* Blocos */}
       <StoreStatusBlock />
+      <AutoAcceptBlock />
       <HoursBlock />
       <PrinterBlock />
     </div>

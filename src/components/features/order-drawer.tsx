@@ -159,7 +159,10 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-body-sm text-olive-700 hover:text-olive-900"
                       >
-                        <MessageCircle className="h-3.5 w-3.5 shrink-0 text-leaf-700" aria-hidden="true" />
+                        <MessageCircle
+                          className="h-3.5 w-3.5 shrink-0 text-leaf-700"
+                          aria-hidden="true"
+                        />
                         {order.customerPhone}
                       </a>
                       <div className="flex items-start gap-2 text-body-sm text-olive-700">
@@ -403,6 +406,7 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
         onClose={() => setCancelDialogOpen(false)}
         onConfirm={handleCancelConfirm}
         title={cancelMode === "reject" ? "Recusar pedido" : "Cancelar pedido"}
+        refundNotice={order?.paymentStatus === "PAGO"}
       />
     </>
   );
