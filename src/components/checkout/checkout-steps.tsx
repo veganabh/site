@@ -279,7 +279,7 @@ function StepResumo() {
                   type="button"
                   aria-label="Remover cupom"
                   onClick={removeCoupon}
-                  className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
+                  className="relative flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition-colors before:absolute before:-inset-2 before:content-[''] hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
                 >
                   <X className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
@@ -458,7 +458,7 @@ function CrossSellRail({ suggestions, onAccept, savings }: CrossSellRailProps) {
             >
               <div className="relative aspect-square overflow-hidden rounded-sm bg-paper-100">
                 <ProductPhoto product={product} sizes="128px" />
-                <span className="absolute top-1.5 right-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-leaf-500 text-paper-50 shadow-sm group-hover:bg-leaf-700">
+                <span className="absolute relative top-1.5 right-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-leaf-500 text-paper-50 shadow-sm group-hover:bg-leaf-700 before:absolute before:-inset-2.5 before:content-['']">
                   <Plus className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={2.5} />
                 </span>
               </div>
@@ -694,7 +694,7 @@ function StepEndereco() {
                       type="button"
                       aria-label={`Editar ${address.nickname || addressTypeLabel(address.type)}`}
                       onClick={() => handleEdit(address)}
-                      className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
+                      className="relative flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors before:absolute before:-inset-1.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
                     >
                       <ChevronRight className="h-4 w-4" aria-hidden="true" />
                     </button>
@@ -702,7 +702,7 @@ function StepEndereco() {
                       type="button"
                       aria-label={`Remover ${address.nickname || addressTypeLabel(address.type)}`}
                       onClick={() => setRemoveDialogId(address.id)}
-                      className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
+                      className="relative flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors before:absolute before:-inset-1.5 before:content-[''] hover:bg-error/10 hover:text-error focus-visible:outline-2 focus-visible:outline-olive-500"
                     >
                       <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     </button>
@@ -902,7 +902,7 @@ export function AddressFormModal({ initialData, onClose }: AddressFormModalProps
             type="button"
             aria-label="Fechar"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
+            className="relative flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 before:absolute before:-inset-1.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -1634,7 +1634,7 @@ function CartItemCompact({ item }: { item: CartItem }) {
               type="button"
               aria-label="Diminuir quantidade"
               onClick={handleDecrement}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
+              className="relative flex h-8 w-8 items-center justify-center rounded-full text-olive-700 transition-colors before:absolute before:-inset-1.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
             >
               {item.quantity <= 1 ? (
                 <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -1653,7 +1653,7 @@ function CartItemCompact({ item }: { item: CartItem }) {
               type="button"
               aria-label="Aumentar quantidade"
               onClick={handleIncrement}
-              className="flex h-8 w-8 items-center justify-center rounded-full text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
+              className="relative flex h-8 w-8 items-center justify-center rounded-full text-olive-700 transition-colors before:absolute before:-inset-1.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900 focus-visible:outline-2 focus-visible:outline-olive-500"
             >
               <Plus className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
@@ -1767,7 +1767,7 @@ function KitCartItemCompact({ kit }: { kit: KitCartItem }) {
           type="button"
           onClick={() => removeKit(kit.cartId)}
           aria-label={`Remover ${template.name}`}
-          className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-error/10 hover:text-error"
+          className="relative ml-auto inline-flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors before:absolute before:-inset-1.5 before:content-[''] hover:bg-error/10 hover:text-error"
         >
           <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
         </button>

@@ -120,7 +120,7 @@ export function AddressManager() {
                   type="button"
                   aria-label={`Editar ${address.nickname || addressTypeLabel(address.type)}`}
                   onClick={() => handleEdit(address)}
-                  className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900"
+                  className="relative flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors before:absolute before:-inset-1.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
                 >
                   <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
@@ -128,7 +128,7 @@ export function AddressManager() {
                   type="button"
                   aria-label={`Remover ${address.nickname || addressTypeLabel(address.type)}`}
                   onClick={() => setToRemoveId(address.id)}
-                  className="flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors hover:bg-error/10 hover:text-error"
+                  className="relative flex h-8 w-8 items-center justify-center rounded-sm text-olive-700 transition-colors before:absolute before:-inset-1.5 before:content-[''] hover:bg-error/10 hover:text-error"
                 >
                   <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>

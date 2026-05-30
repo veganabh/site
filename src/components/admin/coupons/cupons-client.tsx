@@ -326,7 +326,7 @@ export function CuponsClient() {
                             type="button"
                             onClick={() => handleOpenEdit(coupon)}
                             aria-label={`Editar cupom ${coupon.code}`}
-                            className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+                            className="relative flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition before:absolute before:-inset-2 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
                           >
                             <Pencil className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                           </button>
@@ -342,7 +342,7 @@ export function CuponsClient() {
                                   ? `Desativar cupom ${coupon.code}`
                                   : `Ativar cupom ${coupon.code}`
                             }
-                            className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="relative flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition before:absolute before:-inset-2 before:content-[''] hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             {status === "ATIVO" ? (
                               <ToggleRight
@@ -363,7 +363,7 @@ export function CuponsClient() {
                             type="button"
                             onClick={() => handleDeleteRequest(coupon)}
                             aria-label={`Excluir cupom ${coupon.code}`}
-                            className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-terra-500/10 hover:text-terra-700"
+                            className="relative flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition before:absolute before:-inset-2 before:content-[''] hover:bg-terra-500/10 hover:text-terra-700"
                           >
                             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                           </button>
@@ -422,7 +422,7 @@ export function CuponsClient() {
                       type="button"
                       onClick={() => handleOpenEdit(coupon)}
                       aria-label={`Editar cupom ${coupon.code}`}
-                      className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900"
+                      className="relative flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition before:absolute before:-inset-2 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
                     >
                       <Pencil className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                     </button>
@@ -438,7 +438,7 @@ export function CuponsClient() {
                             ? `Desativar cupom ${coupon.code}`
                             : `Ativar cupom ${coupon.code}`
                       }
-                      className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
+                      className="relative flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition before:absolute before:-inset-2 before:content-[''] hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {status === "ATIVO" ? (
                         <ToggleRight
@@ -455,7 +455,7 @@ export function CuponsClient() {
                       type="button"
                       onClick={() => handleDeleteRequest(coupon)}
                       aria-label={`Excluir cupom ${coupon.code}`}
-                      className="flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition hover:bg-terra-500/10 hover:text-terra-700"
+                      className="relative flex h-7 w-7 items-center justify-center rounded-sm text-olive-700 transition before:absolute before:-inset-2 before:content-[''] hover:bg-terra-500/10 hover:text-terra-700"
                     >
                       <Trash2 className="h-3.5 w-3.5" aria-hidden="true" strokeWidth={1.75} />
                     </button>

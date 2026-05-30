@@ -449,7 +449,7 @@ function SlotStep({ slot, picks, onPick, onDecrement }: SlotStepProps) {
                       type="button"
                       onClick={() => onDecrement(p.id)}
                       aria-label={`Remover um ${p.name}`}
-                      className="flex h-7 w-7 items-center justify-center rounded-sm border border-divider text-olive-900 hover:bg-paper-100"
+                      className="relative flex h-7 w-7 items-center justify-center rounded-sm border border-divider text-olive-900 before:absolute before:-inset-2 before:content-[''] hover:bg-paper-100"
                     >
                       <Minus className="h-3 w-3" aria-hidden="true" />
                     </button>
@@ -464,7 +464,7 @@ function SlotStep({ slot, picks, onPick, onDecrement }: SlotStepProps) {
                       onClick={() => onPick(p.id, isSoldOut)}
                       disabled={!canIncrement}
                       aria-label={`Adicionar mais um ${p.name}`}
-                      className="flex h-7 w-7 items-center justify-center rounded-sm border border-divider text-olive-900 hover:bg-paper-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="relative flex h-7 w-7 items-center justify-center rounded-sm border border-divider text-olive-900 before:absolute before:-inset-2 before:content-[''] hover:bg-paper-100 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Plus className="h-3 w-3" aria-hidden="true" />
                     </button>
