@@ -84,7 +84,7 @@ function ContaAuthedDashboard({ firstName }: ContaAuthedDashboardProps) {
   const allOrdersRaw = useAdminOrdersStore((s) => s.orders);
   const allOrders = useMemo(
     () => (user?.id ? allOrdersRaw.filter((o) => o.customerId === user.id) : allOrdersRaw),
-    [allOrdersRaw, user?.id],
+    [allOrdersRaw, user],
   );
 
   const allItems = useMemo<PricedItem[]>(

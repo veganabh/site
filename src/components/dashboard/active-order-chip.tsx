@@ -68,7 +68,7 @@ export function ActiveOrderChip() {
   const activeOrders = useMemo(() => {
     if (!user?.id) return [];
     return orders.filter((o) => o.customerId === user.id && !isTerminal(o.status));
-  }, [orders, user?.id]);
+  }, [orders, user]);
 
   if (!isAuthed) return null;
   if (activeOrders.length === 0) return null;
