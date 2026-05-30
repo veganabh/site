@@ -11,10 +11,16 @@
 - ⏳ **Preço de canal:** preço site = iFood em quase todos. Decidir desconto do canal próprio (objetivo do projeto: migrar do iFood). Estratégia, não código.
 
 ## 2. Loja / operação
-- ⏳ **`store_status = PAUSADO`** no banco (atualizado 2026-05-28). Vitrine mostra "Loja fechada" **independente do horário**. Mudar para ATIVO em `/gestao/configuracoes` no momento de abrir pra valer.
-- ℹ️ Diagnóstico: sábado 09:16 está dentro do horário (sáb 10-18 começa 10h, mas mesmo às 10h+ ficaria fechado) — o que fecha agora é o status PAUSADO, não o horário.
+- ✅ **Loja aberta** — `store_status = ATIVO` (Pedro ativou em `/gestao/configuracoes`; toggle confirmado no QA logado).
 - ⏳ **Horários:** hoje são SEED genérico (seg fechado, ter-sex 9-19, sáb 10-18, dom 11-17). Conferir com a operação real da mãe.
 - ✅ Anéis de entrega configurados (20 zonas).
+
+## 2b. Limpeza pré-lançamento (feita 2026-05-30, QA logado)
+- ✅ **Dados de teste zerados:** 11 pedidos fake (#1-6, #16-20) + cascade (itens/pagamentos/histórico) + 3 notificações lixo ("efwerewer", "asdsadas"…) removidos. Sequência de pedido reiniciada em 1. Relatórios/Clientes/Notificações começam do zero real.
+- ✅ Triggers de proteção (`prevent_orders_delete`, `prevent_role_escalation`) restaurados após a limpeza.
+- ✅ **QA admin logado** (e2e-test@veganabh.com, role=admin): painel, pedidos, cardápio, cupons, notificações, configurações, relatórios, clientes — todas renderizam, DS aplicado, **0 erro de console**.
+- ⏳ **e2e-test** mantido como admin pra QA futura. **Trocar a senha de teste `123456789`** por uma definitiva (ou remover o user).
+- ℹ️ Cupom `VEGANA10` (−10%, ativo) preservado — confirmar se é intencional pro lançamento.
 
 ## 3. Pagamento (AbacatePay)
 - ⏳ **Confirmar no Vercel (prod):** `ABACATEPAY_API_KEY` = chave `abc_prod_…` e `ABACATEPAY_ENV=prod`.
