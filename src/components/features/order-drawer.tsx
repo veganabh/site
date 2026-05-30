@@ -105,8 +105,8 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
         <DialogContent variant="drawer" aria-describedby="order-drawer-description">
           {!order ? null : (
             <>
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-divider px-5 py-4">
+              {/* Header — fixo */}
+              <div className="flex shrink-0 items-center justify-between border-b border-divider px-5 py-4">
                 <div className="flex flex-col gap-0.5">
                   <DialogTitle className="text-body font-bold text-olive-900">
                     Pedido #{order.orderNumber}
@@ -298,10 +298,10 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                 </div>
               </div>
 
-              {/* Footer — ações principais */}
+              {/* Footer — ações principais, fixo na base com respiro */}
               {!isTerminal(order.status) && (
-                <div className="border-t border-divider px-5 py-4">
-                  <div className="flex flex-col gap-2">
+                <div className="shrink-0 border-t border-divider bg-paper-50 px-5 pt-4 pb-6">
+                  <div className="flex flex-col gap-2.5">
                     {/* Ação primária por status */}
                     {order.status === "NOVO" && (
                       <Button
