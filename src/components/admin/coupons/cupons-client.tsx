@@ -245,31 +245,20 @@ export function CuponsClient() {
       ) : (
         <>
           {/* Tabela — desktop md+ */}
-          <div className="hidden md:block">
-            <table role="table" className="w-full text-caption">
+          <Card padding="none" className="hidden overflow-x-auto md:block">
+            <table role="table" className="w-full min-w-[720px] border-collapse text-left">
               <thead>
-                <tr className="border-b border-divider text-left">
-                  <th className="pr-4 pb-2 text-micro font-bold tracking-wide text-olive-700 uppercase">
-                    Código
-                  </th>
-                  <th className="pr-4 pb-2 text-micro font-bold tracking-wide text-olive-700 uppercase">
-                    Tipo
-                  </th>
-                  <th className="pr-4 pb-2 text-micro font-bold tracking-wide text-olive-700 uppercase">
-                    Desconto
-                  </th>
-                  <th className="pr-4 pb-2 text-micro font-bold tracking-wide text-olive-700 uppercase">
-                    Usos
-                  </th>
-                  <th className="pr-4 pb-2 text-micro font-bold tracking-wide text-olive-700 uppercase">
-                    Validade
-                  </th>
-                  <th className="pr-4 pb-2 text-micro font-bold tracking-wide text-olive-700 uppercase">
-                    Status
-                  </th>
-                  <th className="pb-2 text-micro font-bold tracking-wide text-olive-700 uppercase">
-                    <span className="sr-only">Ações</span>
-                  </th>
+                <tr className="border-b border-divider">
+                  {["Código", "Tipo", "Desconto", "Usos", "Validade", "Status", "Ações"].map(
+                    (col) => (
+                      <th
+                        key={col}
+                        className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase"
+                      >
+                        {col === "Ações" ? <span className="sr-only">Ações</span> : col}
+                      </th>
+                    ),
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -280,15 +269,15 @@ export function CuponsClient() {
                   return (
                     <tr
                       key={coupon.id}
-                      className="border-b border-divider last:border-0 hover:bg-paper-100/50"
+                      className="border-b border-divider transition-colors last:border-0 hover:bg-paper-100/50"
                     >
-                      <td className="py-2 pr-4">
+                      <td className="px-3 py-2">
                         <code className="rounded-sm bg-paper-100 px-1.5 py-0 font-mono text-micro text-olive-900">
                           {coupon.code}
                         </code>
                       </td>
 
-                      <td className="py-2 pr-4">
+                      <td className="px-3 py-2">
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full px-1.5 py-0 text-micro leading-4 font-semibold",
@@ -299,17 +288,19 @@ export function CuponsClient() {
                         </span>
                       </td>
 
-                      <td className="py-2 pr-4 font-semibold text-olive-900">
+                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">
                         {formatDiscount(coupon)}
                       </td>
 
-                      <td className="py-2 pr-4 text-olive-700 tabular-nums">
+                      <td className="px-3 py-2 text-caption text-olive-700 tabular-nums">
                         {formatUses(coupon)}
                       </td>
 
-                      <td className="py-2 pr-4 text-olive-700">{formatDate(coupon.validUntil)}</td>
+                      <td className="px-3 py-2 text-caption text-olive-700">
+                        {formatDate(coupon.validUntil)}
+                      </td>
 
-                      <td className="py-2 pr-4">
+                      <td className="px-3 py-2">
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full px-1.5 py-0 text-micro leading-4 font-semibold",
@@ -320,7 +311,7 @@ export function CuponsClient() {
                         </span>
                       </td>
 
-                      <td className="py-2">
+                      <td className="px-3 py-2">
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
@@ -374,7 +365,7 @@ export function CuponsClient() {
                 })}
               </tbody>
             </table>
-          </div>
+          </Card>
 
           {/* Cards — mobile (<md) */}
           <div className="flex flex-col gap-2 md:hidden">
