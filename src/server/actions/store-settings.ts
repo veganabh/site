@@ -31,6 +31,7 @@ const patchSchema = z.object({
   hours: weekHoursSchema.optional(),
   printerEnabled: z.boolean().optional(),
   printerName: z.string().max(120).optional(),
+  autoAccept: z.boolean().optional(),
 });
 
 export type StoreSettingsPatch = z.input<typeof patchSchema>;
@@ -51,8 +52,10 @@ export async function updateStoreSettingsAction(
   const dbPatch: StoreSettingsUpdate = {};
   if (parsed.data.storeStatus !== undefined) dbPatch.store_status = parsed.data.storeStatus;
   if (parsed.data.hours !== undefined) dbPatch.hours = parsed.data.hours;
-  if (parsed.data.printerEnabled !== undefined) dbPatch.printer_enabled = parsed.data.printerEnabled;
+  if (parsed.data.printerEnabled !== undefined)
+    dbPatch.printer_enabled = parsed.data.printerEnabled;
   if (parsed.data.printerName !== undefined) dbPatch.printer_name = parsed.data.printerName;
+  if (parsed.data.autoAccept !== undefined) dbPatch.auto_accept = parsed.data.autoAccept;
 
   if (Object.keys(dbPatch).length === 0) return { ok: true };
 

@@ -17,6 +17,7 @@ import {
   filterOrdersByPeriod,
   buildTimingMetrics,
   buildGeoMetrics,
+  buildAbandonmentMetrics,
   type Period,
 } from "@/lib/order-insights";
 import { listAllOrders } from "@/server/orders";
@@ -68,6 +69,7 @@ export default async function RelatoriosPage({
   const margin = buildProductMargin(orders, products);
   const geo = buildGeoMetrics(orders);
   const timing = buildTimingMetrics(orders);
+  const abandonment = buildAbandonmentMetrics(orders);
   const attribution = await getNotificationAttribution();
 
   const sitePct = channel.siteSharePct === null ? null : Math.round(channel.siteSharePct * 100);

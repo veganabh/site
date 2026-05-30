@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/server/supabase/server";
 import { createSupabaseServiceClient } from "@/server/supabase/service";
 import { checkPixCharge, mapPixStatusToPaymentStatus } from "@/server/payments/abacatepay";
+import { confirmOrderPayment } from "@/server/orders/confirm-payment";
 
 /**
  * Polling endpoint pra obrigado page checar status do PIX.
@@ -18,10 +19,7 @@ import { checkPixCharge, mapPixStatusToPaymentStatus } from "@/server/payments/a
  * Webhook (ADR 0009 D4) é caminho canônico em prod — esse endpoint é fallback
  * UX (cliente paga, espera 2s, vê confirmação sem refresh manual).
  */
-export async function GET(
-  _request: Request,
-  context: { params: Promise<{ orderId: string }> },
-) {
+export async function GET(_request: Request, context: { params: Promise<{ orderId: string }> }) {
   const { orderId } = await context.params;
 
   const supabase = await createSupabaseServerClient();
@@ -131,16 +129,9 @@ export async function GET(
 
   let nextOrderPaymentStatus = order.payment_status;
   if (nextStatus === "paid" && order.payment_status !== "PAGO") {
-    const { error: orderUpdateError } = await service
-      .from("orders")
-      .update({ payment_status: "PAGO" })
-      .eq("id", orderId);
-
-    if (orderUpdateError) {
-      console.error("[payments/status] order update:", orderUpdateError.message);
-    } else {
-      nextOrderPaymentStatus = "PAGO";
-    }
+    // Marca PAGO + aplica auto-aceitar (PAGO → PREPARANDO se ligado).
+    await confirmOrderPayment(service, orderId, "PAGO");
+    nextOrderPaymentStatus = "PAGO";
   }
 
   return NextResponse.json({

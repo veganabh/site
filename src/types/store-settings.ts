@@ -22,6 +22,8 @@ export type AdminSettings = {
   hours: WeekHours;
   printerEnabled: boolean;
   printerName: string;
+  /** Auto-aceitar: pedido pago entra direto em PREPARANDO (true) vs NOVO (false). */
+  autoAccept: boolean;
 };
 
 export const SEED_HOURS: WeekHours = {
@@ -39,6 +41,7 @@ export const SEED_SETTINGS: AdminSettings = {
   hours: SEED_HOURS,
   printerEnabled: false,
   printerName: "",
+  autoAccept: false,
 };
 
 /** Dia da semana atual no formato WeekDay. */

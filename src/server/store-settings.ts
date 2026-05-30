@@ -17,7 +17,7 @@ export async function getStoreSettings(): Promise<AdminSettings> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("store_settings")
-    .select("store_status, hours, printer_enabled, printer_name")
+    .select("store_status, hours, printer_enabled, printer_name, auto_accept")
     .eq("id", "default")
     .maybeSingle();
 
@@ -31,5 +31,6 @@ export async function getStoreSettings(): Promise<AdminSettings> {
     hours: (data.hours as WeekHours) ?? SEED_SETTINGS.hours,
     printerEnabled: data.printer_enabled ?? false,
     printerName: data.printer_name ?? "",
+    autoAccept: data.auto_accept ?? false,
   };
 }

@@ -104,10 +104,12 @@ export default function PedidosPage() {
     setOnlyDelayed((v) => !v);
   }, []);
 
-  // Pedidos do dia (sem filtro de busca) — alimenta a strip de métricas
+  // Pedidos do dia (sem filtro de busca) — alimenta kanban + strip de métricas.
+  // Só pedido PAGO entra: pendente de pagamento não é "pedido" ainda (cliente
+  // acompanha em /conta; vira métrica de abandono nos relatórios).
   const todayOrders = useMemo(() => {
     const start = startOfToday();
-    return orders.filter((o) => new Date(o.createdAt) >= start);
+    return orders.filter((o) => o.paymentStatus === "PAGO" && new Date(o.createdAt) >= start);
   }, [orders]);
 
   // Filtro fixo: dia corrente + busca + (opcional) só atrasados

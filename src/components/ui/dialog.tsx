@@ -109,8 +109,9 @@ export const DialogContent = forwardRef<
             "fixed top-1/2 left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-sm",
             sizeClasses[size],
           ],
-          // Drawer — painel lateral direito
-          isDrawer && "fixed inset-y-0 right-0 w-full max-w-md rounded-none",
+          // Drawer — painel lateral direito. flex-col + h cheia: header/footer
+          // fixos, corpo (flex-1 overflow) rola entre eles.
+          isDrawer && "fixed inset-y-0 right-0 flex h-full w-full max-w-md flex-col rounded-none",
           className,
         )}
         {...props}

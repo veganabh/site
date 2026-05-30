@@ -15,7 +15,7 @@ export function HeroPromo({ className }: HeroPromoProps) {
     <section
       aria-label="Doce feito em casa em Belo Horizonte"
       className={cn(
-        "relative flex min-h-[270px] flex-col justify-center overflow-hidden rounded-sm bg-olive-900 p-5 text-paper-50 shadow-lg md:min-h-[305px] md:p-8",
+        "relative flex min-h-[216px] flex-col justify-center overflow-hidden rounded-sm bg-olive-900 p-5 text-paper-50 shadow-lg md:min-h-[244px] md:p-8",
         className,
       )}
     >

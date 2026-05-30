@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Phone, MapPin, Package, Tag, Truck } from "lucide-react";
+import Link from "next/link";
+import { X, Phone, MapPin, Package, Tag, Truck, MessageCircle } from "lucide-react";
 import type { OrderStatus } from "@/types/order";
 import { canTransitionTo, isTerminal } from "@/types/order";
 import { useAdminOrdersStore } from "@/stores/admin-orders-store";
@@ -21,6 +22,16 @@ function formatDateTime(isoString: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/**
+ * Telefone do cliente → link wa.me (abre WhatsApp Web/app). Normaliza p/ E.164
+ * só-dígitos: tira tudo que não é número; prefixa 55 (Brasil) se vier sem DDI.
+ */
+function waLink(phone: string): string {
+  let digits = phone.replace(/\D/g, "");
+  if (!digits.startsWith("55")) digits = `55${digits}`;
+  return `https://wa.me/${digits}`;
 }
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -105,8 +116,8 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
         <DialogContent variant="drawer" aria-describedby="order-drawer-description">
           {!order ? null : (
             <>
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-divider px-5 py-4">
+              {/* Header — fixo */}
+              <div className="flex shrink-0 items-center justify-between border-b border-divider px-5 py-4">
                 <div className="flex flex-col gap-0.5">
                   <DialogTitle className="text-body font-bold text-olive-900">
                     Pedido #{order.orderNumber}
@@ -130,14 +141,28 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                   <section aria-labelledby="section-cliente">
                     <SectionLabel>Cliente</SectionLabel>
                     <div className="flex flex-col gap-2 rounded-sm border border-divider bg-paper-100 px-4 py-3">
-                      <p className="text-body-sm font-semibold text-olive-900">
+                      <Link
+                        href={`/gestao/clientes/${encodeURIComponent(order.customerPhone)}`}
+                        className="group inline-flex w-fit items-center gap-1.5 text-body-sm font-semibold text-olive-900 underline-offset-2 hover:text-terra-700 hover:underline"
+                      >
                         {order.customerName}
-                      </p>
+                        <span
+                          aria-hidden="true"
+                          className="text-caption text-olive-700 transition group-hover:text-terra-700"
+                        >
+                          ›
+                        </span>
+                      </Link>
                       <a
-                        href={`tel:${order.customerPhone}`}
+                        href={waLink(order.customerPhone)}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center gap-2 text-body-sm text-olive-700 hover:text-olive-900"
                       >
-                        <Phone className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                        <MessageCircle
+                          className="h-3.5 w-3.5 shrink-0 text-leaf-700"
+                          aria-hidden="true"
+                        />
                         {order.customerPhone}
                       </a>
                       <div className="flex items-start gap-2 text-body-sm text-olive-700">
@@ -298,10 +323,10 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                 </div>
               </div>
 
-              {/* Footer — ações principais */}
+              {/* Footer — ações principais, fixo na base com respiro */}
               {!isTerminal(order.status) && (
-                <div className="border-t border-divider px-5 py-4">
-                  <div className="flex flex-col gap-2">
+                <div className="shrink-0 border-t border-divider bg-paper-50 px-5 pt-4 pb-6">
+                  <div className="flex flex-col gap-2.5">
                     {/* Ação primária por status */}
                     {order.status === "NOVO" && (
                       <Button
@@ -381,6 +406,7 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
         onClose={() => setCancelDialogOpen(false)}
         onConfirm={handleCancelConfirm}
         title={cancelMode === "reject" ? "Recusar pedido" : "Cancelar pedido"}
+        refundNotice={order?.paymentStatus === "PAGO"}
       />
     </>
   );
