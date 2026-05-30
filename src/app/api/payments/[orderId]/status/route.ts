@@ -129,16 +129,9 @@ export async function GET(_request: Request, context: { params: Promise<{ orderI
 
   let nextOrderPaymentStatus = order.payment_status;
   if (nextStatus === "paid" && order.payment_status !== "PAGO") {
-    const { error: orderUpdateError } = await service
-      .from("orders")
-      .update({ payment_status: "PAGO" })
-      .eq("id", orderId);
-
-    if (orderUpdateError) {
-      console.error("[payments/status] order update:", orderUpdateError.message);
-    } else {
-      nextOrderPaymentStatus = "PAGO";
-    }
+    // Marca PAGO + aplica auto-aceitar (PAGO → PREPARANDO se ligado).
+    await confirmOrderPayment(service, orderId, "PAGO");
+    nextOrderPaymentStatus = "PAGO";
   }
 
   return NextResponse.json({

@@ -28,6 +28,7 @@ type AdminSettingsActions = {
   /** Sincroniza o store com o estado vindo do servidor (hydrator). */
   hydrate: (settings: AdminSettings) => void;
   setStoreStatus: (status: StoreStatus) => void;
+  setAutoAccept: (enabled: boolean) => void;
   updateDayHours: (day: keyof WeekHours, patch: Partial<DayHours>) => void;
   toggleDayOpen: (day: keyof WeekHours) => void;
   setPrinterEnabled: (enabled: boolean) => void;
@@ -45,6 +46,8 @@ export const useAdminSettingsStore = create<AdminSettingsStore>()((set) => ({
   hydrate: (settings) => set({ ...settings }),
 
   setStoreStatus: (status) => set({ storeStatus: status }),
+
+  setAutoAccept: (enabled) => set({ autoAccept: enabled }),
 
   updateDayHours: (day, patch) =>
     set((s) => ({

@@ -27,6 +27,8 @@ type CancelReasonDialogProps = {
   onConfirm: (reason: string) => void;
   /** Título personalizado para diferenciar "Recusar" de "Cancelar". */
   title?: string;
+  /** Mostra aviso de estorno manual (pedido já estava pago). */
+  refundNotice?: boolean;
 };
 
 // ── Componente ─────────────────────────────────────────────────────────────
@@ -36,6 +38,7 @@ export function CancelReasonDialog({
   onClose,
   onConfirm,
   title = "Cancelar pedido",
+  refundNotice = false,
 }: CancelReasonDialogProps) {
   const [selected, setSelected] = useState<PresetReason | "">("");
   const [customText, setCustomText] = useState("");
@@ -111,6 +114,15 @@ export function CancelReasonDialog({
               rows={3}
               className="mb-4 resize-none"
             />
+          )}
+
+          {/* Aviso de estorno — pedido já estava pago */}
+          {refundNotice && (
+            <p className="mb-4 rounded-sm border border-warning/30 bg-warning/10 px-3 py-2 text-caption text-olive-700">
+              Esse pedido já foi pago. Ao confirmar, marcamos como{" "}
+              <span className="font-semibold">estornado</span> — faça a devolução do valor no painel
+              do AbacatePay.
+            </p>
           )}
 
           {/* Ações */}
