@@ -39,14 +39,16 @@ export function ProfileForm() {
   const [cpf, setCpf] = useState(user?.cpf ? formatCpf(user.cpf) : "");
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      setFirstName(user.firstName);
-      setLastName(user.lastName);
-      setPhone(user.phone);
-      setCpf(user.cpf ? formatCpf(user.cpf) : "");
-    }
-  }, [user]);
+  // Reset dos campos quando o usuário muda — padrão "ajustar estado durante o
+  // render" (React), com sentinela por id. Evita setState síncrono em effect.
+  const [syncedUserId, setSyncedUserId] = useState(user?.id);
+  if (user && user.id !== syncedUserId) {
+    setSyncedUserId(user.id);
+    setFirstName(user.firstName);
+    setLastName(user.lastName);
+    setPhone(user.phone);
+    setCpf(user.cpf ? formatCpf(user.cpf) : "");
+  }
 
   const [state, formAction, pending] = useActionState<ProfileActionResult | null, FormData>(
     async (_prev, formData) => {
