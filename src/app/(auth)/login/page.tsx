@@ -26,7 +26,7 @@ export default async function LoginPage({
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 py-8 md:py-12">
+    <main className="w-full max-w-md">
       <LoginForm next={next} />
     </main>
   );
