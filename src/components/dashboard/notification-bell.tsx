@@ -112,7 +112,7 @@ function NotificationItem({ notification, onRead, onCtaClick }: NotificationItem
         <p className="mt-0.5 line-clamp-1 text-body-sm leading-snug font-semibold text-olive-900">
           {notification.title}
         </p>
-        <p className="mt-0.5 line-clamp-2 text-caption leading-snug text-olive-700">
+        <p className="mt-0.5 line-clamp-3 text-caption leading-snug text-olive-700">
           {notification.body}
         </p>
 
@@ -143,11 +143,11 @@ export function NotificationBell() {
   const badgeCount = Math.min(unreadCount, 9);
   const badgeLabel = unreadCount > 9 ? "9+" : unreadCount > 0 ? String(unreadCount) : null;
 
-  // Abrir o sino = leitura (impressão). Marca as visíveis como lidas (dedup
-  // por PK no server). É o único gatilho de "leitura" — clicar no CTA é clique.
+  // Abrir o sino NÃO marca como lida. Leitura é ação explícita: X no item ou
+  // "Marcar tudo como lido". Assim notificação nova continua "viva" até a
+  // gestora agir — em vez de apagar só por abrir o painel.
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
-    if (next && unreadCount > 0) markAllRead();
   };
 
   // Clique no CTA: registra clique (dedup por usuário) + fecha + navega

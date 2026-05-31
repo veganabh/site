@@ -252,13 +252,13 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
         label="Mensagem"
         htmlFor="body"
         error={errors.body?.message}
-        hint={`${bodyValue.length}/280 caracteres — aparece no sino, truncado em 2 linhas`}
+        hint={`${bodyValue.length}/120 caracteres — aparece completa no sino (até 3 linhas)`}
         required
       >
         <TextArea
           id="body"
           rows={3}
-          maxLength={280}
+          maxLength={120}
           placeholder="ex: Use o cupom VERDE20 no checkout. Válido de sexta a domingo."
           {...register("body")}
           hasError={!!errors.body}
