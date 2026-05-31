@@ -138,14 +138,15 @@ export async function placeOrderAction(input: PlaceOrderInput): Promise<PlaceOrd
     return { ok: false, message: "Não foi possível validar os produtos." };
   }
 
-  const productById = new Map(
-    (productRows ?? []).map((p) => [p.id as string, p]),
-  );
+  const productById = new Map((productRows ?? []).map((p) => [p.id as string, p]));
 
   for (const item of parsed.data.items) {
     const product = productById.get(item.productId);
     if (!product || product.deleted_at || !product.active) {
-      return { ok: false, message: "Algum item do seu carrinho não está mais disponível. Revise o pedido." };
+      return {
+        ok: false,
+        message: "Algum item do seu carrinho não está mais disponível. Revise o pedido.",
+      };
     }
     if ((product.stock ?? 0) < item.qty) {
       return {
@@ -166,9 +167,12 @@ export async function placeOrderAction(input: PlaceOrderInput): Promise<PlaceOrd
   let couponId: string | null = null;
   let couponCode: string | null = null;
   if (parsed.data.couponCode) {
+    // Revalida no servidor (defesa) passando o usuário — cupom de primeira
+    // compra é rejeitado aqui também se o cliente burlar o front.
     const { data: rpcData, error: rpcError } = await supabase.rpc("validate_coupon", {
       p_code: parsed.data.couponCode,
       p_cart_total_cents: subtotalCents,
+      p_user_id: profile.id,
     });
 
     if (rpcError) {
@@ -176,12 +180,23 @@ export async function placeOrderAction(input: PlaceOrderInput): Promise<PlaceOrd
       return { ok: false, message: "Não foi possível validar o cupom. Tente de novo." };
     }
 
-    const result = rpcData as
-      | { valid: boolean; coupon_id?: string; discount_cents?: number }
-      | null;
+    const result = rpcData as {
+      valid: boolean;
+      reason?: string;
+      coupon_id?: string;
+      discount_cents?: number;
+    } | null;
 
     if (!result?.valid) {
-      return { ok: false, message: "Esse cupom não vale mais. Remova e tente de novo." };
+      const reasonMsg: Record<string, string> = {
+        not_first_purchase: "Esse cupom é só pra primeira compra. Remova pra finalizar.",
+        already_used: "Você já usou esse cupom. Remova pra finalizar.",
+        requires_login: "Esse cupom exige conta. Remova pra finalizar.",
+      };
+      const msg =
+        (result?.reason && reasonMsg[result.reason]) ??
+        "Esse cupom não vale mais. Remova e tente de novo.";
+      return { ok: false, message: msg };
     }
 
     couponDiscountCents = result.discount_cents ?? 0;
@@ -292,8 +307,7 @@ export async function placeOrderAction(input: PlaceOrderInput): Promise<PlaceOrd
         "Catálogo do cartão fora de sincronia. Rode `npm run abacatepay:sync-products`.",
       );
     } else {
-      const baseUrl =
-        process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3100";
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3100";
 
       const checkoutResult = await createCheckout({
         items: parsed.data.items.map((item) => ({
@@ -326,10 +340,7 @@ export async function placeOrderAction(input: PlaceOrderInput): Promise<PlaceOrd
         });
 
         if (paymentError) {
-          console.error(
-            "[place-order] payments insert (checkout):",
-            paymentError.message,
-          );
+          console.error("[place-order] payments insert (checkout):", paymentError.message);
         }
       } else {
         paymentFallback = true;

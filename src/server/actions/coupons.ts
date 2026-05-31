@@ -27,16 +27,23 @@ function valueToDb(type: CouponType, valueReais: number): number {
 }
 
 const baseSchema = z.object({
-  code: z.string().trim().min(1, "Código obrigatório.").max(50).transform((s) => s.toUpperCase()),
+  code: z
+    .string()
+    .trim()
+    .min(1, "Código obrigatório.")
+    .max(50)
+    .transform((s) => s.toUpperCase()),
   label: z.string().trim().max(80).default(""),
   hint: z.string().trim().min(1, "Descrição obrigatória.").max(200),
   type: z.enum(["PERCENTUAL", "FIXO", "FRETE_GRATIS"]),
   value: z.coerce.number().nonnegative().default(0),
   minOrderValue: z.coerce.number().nonnegative().optional(),
   maxUses: z.coerce.number().int().positive().optional(),
+  maxUsesPerUser: z.coerce.number().int().positive().optional(),
   validFrom: z.string().min(1, "Data inicial obrigatória."),
   validUntil: z.string().optional(),
   status: z.enum(["ATIVO", "INATIVO"]),
+  eligibility: z.enum(["ALL", "FIRST_PURCHASE"]).default("ALL"),
 });
 
 const createSchema = baseSchema;
@@ -72,9 +79,11 @@ export async function createCouponAction(
     min_order_value_cents:
       data.minOrderValue !== undefined ? reaisToCents(data.minOrderValue) : null,
     max_uses: data.maxUses ?? null,
+    max_uses_per_user: data.maxUsesPerUser ?? null,
     valid_from: data.validFrom,
     valid_until: data.validUntil || null,
     status: data.status,
+    eligibility: data.eligibility ?? "ALL",
   };
 
   const { data: inserted, error } = await supabase
@@ -125,11 +134,14 @@ export async function updateCouponAction(
   if (data.value !== undefined && data.type !== undefined) {
     patch.value = valueToDb(data.type, data.value);
   }
-  if (data.minOrderValue !== undefined) patch.min_order_value_cents = reaisToCents(data.minOrderValue);
+  if (data.minOrderValue !== undefined)
+    patch.min_order_value_cents = reaisToCents(data.minOrderValue);
   if (data.maxUses !== undefined) patch.max_uses = data.maxUses;
+  if (data.maxUsesPerUser !== undefined) patch.max_uses_per_user = data.maxUsesPerUser;
   if (data.validFrom !== undefined) patch.valid_from = data.validFrom;
   if (data.validUntil !== undefined) patch.valid_until = data.validUntil || null;
   if (data.status !== undefined) patch.status = data.status;
+  if (data.eligibility !== undefined) patch.eligibility = data.eligibility;
 
   if (Object.keys(patch).length === 0) return { ok: true };
 

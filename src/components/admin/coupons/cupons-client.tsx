@@ -275,6 +275,11 @@ export function CuponsClient() {
                         <code className="rounded-sm bg-paper-100 px-1.5 py-0 font-mono text-micro text-olive-900">
                           {coupon.code}
                         </code>
+                        {coupon.eligibility === "FIRST_PURCHASE" && (
+                          <span className="mt-1 flex w-fit items-center rounded-full bg-terra-500/15 px-1.5 py-0 text-micro font-semibold text-terra-700">
+                            1ª compra
+                          </span>
+                        )}
                       </td>
 
                       <td className="px-3 py-2">
@@ -376,9 +381,16 @@ export function CuponsClient() {
               return (
                 <Card key={coupon.id} padding="sm" className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <code className="rounded-sm bg-paper-100 px-1.5 py-0 font-mono text-micro text-olive-900">
-                      {coupon.code}
-                    </code>
+                    <div className="flex items-center gap-1.5">
+                      <code className="rounded-sm bg-paper-100 px-1.5 py-0 font-mono text-micro text-olive-900">
+                        {coupon.code}
+                      </code>
+                      {coupon.eligibility === "FIRST_PURCHASE" && (
+                        <span className="inline-flex items-center rounded-full bg-terra-500/15 px-1.5 py-0 text-micro font-semibold text-terra-700">
+                          1ª compra
+                        </span>
+                      )}
+                    </div>
                     <span
                       className={cn(
                         "inline-flex items-center rounded-full px-1.5 py-0 text-micro leading-4 font-semibold",

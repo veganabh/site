@@ -16,7 +16,11 @@ const reasonMessages: Record<string, string> = {
   not_yet_valid: "Cupom ainda não está ativo.",
   expired: "Cupom expirado.",
   max_uses_reached: "Cupom esgotado.",
+  exhausted: "Cupom esgotado.",
   below_min_order: "Pedido não atinge o mínimo do cupom.",
+  min_order: "Pedido não atinge o mínimo do cupom.",
+  requires_login: "Esse cupom é só pra primeira compra — entre na sua conta pra usar.",
+  not_first_purchase: "Esse cupom é só pra primeira compra. Você já tem um pedido na casa. :)",
 };
 
 export type ApplyCouponResult =
@@ -58,9 +62,17 @@ export async function applyCouponAction(input: {
   }
 
   const supabase = await createSupabaseServerClient();
+  // Passa o usuário logado (se houver) pra RPC checar elegibilidade de
+  // estreia. Convidado → p_user_id null → cupom FIRST_PURCHASE devolve
+  // `requires_login` (mensagem amigável acima).
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { data, error } = await supabase.rpc("validate_coupon", {
     p_code: parsed.data.code,
     p_cart_total_cents: parsed.data.subtotalCents,
+    p_user_id: user?.id ?? undefined,
   });
 
   if (error) {

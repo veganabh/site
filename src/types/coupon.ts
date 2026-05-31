@@ -12,6 +12,14 @@ export type CouponType = "PERCENTUAL" | "FIXO" | "FRETE_GRATIS";
 
 export type CouponStatus = "ATIVO" | "INATIVO" | "EXPIRADO";
 
+/**
+ * Quem pode usar o cupom:
+ * - ALL: qualquer cliente.
+ * - FIRST_PURCHASE: só quem ainda não tem pedido pago (campanha de estreia).
+ *   Exige login — a checagem é por `profile_id` no servidor (RPC validate_coupon).
+ */
+export type CouponEligibility = "ALL" | "FIRST_PURCHASE";
+
 export type Coupon = {
   id: string;
   /** Código que o cliente digita. Sempre UPPER_CASE. */
@@ -32,6 +40,10 @@ export type Coupon = {
   minOrderValue?: number;
   /** Limite de usos totais. Undefined = ilimitado. */
   maxUses?: number;
+  /** Limite de usos por cliente (resgates pagos). Undefined = ilimitado por pessoa. */
+  maxUsesPerUser?: number;
+  /** Elegibilidade: todos ou só primeira compra. Default ALL. */
+  eligibility: CouponEligibility;
   /** Quantas vezes já foi usado. */
   usedCount: number;
   /** ISO date — quando começa a valer. */

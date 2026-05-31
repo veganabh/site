@@ -86,15 +86,63 @@ export type Database = {
         };
         Relationships: [];
       };
+      coupon_redemptions: {
+        Row: {
+          coupon_id: string;
+          id: string;
+          order_id: string;
+          profile_id: string | null;
+          redeemed_at: string;
+        };
+        Insert: {
+          coupon_id: string;
+          id?: string;
+          order_id: string;
+          profile_id?: string | null;
+          redeemed_at?: string;
+        };
+        Update: {
+          coupon_id?: string;
+          id?: string;
+          order_id?: string;
+          profile_id?: string | null;
+          redeemed_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "coupon_redemptions_coupon_id_fkey";
+            columns: ["coupon_id"];
+            isOneToOne: false;
+            referencedRelation: "coupons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "coupon_redemptions_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "coupon_redemptions_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       coupons: {
         Row: {
           code: string;
           created_at: string;
           deleted_at: string | null;
+          eligibility: string;
           hint: string;
           id: string;
           label: string;
           max_uses: number | null;
+          max_uses_per_user: number | null;
           min_order_value_cents: number | null;
           status: string;
           type: string;
@@ -108,10 +156,12 @@ export type Database = {
           code: string;
           created_at?: string;
           deleted_at?: string | null;
+          eligibility?: string;
           hint?: string;
           id?: string;
           label?: string;
           max_uses?: number | null;
+          max_uses_per_user?: number | null;
           min_order_value_cents?: number | null;
           status?: string;
           type: string;
@@ -125,10 +175,12 @@ export type Database = {
           code?: string;
           created_at?: string;
           deleted_at?: string | null;
+          eligibility?: string;
           hint?: string;
           id?: string;
           label?: string;
           max_uses?: number | null;
+          max_uses_per_user?: number | null;
           min_order_value_cents?: number | null;
           status?: string;
           type?: string;
@@ -937,10 +989,12 @@ export type Database = {
     };
     Functions: {
       is_admin: { Args: never; Returns: boolean };
+      redeem_coupon: { Args: { p_order_id: string }; Returns: undefined };
       show_limit: { Args: never; Returns: number };
       show_trgm: { Args: { "": string }; Returns: string[] };
+      unredeem_coupon: { Args: { p_order_id: string }; Returns: undefined };
       validate_coupon: {
-        Args: { p_cart_total_cents: number; p_code: string };
+        Args: { p_cart_total_cents: number; p_code: string; p_user_id?: string };
         Returns: Json;
       };
     };

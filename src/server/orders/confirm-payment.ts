@@ -20,15 +20,22 @@ type Service = SupabaseClient<Database>;
  * Idempotente o suficiente: webhook duplicado já é barrado por idempotency_key
  * antes de chamar aqui; ainda assim a guarda `status === 'NOVO'` evita efeito
  * colateral se chamado mais de uma vez.
+ *
+ * Cupom: ao pagar, registra o resgate (redeem_coupon) que incrementa
+ * `used_count` e alimenta o limite por pessoa. Ao estornar, desfaz
+ * (unredeem_coupon). Ambos idempotentes via unique (coupon_id, order_id) —
+ * webhook duplicado não conta duas vezes. No-op se o pedido não tem cupom.
  */
 export async function confirmOrderPayment(
   service: Service,
   orderId: string,
   orderPaymentStatus: "PAGO" | "ESTORNADO",
 ): Promise<void> {
-  // Estorno: só marca o pagamento; não mexe no fluxo do kanban aqui.
+  // Estorno: marca o pagamento e devolve o uso do cupom (se havia).
   if (orderPaymentStatus === "ESTORNADO") {
     await service.from("orders").update({ payment_status: "ESTORNADO" }).eq("id", orderId);
+    const { error } = await service.rpc("unredeem_coupon", { p_order_id: orderId });
+    if (error) console.error("[confirm-payment] unredeem_coupon:", error.message);
     return;
   }
 
@@ -47,4 +54,8 @@ export async function confirmOrderPayment(
       ...(promote ? { status: "PREPARANDO" } : {}),
     })
     .eq("id", orderId);
+
+  // Registra o resgate do cupom (incrementa used_count). Idempotente.
+  const { error } = await service.rpc("redeem_coupon", { p_order_id: orderId });
+  if (error) console.error("[confirm-payment] redeem_coupon:", error.message);
 }

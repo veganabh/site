@@ -38,9 +38,11 @@ const couponFormSchema = z
     value: z.string().optional(),
     minOrderValue: z.string().optional(),
     maxUses: z.string().optional(),
+    maxUsesPerUser: z.string().optional(),
     validFrom: z.string().min(1, "Data de início obrigatória"),
     validUntil: z.string().optional(),
     status: z.enum(["ATIVO", "INATIVO"]),
+    eligibility: z.enum(["ALL", "FIRST_PURCHASE"]),
   })
   .refine(
     (data) => {
@@ -105,17 +107,21 @@ export function CouponFormDialog({
           value: coupon.type !== "FRETE_GRATIS" ? String(coupon.value) : "",
           minOrderValue: coupon.minOrderValue !== undefined ? String(coupon.minOrderValue) : "",
           maxUses: coupon.maxUses !== undefined ? String(coupon.maxUses) : "",
+          maxUsesPerUser: coupon.maxUsesPerUser !== undefined ? String(coupon.maxUsesPerUser) : "",
           validFrom: coupon.validFrom,
           validUntil: coupon.validUntil ?? "",
           status: coupon.status === "EXPIRADO" ? "ATIVO" : coupon.status,
+          eligibility: coupon.eligibility,
         }
       : {
           type: "PERCENTUAL" as const,
           status: "ATIVO" as const,
+          eligibility: "ALL" as const,
           validFrom: new Date().toISOString().split("T")[0],
           value: "",
           minOrderValue: "",
           maxUses: "",
+          maxUsesPerUser: "",
           validUntil: "",
           label: "",
           hint: "",
@@ -136,17 +142,22 @@ export function CouponFormDialog({
               value: coupon.type !== "FRETE_GRATIS" ? String(coupon.value) : "",
               minOrderValue: coupon.minOrderValue !== undefined ? String(coupon.minOrderValue) : "",
               maxUses: coupon.maxUses !== undefined ? String(coupon.maxUses) : "",
+              maxUsesPerUser:
+                coupon.maxUsesPerUser !== undefined ? String(coupon.maxUsesPerUser) : "",
               validFrom: coupon.validFrom,
               validUntil: coupon.validUntil ?? "",
               status: coupon.status === "EXPIRADO" ? "ATIVO" : coupon.status,
+              eligibility: coupon.eligibility,
             }
           : {
               type: "PERCENTUAL" as const,
               status: "ATIVO" as const,
+              eligibility: "ALL" as const,
               validFrom: new Date().toISOString().split("T")[0],
               value: "",
               minOrderValue: "",
               maxUses: "",
+              maxUsesPerUser: "",
               validUntil: "",
               label: "",
               hint: "",
@@ -158,6 +169,7 @@ export function CouponFormDialog({
 
   const watchedType = watch("type");
   const watchedStatus = watch("status");
+  const watchedEligibility = watch("eligibility");
 
   function onSubmit(data: CouponFormData) {
     setServerError(null);
@@ -166,6 +178,10 @@ export function CouponFormDialog({
     const parsedMin =
       data.minOrderValue && data.minOrderValue !== "" ? parseFloat(data.minOrderValue) : undefined;
     const parsedMax = data.maxUses && data.maxUses !== "" ? parseInt(data.maxUses, 10) : undefined;
+    const parsedMaxPerUser =
+      data.maxUsesPerUser && data.maxUsesPerUser !== ""
+        ? parseInt(data.maxUsesPerUser, 10)
+        : undefined;
 
     const payload = {
       code: normalizedCode,
@@ -175,9 +191,11 @@ export function CouponFormDialog({
       value: isNaN(parsedValue) ? 0 : parsedValue,
       minOrderValue: parsedMin,
       maxUses: parsedMax,
+      maxUsesPerUser: parsedMaxPerUser,
       validFrom: data.validFrom,
       validUntil: data.validUntil || undefined,
       status: data.status,
+      eligibility: data.eligibility,
     } as const;
 
     if (isEditing) {
@@ -190,9 +208,11 @@ export function CouponFormDialog({
         value: payload.value,
         minOrderValue: payload.minOrderValue,
         maxUses: payload.maxUses,
+        maxUsesPerUser: payload.maxUsesPerUser,
         validFrom: payload.validFrom,
         validUntil: payload.validUntil,
         status: payload.status,
+        eligibility: payload.eligibility,
       });
 
       startTransition(async () => {
@@ -337,6 +357,32 @@ export function CouponFormDialog({
               />
             </div>
 
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="eligibility" className={labelClass}>
+                Quem pode usar
+              </label>
+              <Controller
+                control={control}
+                name="eligibility"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="eligibility" hasError={!!errors.eligibility}>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">Todos os clientes</SelectItem>
+                      <SelectItem value="FIRST_PURCHASE">Só primeira compra</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {watchedEligibility === "FIRST_PURCHASE" && (
+                <p className="mt-0.5 text-caption text-olive-700">
+                  Vale só pra quem ainda não tem pedido pago. Exige login no checkout.
+                </p>
+              )}
+            </div>
+
             {watchedType !== "FRETE_GRATIS" && (
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="value" className={labelClass}>
@@ -376,18 +422,34 @@ export function CouponFormDialog({
               />
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="maxUses" className={labelClass}>
-                Limite de usos
-              </label>
-              <Input
-                id="maxUses"
-                type="number"
-                min={1}
-                step={1}
-                placeholder="Ilimitado"
-                {...register("maxUses")}
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="maxUses" className={labelClass}>
+                  Limite de usos (total)
+                </label>
+                <Input
+                  id="maxUses"
+                  type="number"
+                  min={1}
+                  step={1}
+                  placeholder="Ilimitado"
+                  {...register("maxUses")}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="maxUsesPerUser" className={labelClass}>
+                  Usos por pessoa
+                </label>
+                <Input
+                  id="maxUsesPerUser"
+                  type="number"
+                  min={1}
+                  step={1}
+                  placeholder="Ilimitado"
+                  {...register("maxUsesPerUser")}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
