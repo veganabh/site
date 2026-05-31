@@ -1,7 +1,6 @@
 // /gestao/relatorios — Relatórios analíticos. Seção 1: Canais (site vs iFood).
 
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Store, Bike, AlertTriangle, MapPin, Clock } from "lucide-react";
 
 import { AdminGate } from "@/components/features/admin-gate";
@@ -12,14 +11,14 @@ import { buildChannelMetrics } from "@/lib/channel-metrics";
 import { buildCouponRoi } from "@/lib/coupon-roi";
 import { buildProductMargin } from "@/lib/product-margin";
 import {
-  PERIODS,
-  PERIOD_LABEL,
-  filterOrdersByPeriod,
+  resolveReportRange,
+  filterOrdersByRange,
+  buildDailySeries,
   buildTimingMetrics,
   buildGeoMetrics,
   buildAbandonmentMetrics,
-  type Period,
 } from "@/lib/order-insights";
+import { RelatoriosToolbar } from "@/components/admin/relatorios/relatorios-toolbar";
 import { listAllOrders } from "@/server/orders";
 import { listProducts } from "@/server/products";
 import { getNotificationAttribution } from "@/server/notification-attribution";
@@ -51,18 +50,18 @@ function monthLabel(key: string): string {
 export default async function RelatoriosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string }>;
+  searchParams: Promise<{ period?: string; from?: string; to?: string }>;
 }) {
-  const { period: rawPeriod } = await searchParams;
-  const period: Period = (PERIODS as readonly string[]).includes(rawPeriod ?? "")
-    ? (rawPeriod as Period)
-    : "all";
+  const { period: rawPeriod, from, to } = await searchParams;
+  const period = rawPeriod ?? "all";
+  const range = resolveReportRange(period, from, to);
 
   const [allOrders, products] = await Promise.all([
     listAllOrders(),
     listProducts({ onlyActive: false }),
   ]);
-  const orders = filterOrdersByPeriod(allOrders, period);
+  const orders = filterOrdersByRange(allOrders, range);
+  const dailySeries = buildDailySeries(orders, range);
 
   const channel = buildChannelMetrics(orders);
   const couponRoi = buildCouponRoi(orders);
@@ -100,23 +99,14 @@ export default async function RelatoriosPage({
               Dados pra decisão — canais, margem, cupons, geografia e engajamento.
             </p>
           </div>
-          {/* Filtro de período */}
-          <div className="flex flex-wrap gap-1.5">
-            {PERIODS.map((p) => (
-              <Link
-                key={p}
-                href={`/gestao/relatorios?period=${p}`}
-                className={cn(
-                  "rounded-full border px-2.5 py-0.5 text-micro font-semibold transition-colors",
-                  period === p
-                    ? "border-olive-900 bg-olive-900 text-paper-50"
-                    : "border-divider bg-paper-50 text-olive-700 hover:bg-paper-100",
-                )}
-              >
-                {PERIOD_LABEL[p]}
-              </Link>
-            ))}
-          </div>
+          {/* Filtro de período + exportar CSV */}
+          <RelatoriosToolbar
+            activePeriod={period}
+            customFrom={from}
+            customTo={to}
+            rangeLabel={range.label}
+            dailySeries={dailySeries}
+          />
         </div>
 
         {/* Alertas estratégicos */}
