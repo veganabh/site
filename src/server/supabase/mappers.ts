@@ -254,12 +254,12 @@ type CouponRow = {
   valid_from: string;
   valid_until: string | null;
   status: string;
+  eligibility: string;
   created_at: string;
 };
 
 export function couponFromRow(row: CouponRow): Coupon {
-  const value =
-    row.type === "FIXO" ? centsToReais(row.value) : row.value;
+  const value = row.type === "FIXO" ? centsToReais(row.value) : row.value;
   return {
     id: row.id,
     code: row.code,
@@ -274,6 +274,7 @@ export function couponFromRow(row: CouponRow): Coupon {
     validFrom: row.valid_from,
     validUntil: row.valid_until ?? undefined,
     status: row.status as Coupon["status"],
+    eligibility: (row.eligibility as Coupon["eligibility"]) ?? "ALL",
     createdAt: row.created_at,
   };
 }
@@ -577,7 +578,9 @@ export function orderItemToInsert(item: OrderItem & { isKit?: boolean }): OrderI
 
 // ── Product insert ───────────────────────────────────────────────────────────
 
-export function productToInsert(product: Omit<Product, "id">): Omit<ProductRow, "id" | "deleted_at"> {
+export function productToInsert(
+  product: Omit<Product, "id">,
+): Omit<ProductRow, "id" | "deleted_at"> {
   return {
     slug: product.slug,
     name: product.name,

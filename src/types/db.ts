@@ -91,6 +91,7 @@ export type Database = {
           code: string;
           created_at: string;
           deleted_at: string | null;
+          eligibility: string;
           hint: string;
           id: string;
           label: string;
@@ -108,6 +109,7 @@ export type Database = {
           code: string;
           created_at?: string;
           deleted_at?: string | null;
+          eligibility?: string;
           hint?: string;
           id?: string;
           label?: string;
@@ -125,6 +127,7 @@ export type Database = {
           code?: string;
           created_at?: string;
           deleted_at?: string | null;
+          eligibility?: string;
           hint?: string;
           id?: string;
           label?: string;
@@ -940,7 +943,7 @@ export type Database = {
       show_limit: { Args: never; Returns: number };
       show_trgm: { Args: { "": string }; Returns: string[] };
       validate_coupon: {
-        Args: { p_cart_total_cents: number; p_code: string };
+        Args: { p_cart_total_cents: number; p_code: string; p_user_id?: string };
         Returns: Json;
       };
     };

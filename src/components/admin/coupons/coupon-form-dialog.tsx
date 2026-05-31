@@ -41,6 +41,7 @@ const couponFormSchema = z
     validFrom: z.string().min(1, "Data de início obrigatória"),
     validUntil: z.string().optional(),
     status: z.enum(["ATIVO", "INATIVO"]),
+    eligibility: z.enum(["ALL", "FIRST_PURCHASE"]),
   })
   .refine(
     (data) => {
@@ -108,10 +109,12 @@ export function CouponFormDialog({
           validFrom: coupon.validFrom,
           validUntil: coupon.validUntil ?? "",
           status: coupon.status === "EXPIRADO" ? "ATIVO" : coupon.status,
+          eligibility: coupon.eligibility,
         }
       : {
           type: "PERCENTUAL" as const,
           status: "ATIVO" as const,
+          eligibility: "ALL" as const,
           validFrom: new Date().toISOString().split("T")[0],
           value: "",
           minOrderValue: "",
@@ -139,10 +142,12 @@ export function CouponFormDialog({
               validFrom: coupon.validFrom,
               validUntil: coupon.validUntil ?? "",
               status: coupon.status === "EXPIRADO" ? "ATIVO" : coupon.status,
+              eligibility: coupon.eligibility,
             }
           : {
               type: "PERCENTUAL" as const,
               status: "ATIVO" as const,
+              eligibility: "ALL" as const,
               validFrom: new Date().toISOString().split("T")[0],
               value: "",
               minOrderValue: "",
@@ -158,6 +163,7 @@ export function CouponFormDialog({
 
   const watchedType = watch("type");
   const watchedStatus = watch("status");
+  const watchedEligibility = watch("eligibility");
 
   function onSubmit(data: CouponFormData) {
     setServerError(null);
@@ -178,6 +184,7 @@ export function CouponFormDialog({
       validFrom: data.validFrom,
       validUntil: data.validUntil || undefined,
       status: data.status,
+      eligibility: data.eligibility,
     } as const;
 
     if (isEditing) {
@@ -193,6 +200,7 @@ export function CouponFormDialog({
         validFrom: payload.validFrom,
         validUntil: payload.validUntil,
         status: payload.status,
+        eligibility: payload.eligibility,
       });
 
       startTransition(async () => {
@@ -335,6 +343,32 @@ export function CouponFormDialog({
                   </Select>
                 )}
               />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="eligibility" className={labelClass}>
+                Quem pode usar
+              </label>
+              <Controller
+                control={control}
+                name="eligibility"
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="eligibility" hasError={!!errors.eligibility}>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">Todos os clientes</SelectItem>
+                      <SelectItem value="FIRST_PURCHASE">Só primeira compra</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {watchedEligibility === "FIRST_PURCHASE" && (
+                <p className="mt-0.5 text-caption text-olive-700">
+                  Vale só pra quem ainda não tem pedido pago. Exige login no checkout.
+                </p>
+              )}
             </div>
 
             {watchedType !== "FRETE_GRATIS" && (
