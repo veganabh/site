@@ -39,6 +39,7 @@ const baseSchema = z.object({
   value: z.coerce.number().nonnegative().default(0),
   minOrderValue: z.coerce.number().nonnegative().optional(),
   maxUses: z.coerce.number().int().positive().optional(),
+  maxUsesPerUser: z.coerce.number().int().positive().optional(),
   validFrom: z.string().min(1, "Data inicial obrigatória."),
   validUntil: z.string().optional(),
   status: z.enum(["ATIVO", "INATIVO"]),
@@ -78,6 +79,7 @@ export async function createCouponAction(
     min_order_value_cents:
       data.minOrderValue !== undefined ? reaisToCents(data.minOrderValue) : null,
     max_uses: data.maxUses ?? null,
+    max_uses_per_user: data.maxUsesPerUser ?? null,
     valid_from: data.validFrom,
     valid_until: data.validUntil || null,
     status: data.status,
@@ -135,6 +137,7 @@ export async function updateCouponAction(
   if (data.minOrderValue !== undefined)
     patch.min_order_value_cents = reaisToCents(data.minOrderValue);
   if (data.maxUses !== undefined) patch.max_uses = data.maxUses;
+  if (data.maxUsesPerUser !== undefined) patch.max_uses_per_user = data.maxUsesPerUser;
   if (data.validFrom !== undefined) patch.valid_from = data.validFrom;
   if (data.validUntil !== undefined) patch.valid_until = data.validUntil || null;
   if (data.status !== undefined) patch.status = data.status;

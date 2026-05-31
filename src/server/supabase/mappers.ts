@@ -250,6 +250,7 @@ type CouponRow = {
   value: number;
   min_order_value_cents: number | null;
   max_uses: number | null;
+  max_uses_per_user: number | null;
   used_count: number;
   valid_from: string;
   valid_until: string | null;
@@ -270,6 +271,7 @@ export function couponFromRow(row: CouponRow): Coupon {
     minOrderValue:
       row.min_order_value_cents !== null ? centsToReais(row.min_order_value_cents) : undefined,
     maxUses: row.max_uses ?? undefined,
+    maxUsesPerUser: row.max_uses_per_user ?? undefined,
     usedCount: row.used_count,
     validFrom: row.valid_from,
     validUntil: row.valid_until ?? undefined,

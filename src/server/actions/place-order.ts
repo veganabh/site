@@ -188,10 +188,14 @@ export async function placeOrderAction(input: PlaceOrderInput): Promise<PlaceOrd
     } | null;
 
     if (!result?.valid) {
+      const reasonMsg: Record<string, string> = {
+        not_first_purchase: "Esse cupom é só pra primeira compra. Remova pra finalizar.",
+        already_used: "Você já usou esse cupom. Remova pra finalizar.",
+        requires_login: "Esse cupom exige conta. Remova pra finalizar.",
+      };
       const msg =
-        result?.reason === "not_first_purchase"
-          ? "Esse cupom é só pra primeira compra. Remova pra finalizar."
-          : "Esse cupom não vale mais. Remova e tente de novo.";
+        (result?.reason && reasonMsg[result.reason]) ??
+        "Esse cupom não vale mais. Remova e tente de novo.";
       return { ok: false, message: msg };
     }
 

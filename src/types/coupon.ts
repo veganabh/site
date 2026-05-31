@@ -40,6 +40,8 @@ export type Coupon = {
   minOrderValue?: number;
   /** Limite de usos totais. Undefined = ilimitado. */
   maxUses?: number;
+  /** Limite de usos por cliente (resgates pagos). Undefined = ilimitado por pessoa. */
+  maxUsesPerUser?: number;
   /** Elegibilidade: todos ou só primeira compra. Default ALL. */
   eligibility: CouponEligibility;
   /** Quantas vezes já foi usado. */
