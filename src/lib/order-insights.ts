@@ -26,6 +26,155 @@ export function filterOrdersByPeriod(
   return orders.filter((o) => new Date(o.createdAt).getTime() >= cutoff);
 }
 
+// ── Range personalizado (De / Até) ──────────────────────────────────────────────
+
+/**
+ * Range de datas resolvido pra um relatório. `start`/`end` são limites
+ * inclusivos em ms; `null` = sem limite daquele lado (ex: period "all").
+ * `label` é o texto exibido no toolbar/CSV.
+ */
+export type ResolvedRange = {
+  start: number | null;
+  end: number | null;
+  label: string;
+};
+
+/** Início do dia (00:00:00.000) local de uma data ISO "YYYY-MM-DD". */
+function startOfDay(iso: string): number | null {
+  const t = new Date(`${iso}T00:00:00`).getTime();
+  return Number.isNaN(t) ? null : t;
+}
+
+/** Fim do dia (23:59:59.999) local de uma data ISO "YYYY-MM-DD". */
+function endOfDay(iso: string): number | null {
+  const t = new Date(`${iso}T23:59:59.999`).getTime();
+  return Number.isNaN(t) ? null : t;
+}
+
+/** "YYYY-MM-DD" local de um timestamp. */
+export function isoDay(ms: number): string {
+  const d = new Date(ms);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * Resolve o range efetivo a partir do period + datas custom da URL.
+ * - period preset (7d/30d/90d): janela rolante terminando agora.
+ * - period "custom": usa from/to (datas ISO). Inverte se vierem trocadas.
+ *   Custom inválido (sem datas válidas) cai pra "all".
+ * - period "all" (ou desconhecido): sem limites.
+ */
+export function resolveReportRange(
+  period: string,
+  from: string | undefined,
+  to: string | undefined,
+  now: Date = new Date(),
+): ResolvedRange {
+  if (period === "custom") {
+    let start = from ? startOfDay(from) : null;
+    let end = to ? endOfDay(to) : null;
+    if (start !== null && end !== null && start > end) {
+      [start, end] = [startOfDay(to as string), endOfDay(from as string)];
+    }
+    if (start === null && end === null) {
+      return { start: null, end: null, label: "Tudo" };
+    }
+    const label = `${start !== null ? isoDay(start) : "…"} → ${end !== null ? isoDay(end) : "…"}`;
+    return { start, end, label };
+  }
+
+  if (period === "7d" || period === "30d" || period === "90d") {
+    const days = period === "7d" ? 7 : period === "30d" ? 30 : 90;
+    return {
+      start: now.getTime() - days * 86_400_000,
+      end: now.getTime(),
+      label: PERIOD_LABEL[period],
+    };
+  }
+
+  return { start: null, end: null, label: "Tudo" };
+}
+
+/** Filtra pedidos por um range resolvido (limites inclusivos). */
+export function filterOrdersByRange(orders: Order[], range: ResolvedRange): Order[] {
+  return orders.filter((o) => {
+    const t = new Date(o.createdAt).getTime();
+    if (range.start !== null && t < range.start) return false;
+    if (range.end !== null && t > range.end) return false;
+    return true;
+  });
+}
+
+// ── Série diária (pra exportação CSV / análise) ─────────────────────────────────
+
+export type DailyRow = {
+  /** "YYYY-MM-DD". */
+  date: string;
+  /** Pedidos não cancelados no dia. */
+  orders: number;
+  /** Receita (R$) dos pedidos não cancelados no dia. */
+  revenue: number;
+  /** Ticket médio do dia (revenue ÷ orders); 0 se sem pedidos. */
+  avgTicket: number;
+};
+
+/**
+ * Série diária contínua sobre `orders`, um registro por dia entre
+ * `range.start`..`range.end` (inclusive) — dias sem pedido entram zerados,
+ * pra série não ter buracos no gráfico/análise. Pedidos CANCELADO ignorados
+ * (consistente com os demais builders). Quando o range é aberto, usa o
+ * primeiro/último pedido como limite; sem pedidos, retorna [].
+ */
+export function buildDailySeries(orders: Order[], range: ResolvedRange): DailyRow[] {
+  const real = orders.filter((o) => o.status !== "CANCELADO");
+
+  // Limites concretos: usa o range, ou deriva dos pedidos quando aberto.
+  let startMs = range.start;
+  let endMs = range.end;
+  if ((startMs === null || endMs === null) && real.length > 0) {
+    const times = real.map((o) => new Date(o.createdAt).getTime());
+    if (startMs === null) startMs = Math.min(...times);
+    if (endMs === null) endMs = Math.max(...times);
+  }
+  if (startMs === null || endMs === null) return [];
+
+  // Acumula por dia.
+  const byDay = new Map<string, { orders: number; revenue: number }>();
+  for (const o of real) {
+    const t = new Date(o.createdAt).getTime();
+    if (t < startMs || t > endMs) continue;
+    const key = isoDay(t);
+    const row = byDay.get(key) ?? { orders: 0, revenue: 0 };
+    row.orders += 1;
+    row.revenue += o.total;
+    byDay.set(key, row);
+  }
+
+  // Preenche todos os dias do range (zerando os vazios).
+  const series: DailyRow[] = [];
+  const startKey = isoDay(startMs);
+  const endKey = isoDay(endMs);
+  const cursor = new Date(`${startKey}T12:00:00`); // meio-dia evita pulo de DST
+  const lastKey = endKey;
+  // Guard contra loop infinito: máximo ~3 anos de dias.
+  for (let i = 0; i < 1100; i++) {
+    const key = isoDay(cursor.getTime());
+    const agg = byDay.get(key) ?? { orders: 0, revenue: 0 };
+    series.push({
+      date: key,
+      orders: agg.orders,
+      revenue: agg.revenue,
+      avgTicket: agg.orders > 0 ? agg.revenue / agg.orders : 0,
+    });
+    if (key === lastKey) break;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return series;
+}
+
 // ── Pico (dia da semana + hora) ────────────────────────────────────────────────
 
 const WEEKDAY_NAMES = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
