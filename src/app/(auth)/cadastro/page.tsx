@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { SignUpForm } from "@/components/auth/signup-form";
+import { AuthCard } from "@/components/auth/auth-card";
 import { createSupabaseServerClient } from "@/server/supabase/server";
 
 export const metadata: Metadata = {
@@ -19,9 +19,5 @@ export default async function CadastroPage() {
     redirect("/conta");
   }
 
-  return (
-    <main className="w-full max-w-md">
-      <SignUpForm />
-    </main>
-  );
+  return <AuthCard defaultTab="signup" />;
 }

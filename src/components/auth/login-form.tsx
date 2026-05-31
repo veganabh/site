@@ -1,16 +1,18 @@
 "use client";
 
 import { useActionState } from "react";
-import Link from "next/link";
 import { Lock, Mail } from "lucide-react";
 
 import { signInAction, type AuthActionResult } from "@/server/auth/actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AuthBrandBanner } from "@/components/auth/auth-brand-panel";
 
 const INITIAL_STATE: AuthActionResult | null = null;
 
+/**
+ * Formulário de login — apenas o <form> (campos + submit). Sem card/marca:
+ * o wrapper (card, abas, foto, aside) vive em `AuthCard` + layout (auth).
+ */
 export function LoginForm({ next }: { next?: string }) {
   const [state, formAction, pending] = useActionState<AuthActionResult | null, FormData>(
     async (_prev, formData) => signInAction(formData),
@@ -20,71 +22,44 @@ export function LoginForm({ next }: { next?: string }) {
   const fieldErrors = state && !state.ok ? (state.fieldErrors ?? {}) : {};
 
   return (
-    <div className="flex w-full max-w-md flex-col gap-4">
-      <AuthBrandBanner />
+    <form action={formAction} className="flex flex-col gap-4" aria-label="Formulário de login">
+      {next ? <input type="hidden" name="next" value={next} /> : null}
 
-      <form
-        action={formAction}
-        className="flex flex-col gap-5 rounded-sm bg-paper-50 p-6 shadow-md md:p-8"
-        aria-labelledby="login-titulo"
-      >
-        {next ? <input type="hidden" name="next" value={next} /> : null}
-        <header className="flex flex-col gap-1">
-          <h1 id="login-titulo" className="text-h1 font-bold text-olive-900">
-            Entrar
-          </h1>
-          <p className="text-body-sm text-olive-700">Bem-vinda de volta. Cadê seus bolinhos.</p>
-        </header>
+      <Field
+        name="email"
+        label="E-mail"
+        type="email"
+        icon={Mail}
+        autoComplete="email"
+        placeholder="voce@exemplo.com"
+        errors={fieldErrors.email}
+        required
+      />
 
-        <div className="flex flex-col gap-4">
-          <Field
-            name="email"
-            label="E-mail"
-            type="email"
-            icon={Mail}
-            autoComplete="email"
-            placeholder="voce@exemplo.com"
-            errors={fieldErrors.email}
-            required
-          />
+      <Field
+        name="password"
+        label="Senha"
+        type="password"
+        icon={Lock}
+        autoComplete="current-password"
+        placeholder="••••••••"
+        errors={fieldErrors.password}
+        required
+      />
 
-          <Field
-            name="password"
-            label="Senha"
-            type="password"
-            icon={Lock}
-            autoComplete="current-password"
-            placeholder="••••••••"
-            errors={fieldErrors.password}
-            required
-          />
-        </div>
-
-        {state && !state.ok ? (
-          <p
-            role="alert"
-            className="rounded-sm bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
-          >
-            {state.message}
-          </p>
-        ) : null}
-
-        <Button type="submit" variant="primary" isLoading={pending} disabled={pending}>
-          {pending ? "Entrando…" : "Entrar"}
-        </Button>
-
-        <p className="text-center text-caption text-olive-700">
-          Ainda não tem conta?{" "}
-          <Link href="/cadastro" className="font-semibold text-terra-700 hover:text-terra-500">
-            Cadastrar
-          </Link>
+      {state && !state.ok ? (
+        <p
+          role="alert"
+          className="rounded-sm bg-terra-500/10 px-3 py-2 text-caption font-semibold text-terra-700"
+        >
+          {state.message}
         </p>
-      </form>
+      ) : null}
 
-      <p className="text-center text-micro text-olive-700">
-        Sem lactose · 100% vegano · entrega no mesmo dia
-      </p>
-    </div>
+      <Button type="submit" variant="primary" isLoading={pending} disabled={pending}>
+        {pending ? "Entrando…" : "Entrar"}
+      </Button>
+    </form>
   );
 }
 
@@ -97,7 +72,6 @@ type FieldProps = {
   placeholder?: string;
   required?: boolean;
   errors?: string[];
-  defaultValue?: string;
 };
 
 function Field({
@@ -109,7 +83,6 @@ function Field({
   placeholder,
   required,
   errors,
-  defaultValue,
 }: FieldProps) {
   return (
     <label className="flex flex-col gap-1.5">
@@ -127,7 +100,6 @@ function Field({
           autoComplete={autoComplete}
           placeholder={placeholder}
           required={required}
-          defaultValue={defaultValue}
           aria-invalid={Boolean(errors?.length)}
           hasError={Boolean(errors?.length)}
           className="pr-3 pl-9"

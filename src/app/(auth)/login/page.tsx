@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { LoginForm } from "@/components/auth/login-form";
+import { AuthCard } from "@/components/auth/auth-card";
 import { createSupabaseServerClient } from "@/server/supabase/server";
 
 export const metadata: Metadata = {
@@ -25,9 +25,5 @@ export default async function LoginPage({
     redirect(next && next.startsWith("/") && !next.startsWith("//") ? next : "/conta");
   }
 
-  return (
-    <main className="w-full max-w-md">
-      <LoginForm next={next} />
-    </main>
-  );
+  return <AuthCard defaultTab="signin" next={next} />;
 }

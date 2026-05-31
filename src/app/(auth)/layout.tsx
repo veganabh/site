@@ -1,34 +1,50 @@
+import Image from "next/image";
 import Link from "next/link";
 
-import { AuthBrandPanel } from "@/components/auth/auth-brand-panel";
+import { AuthBrandAside } from "@/components/auth/auth-brand-panel";
 
 /**
  * Layout das páginas /login e /cadastro. Standalone — sem sidebar de conta
  * nem shell de gestão.
  *
- * Split-screen no desktop (≥lg): painel de marca imersivo à esquerda, coluna
- * de formulário à direita. No mobile colapsa numa coluna única; o calor da
- * marca volta via `AuthBrandBanner` (renderizado por cada form).
+ * Fullscreen sem scroll (`h-dvh overflow-hidden`): foto de produto cobre a
+ * tela toda, overlay olive garante legibilidade. Por cima: bloco de marca à
+ * esquerda (desktop) e o card de auth à direita. No mobile o card centraliza
+ * sobre a foto (o aside some). O card em si controla o conteúdo (abas
+ * Entrar/Criar conta) — ver `AuthCard`.
  */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh bg-paper-100">
-      {/* Painel de marca — só desktop */}
-      <AuthBrandPanel />
+    <div className="relative flex h-dvh w-full overflow-hidden bg-olive-900">
+      {/* Foto fullscreen */}
+      <Image
+        src="/produtos/bolo-cenoura-brigadeiro.png"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover"
+      />
+      {/* Overlay: escurece pra contraste do texto claro + do card branco */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-r from-olive-900/92 via-olive-900/75 to-olive-900/85"
+      />
 
-      {/* Coluna do formulário */}
-      <div className="flex flex-1 flex-col">
-        {/* Logo sempre sobre fundo claro (contraste garantido) */}
-        <header className="flex items-center justify-center border-b border-divider bg-paper-50 py-4">
-          <Link href="/" aria-label="Voltar pra home Veg.ana">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="Veg.ana" className="h-8 w-auto" />
-          </Link>
-        </header>
+      {/* Logo — canto superior esquerdo, monocromático claro sobre a foto */}
+      <Link
+        href="/"
+        aria-label="Voltar pra home Veg.ana"
+        className="absolute top-6 left-6 z-20 lg:top-8 lg:left-10"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.svg" alt="Veg.ana" className="h-8 w-auto brightness-0 invert" />
+      </Link>
 
-        <div className="flex flex-1 items-start justify-center px-4 py-6 md:py-10 lg:items-center">
-          {children}
-        </div>
+      {/* Conteúdo: aside de marca + card */}
+      <div className="relative z-10 mx-auto flex h-full w-full max-w-6xl items-center justify-center gap-10 px-6 lg:justify-between lg:px-12">
+        <AuthBrandAside />
+        <div className="w-full max-w-md shrink-0">{children}</div>
       </div>
     </div>
   );
