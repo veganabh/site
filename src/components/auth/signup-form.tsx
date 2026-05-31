@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState } from "react";
-import Link from "next/link";
 import { Lock, Mail, Phone, User } from "lucide-react";
 
 import { signUpAction, type AuthActionResult } from "@/server/auth/actions";
@@ -10,6 +9,12 @@ import { Button } from "@/components/ui/button";
 
 const INITIAL_STATE: AuthActionResult | null = null;
 
+/**
+ * Formulário de cadastro — apenas o <form> (campos + submit). Sem card/marca:
+ * o wrapper (card, abas, foto, aside) vive em `AuthCard` + layout (auth).
+ *
+ * Layout compacto (gap-3) pra caber em tela cheia sem scroll junto das abas.
+ */
 export function SignUpForm() {
   const [state, formAction, pending] = useActionState<AuthActionResult | null, FormData>(
     async (_prev, formData) => signUpAction(formData),
@@ -21,39 +26,17 @@ export function SignUpForm() {
 
   if (success) {
     return (
-      <div
-        role="status"
-        className="flex flex-col gap-3 rounded-sm border border-divider bg-paper-50 p-5 text-center md:p-6"
-      >
-        <h1 className="text-h2 font-bold text-olive-900">Cadastro recebido</h1>
+      <div role="status" className="flex flex-col gap-3 py-2 text-center">
+        <h2 className="text-h3 font-bold text-olive-900">Cadastro recebido</h2>
         <p className="text-body-sm text-olive-700">
           Confirma o e-mail que a gente acabou de mandar pra liberar seu acesso.
         </p>
-        <Link
-          href="/login"
-          className="mx-auto inline-flex h-11 items-center justify-center rounded-full bg-terra-500 px-5 text-body-sm font-semibold text-paper-50 hover:bg-terra-700"
-        >
-          Ir pro login
-        </Link>
       </div>
     );
   }
 
   return (
-    <form
-      action={formAction}
-      className="flex flex-col gap-4 rounded-sm border border-divider bg-paper-50 p-5 md:p-6"
-      aria-labelledby="cadastro-titulo"
-    >
-      <header className="flex flex-col gap-1">
-        <h1 id="cadastro-titulo" className="text-h2 font-bold text-olive-900">
-          Criar conta
-        </h1>
-        <p className="text-body-sm text-olive-700">
-          Pra acompanhar pedidos e fechar mais rápido na próxima.
-        </p>
-      </header>
-
+    <form action={formAction} className="flex flex-col gap-3" aria-label="Formulário de cadastro">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field
           name="firstName"
@@ -127,15 +110,8 @@ export function SignUpForm() {
       ) : null}
 
       <Button type="submit" variant="primary" isLoading={pending} disabled={pending}>
-        {pending ? "Cadastrando…" : "Cadastrar"}
+        {pending ? "Cadastrando…" : "Criar conta"}
       </Button>
-
-      <p className="text-center text-caption text-olive-700">
-        Já tem conta?{" "}
-        <Link href="/login" className="font-semibold text-terra-700 hover:text-terra-500">
-          Entrar
-        </Link>
-      </p>
     </form>
   );
 }
@@ -179,7 +155,7 @@ function Field({
           required={required}
           aria-invalid={Boolean(errors?.length)}
           hasError={Boolean(errors?.length)}
-          className="pr-3 pl-9"
+          className="h-10 pr-3 pl-9"
         />
       </div>
       {errors?.length ? (
