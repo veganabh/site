@@ -9,12 +9,18 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { cn } from "@/lib/utils";
 import { Input, TextArea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   notificationInputSchema,
   NOTIFICATION_TYPES,
@@ -120,6 +126,7 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
     register,
     handleSubmit,
     watch,
+    control,
     formState: { errors },
   } = useForm<NotificationFormInput, unknown, NotificationInputSchema>({
     resolver: zodResolver(notificationInputSchema),
@@ -180,39 +187,45 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
       {/* Linha 1: tipo + audiência */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormField label="Tipo" htmlFor="type" error={errors.type?.message} required>
-          <select
-            id="type"
-            {...register("type")}
-            className={cn(
-              "h-10 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 transition-colors",
-              "focus:border-olive-500 focus:ring-2 focus:ring-olive-500/20 focus:outline-none",
-              errors.type && "border-terra-500",
+          <Controller
+            control={control}
+            name="type"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="type" hasError={!!errors.type}>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {NOTIFICATION_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {TYPE_LABELS[t]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
-          >
-            {NOTIFICATION_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {TYPE_LABELS[t]}
-              </option>
-            ))}
-          </select>
+          />
         </FormField>
 
         <FormField label="Audiência" htmlFor="audience" error={errors.audience?.message} required>
-          <select
-            id="audience"
-            {...register("audience")}
-            className={cn(
-              "h-10 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900 transition-colors",
-              "focus:border-olive-500 focus:ring-2 focus:ring-olive-500/20 focus:outline-none",
-              errors.audience && "border-terra-500",
+          <Controller
+            control={control}
+            name="audience"
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="audience" hasError={!!errors.audience}>
+                  <SelectValue placeholder="Selecione a audiência" />
+                </SelectTrigger>
+                <SelectContent>
+                  {NOTIFICATION_AUDIENCES.map((a) => (
+                    <SelectItem key={a} value={a}>
+                      {AUDIENCE_LABELS[a]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
-          >
-            {NOTIFICATION_AUDIENCES.map((a) => (
-              <option key={a} value={a}>
-                {AUDIENCE_LABELS[a]}
-              </option>
-            ))}
-          </select>
+          />
         </FormField>
       </div>
 
@@ -239,13 +252,13 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
         label="Mensagem"
         htmlFor="body"
         error={errors.body?.message}
-        hint={`${bodyValue.length}/280 caracteres — aparece no sino, truncado em 2 linhas`}
+        hint={`${bodyValue.length}/120 caracteres — aparece completa no sino (até 3 linhas)`}
         required
       >
         <TextArea
           id="body"
           rows={3}
-          maxLength={280}
+          maxLength={120}
           placeholder="ex: Use o cupom VERDE20 no checkout. Válido de sexta a domingo."
           {...register("body")}
           hasError={!!errors.body}
@@ -299,21 +312,29 @@ export function NotificacaoForm(props: NotificacaoFormProps) {
             error={errors.couponCode?.message}
             hint="Se escolher, clicar no botão aplica o cupom no carrinho do cliente automaticamente."
           >
-            <select
-              id="couponCode"
-              {...register("couponCode")}
-              className={cn(
-                "h-10 w-full rounded-sm border border-divider bg-paper-50 px-3 text-body-sm text-olive-900",
-                "focus:border-olive-500 focus:ring-2 focus:ring-olive-500/20 focus:outline-none",
+            <Controller
+              control={control}
+              name="couponCode"
+              render={({ field }) => (
+                // Radix Select não aceita value="" — sentinela __none__ ⇄ "".
+                <Select
+                  value={field.value ? field.value : "__none__"}
+                  onValueChange={(v) => field.onChange(v === "__none__" ? "" : v)}
+                >
+                  <SelectTrigger id="couponCode">
+                    <SelectValue placeholder="Nenhum (CTA só navega pelo link)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Nenhum (CTA só navega pelo link)</SelectItem>
+                    {coupons.map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {c.code} — {c.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
-            >
-              <option value="">Nenhum (CTA só navega pelo link)</option>
-              {coupons.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.code} — {c.label}
-                </option>
-              ))}
-            </select>
+            />
           </FormField>
         </div>
       </div>

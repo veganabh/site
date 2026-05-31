@@ -15,7 +15,10 @@ export const NOTIFICATION_AUDIENCES = ["all", "authed", "guest"] as const;
  * `z.string().datetime()` rejeitava o formato do input → "Data inválida".
  */
 const parseableDate = (message: string) =>
-  z.string().min(1, message).refine((v) => !Number.isNaN(new Date(v).getTime()), { message });
+  z
+    .string()
+    .min(1, message)
+    .refine((v) => !Number.isNaN(new Date(v).getTime()), { message });
 
 export const notificationInputSchema = z
   .object({
@@ -29,7 +32,7 @@ export const notificationInputSchema = z
     body: z
       .string()
       .min(1, "Mensagem obrigatória.")
-      .max(280, "Mensagem deve ter no máximo 280 caracteres."),
+      .max(120, "Mensagem deve ter no máximo 120 caracteres."),
 
     ctaLabel: z
       .string()
@@ -69,13 +72,10 @@ export const notificationInputSchema = z
       path: ["ctaLabel"],
     },
   )
-  .refine(
-    (data) => new Date(data.expiresAt) > new Date(data.publishedAt),
-    {
-      message: "A data de expiração deve ser posterior à data de publicação.",
-      path: ["expiresAt"],
-    },
-  );
+  .refine((data) => new Date(data.expiresAt) > new Date(data.publishedAt), {
+    message: "A data de expiração deve ser posterior à data de publicação.",
+    path: ["expiresAt"],
+  });
 
 /**
  * Tipo do PAYLOAD final (após transform `?? null`). Usado em server actions
