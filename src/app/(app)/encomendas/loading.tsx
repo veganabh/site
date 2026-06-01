@@ -2,7 +2,7 @@ export default function EncomendasLoading() {
   return (
     <div className="flex flex-col gap-5">
       {/* Hero banner skeleton */}
-      <div className="min-h-[270px] animate-pulse rounded-sm bg-paper-100 md:min-h-[305px]" />
+      <div className="min-h-[216px] animate-pulse rounded-sm bg-paper-100 md:min-h-[244px]" />
 
       {/* Categorias skeleton */}
       <div className="flex flex-col gap-2">
