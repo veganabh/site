@@ -17,6 +17,7 @@ const makeProduct = (id: string, price_site: number, price_ifood?: number): Prod
   active: true,
   stock: 10,
   lowStockThreshold: 3,
+  availableForPreorder: false,
 });
 
 const ALL_PRODUCTS: readonly Product[] = [

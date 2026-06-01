@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { LeafLoaderAnimation } from "@/components/features/leaf-loader-animation";
 import { useCartStore } from "@/stores/cart-store";
+import { CalendarClock } from "lucide-react";
 import { useSession } from "@/lib/auth/use-session";
 import { useSidebarStore } from "@/stores/sidebar-store";
 
@@ -64,7 +65,10 @@ const CONTA_ITEM_ANON: NavItem = {
 export function Sidebar() {
   const pathname = usePathname() ?? "/";
   const cartCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
+  const orderContext = useCartStore((s) => s.orderContext);
   const { isAuthed, user } = useSession();
+
+  const isPreorder = orderContext === "preorder" && cartCount > 0;
   // Área interna (Gestão + Configurações) só pra admin — cliente comum não vê.
   // O acesso já é barrado no servidor (layout (gestao)); aqui escondemos a UI
   // pra não exibir atalhos de uma área que não é dele.
@@ -118,20 +122,26 @@ export function Sidebar() {
       >
         {navItems.map((item) => {
           const active = item.matcher(pathname);
-          const Icon = item.icon;
           const badgeCount = item.showCartBadge ? cartCount : 0;
+
+          // Contexto do carrinho: ícone, label e href mudam quando há encomenda na cesta.
+          // Preorder tem rota dedicada /encomendas/finalizar (nunca /carrinho normal).
+          const Icon = item.showCartBadge && isPreorder ? CalendarClock : item.icon;
+          const displayLabel = item.showCartBadge && isPreorder ? "Encomenda" : item.label;
+          const resolvedHref =
+            item.showCartBadge && isPreorder ? "/encomendas/finalizar" : item.href;
 
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={resolvedHref}
               aria-current={active ? "page" : undefined}
               aria-label={
                 badgeCount > 0
-                  ? `${item.label} — ${badgeCount} ${badgeCount === 1 ? "item" : "itens"} no carrinho`
-                  : item.label
+                  ? `${displayLabel} — ${badgeCount} ${badgeCount === 1 ? "item" : "itens"}`
+                  : displayLabel
               }
-              title={expanded ? undefined : item.label}
+              title={expanded ? undefined : displayLabel}
               className={cn(
                 "relative flex items-center transition-colors",
                 expanded
@@ -158,7 +168,7 @@ export function Sidebar() {
                 )}
               </span>
               {expanded && (
-                <span className="truncate text-body-sm font-semibold">{item.label}</span>
+                <span className="truncate text-body-sm font-semibold">{displayLabel}</span>
               )}
             </Link>
           );

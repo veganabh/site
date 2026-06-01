@@ -18,6 +18,15 @@ export type CartItem = {
 };
 
 /**
+ * Contexto de origem do carrinho.
+ * - 'daily': itens do cardápio do dia (checkout normal → place-order).
+ * - 'preorder': itens da aba Encomendas (checkout de encomenda → place-preorder).
+ * Não misturar: ao adicionar item de contexto diferente, a UI exibe aviso
+ * e, ao confirmar, troca contexto e limpa os itens anteriores.
+ */
+export type OrderContext = "daily" | "preorder";
+
+/**
  * Cupom aplicado no carrinho. Shape mínimo derivado da tabela `coupons`
  * via RPC `validate_coupon`. Sem `discount` como método — `computeCouponDiscount`
  * em `lib/coupons` calcula client-side a partir desse shape.
@@ -49,10 +58,28 @@ type CartStore = {
    */
   crossSellAccepted: boolean;
 
-  addItem: (product: Product) => void;
+  /**
+   * Contexto de origem do carrinho. Define o fluxo de checkout.
+   * 'daily' → checkout normal. 'preorder' → checkout de encomenda.
+   */
+  orderContext: OrderContext;
+
+  /**
+   * Adiciona item ao carrinho com o contexto especificado.
+   * Se o contexto diferir do atual e houver itens, retorna 'conflict'
+   * para que a UI exiba o aviso de mistura. O caller deve chamar
+   * `resolveContextConflict` se o usuário confirmar a troca.
+   */
+  addItem: (product: Product, context?: OrderContext) => "added" | "conflict";
   removeItem: (productId: string) => void;
   updateQty: (productId: string, qty: number) => void;
   clearCart: () => void;
+
+  /**
+   * Troca o contexto do carrinho, limpa os itens anteriores e adiciona
+   * o produto que gerou o conflito. Chamado pela UI após confirmação do usuário.
+   */
+  resolveContextConflict: (product: Product, newContext: OrderContext) => void;
 
   /** Adiciona kit recém-montado ao carrinho. Retorna o cartId gerado. */
   addKit: (input: {
@@ -96,28 +123,50 @@ function makeCartId(): string {
 
 export const useCartStore = create<CartStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       items: [],
       kits: [],
       appliedCoupon: null,
       crossSellAccepted: false,
+      orderContext: "daily",
 
-      addItem: (product) => {
+      addItem: (product, context = "daily") => {
+        const state = get();
+
+        // Detecta conflito: carrinho já tem itens de outro contexto.
+        const hasItems = state.items.length > 0 || state.kits.length > 0;
+        if (hasItems && state.orderContext !== context) {
+          return "conflict";
+        }
+
         captureEvent("add_to_cart", {
           productId: product.id,
           name: product.name,
           price: product.price_site,
         });
-        set((state) => {
-          const existing = state.items.find((i) => i.product.id === product.id);
-          if (existing) {
-            return {
-              items: state.items.map((i) =>
+        set((s) => {
+          const existing = s.items.find((i) => i.product.id === product.id);
+          const updatedItems = existing
+            ? s.items.map((i) =>
                 i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i,
-              ),
-            };
-          }
-          return { items: [...state.items, { product, quantity: 1 }] };
+              )
+            : [...s.items, { product, quantity: 1 }];
+          return { items: updatedItems, orderContext: context };
+        });
+        return "added";
+      },
+
+      resolveContextConflict: (product, newContext) => {
+        captureEvent("add_to_cart", {
+          productId: product.id,
+          name: product.name,
+          price: product.price_site,
+        });
+        set({
+          items: [{ product, quantity: 1 }],
+          kits: [],
+          appliedCoupon: null,
+          orderContext: newContext,
         });
       },
 
@@ -126,13 +175,17 @@ export const useCartStore = create<CartStore>()(
 
       updateQty: (productId, qty) =>
         set((state) => ({
-          items: state.items.map((i) =>
-            i.product.id === productId ? { ...i, quantity: qty } : i,
-          ),
+          items: state.items.map((i) => (i.product.id === productId ? { ...i, quantity: qty } : i)),
         })),
 
       clearCart: () =>
-        set({ items: [], kits: [], appliedCoupon: null, crossSellAccepted: false }),
+        set({
+          items: [],
+          kits: [],
+          appliedCoupon: null,
+          crossSellAccepted: false,
+          orderContext: "daily",
+        }),
 
       addKit: (input) => {
         const cartId = makeCartId();
@@ -187,20 +240,23 @@ export const useCartStore = create<CartStore>()(
     {
       name: "vegana-cart-v1",
       storage: createJSONStorage(() => localStorage),
-      version: 2,
+      version: 3,
       // Persiste só carrinho real. `crossSellAccepted` é flag deprecada (live recompute).
       partialize: (state) => ({
         items: state.items,
         kits: state.kits,
         appliedCoupon: state.appliedCoupon,
+        orderContext: state.orderContext,
       }),
       migrate() {
         // v1 → v2: shape do appliedCoupon mudou (sem método `discount`).
+        // v2 → v3: orderContext adicionado — reset seguro.
         // Reset seguro evita blob corrupto quebrar /carrinho.
         return {
           items: [],
           kits: [],
           appliedCoupon: null,
+          orderContext: "daily" as const,
         };
       },
     },

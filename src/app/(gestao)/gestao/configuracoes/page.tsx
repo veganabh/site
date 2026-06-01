@@ -18,6 +18,7 @@ import { updateStoreSettingsAction } from "@/server/actions/store-settings";
 import { Toggle } from "@/components/ui/toggle";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { PreorderSettingsBlock } from "@/components/features/preorders/preorder-settings-block";
 
 // Persiste o estado atual do store (após setter otimista) no Supabase.
 function persistHours() {
@@ -383,6 +384,7 @@ export default function ConfiguracoesPage() {
       <StoreStatusBlock />
       <AutoAcceptBlock />
       <HoursBlock />
+      <PreorderSettingsBlock />
       <PrinterBlock />
     </div>
   );

@@ -11,6 +11,12 @@ vi.mock("@/lib/auth/use-session", () => ({
   useSession: () => ({ isAuthed: true, status: "authed" }),
 }));
 
+// Cart store: orderContext=daily e sem itens — exibe item de "Carrinho" normal.
+vi.mock("@/stores/cart-store", () => ({
+  useCartStore: (selector: (s: { orderContext: string; items: unknown[] }) => unknown) =>
+    selector({ orderContext: "daily", items: [] }),
+}));
+
 // Importar depois do mock
 import { BottomNav } from "./bottom-nav";
 

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, ShoppingBag, CircleUser, LogIn } from "lucide-react";
+import { House, ShoppingBag, CircleUser, LogIn, CalendarClock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth/use-session";
+import { useCartStore } from "@/stores/cart-store";
 
 type NavItem = {
   href: string;
@@ -12,16 +13,6 @@ type NavItem = {
   icon: React.ElementType;
   matcher: (p: string) => boolean;
 };
-
-const BASE_ITEMS: NavItem[] = [
-  { href: "/", label: "Home", icon: House, matcher: (p: string) => p === "/" },
-  {
-    href: "/carrinho",
-    label: "Carrinho",
-    icon: ShoppingBag,
-    matcher: (p: string) => p.startsWith("/carrinho"),
-  },
-];
 
 const AUTHED_LAST: NavItem = {
   href: "/conta",
@@ -40,12 +31,32 @@ const ANON_LAST: NavItem = {
 /**
  * Floating pill nav mobile — padrão iOS/Rappi 2024.
  * Terceiro item depende da sessão: "Conta" (autenticado) vs "Entrar" (anônimo).
+ *
+ * O item de carrinho adapta href e ícone ao orderContext:
+ * - daily  → /carrinho, ícone ShoppingBag
+ * - preorder → /encomendas/finalizar, ícone CalendarClock
  */
 export function BottomNav() {
   const pathname = usePathname();
   const { isAuthed } = useSession();
+  const orderContext = useCartStore((s) => s.orderContext);
+  const cartCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
 
-  const items: NavItem[] = [...BASE_ITEMS, isAuthed ? AUTHED_LAST : ANON_LAST];
+  const isPreorder = orderContext === "preorder" && cartCount > 0;
+
+  const cartItem: NavItem = {
+    href: isPreorder ? "/encomendas/finalizar" : "/carrinho",
+    label: isPreorder ? "Encomenda" : "Carrinho",
+    icon: isPreorder ? CalendarClock : ShoppingBag,
+    matcher: (p: string) =>
+      isPreorder ? p.startsWith("/encomendas/finalizar") : p.startsWith("/carrinho"),
+  };
+
+  const items: NavItem[] = [
+    { href: "/", label: "Home", icon: House, matcher: (p: string) => p === "/" },
+    cartItem,
+    isAuthed ? AUTHED_LAST : ANON_LAST,
+  ];
 
   return (
     <nav

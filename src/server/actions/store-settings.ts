@@ -26,12 +26,22 @@ const weekHoursSchema = z.object({
   sun: dayHoursSchema,
 });
 
+const preorderPatchSchema = z.object({
+  minLeadDays: z.number().int().min(0).max(30).optional(),
+  maxLeadDays: z.number().int().min(1).max(365).optional(),
+  minValueCents: z.number().int().min(0).optional(),
+  dailyCapacity: z.number().int().min(1).nullable().optional(),
+  hourFrom: z.number().int().min(0).max(23).optional(),
+  hourTo: z.number().int().min(0).max(23).optional(),
+});
+
 const patchSchema = z.object({
   storeStatus: z.enum(["ATIVO", "PAUSADO"]).optional(),
   hours: weekHoursSchema.optional(),
   printerEnabled: z.boolean().optional(),
   printerName: z.string().max(120).optional(),
   autoAccept: z.boolean().optional(),
+  preorder: preorderPatchSchema.optional(),
 });
 
 export type StoreSettingsPatch = z.input<typeof patchSchema>;
@@ -56,6 +66,16 @@ export async function updateStoreSettingsAction(
     dbPatch.printer_enabled = parsed.data.printerEnabled;
   if (parsed.data.printerName !== undefined) dbPatch.printer_name = parsed.data.printerName;
   if (parsed.data.autoAccept !== undefined) dbPatch.auto_accept = parsed.data.autoAccept;
+  // Preorder settings
+  if (parsed.data.preorder !== undefined) {
+    const p = parsed.data.preorder;
+    if (p.minLeadDays !== undefined) dbPatch.preorder_min_lead_days = p.minLeadDays;
+    if (p.maxLeadDays !== undefined) dbPatch.preorder_max_lead_days = p.maxLeadDays;
+    if (p.minValueCents !== undefined) dbPatch.preorder_min_value_cents = p.minValueCents;
+    if (p.dailyCapacity !== undefined) dbPatch.preorder_daily_capacity = p.dailyCapacity;
+    if (p.hourFrom !== undefined) dbPatch.preorder_hour_from = p.hourFrom;
+    if (p.hourTo !== undefined) dbPatch.preorder_hour_to = p.hourTo;
+  }
 
   if (Object.keys(dbPatch).length === 0) return { ok: true };
 

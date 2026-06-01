@@ -78,4 +78,10 @@ export type Product = {
   contains?: readonly ProductContains[];
   /** Se aceita freezer. */
   freezable?: boolean;
+
+  /**
+   * Produto disponível para encomenda futura (pré-venda agendada).
+   * Quando true, aparece na rota /encomendas independente do estoque (ADR 0013 D4).
+   */
+  availableForPreorder: boolean;
 };

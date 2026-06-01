@@ -15,12 +15,13 @@ import {
   SEED_SETTINGS,
   type AdminSettings,
   type DayHours,
+  type PreorderSettings,
   type StoreStatus,
   type WeekHours,
 } from "@/types/store-settings";
 
 // Re-export para back-compat de quem importava os tipos deste módulo.
-export type { AdminSettings, DayHours, StoreStatus, WeekHours };
+export type { AdminSettings, DayHours, PreorderSettings, StoreStatus, WeekHours };
 
 // ── Ações ──────────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,8 @@ type AdminSettingsActions = {
   toggleDayOpen: (day: keyof WeekHours) => void;
   setPrinterEnabled: (enabled: boolean) => void;
   setPrinterName: (name: string) => void;
+  /** Atualiza campo(s) das configurações de encomenda. */
+  updatePreorder: (patch: Partial<PreorderSettings>) => void;
   reset: () => void;
 };
 
@@ -62,6 +65,11 @@ export const useAdminSettingsStore = create<AdminSettingsStore>()((set) => ({
   setPrinterEnabled: (enabled) => set({ printerEnabled: enabled }),
 
   setPrinterName: (name) => set({ printerName: name }),
+
+  updatePreorder: (patch) =>
+    set((s) => ({
+      preorder: { ...s.preorder, ...patch },
+    })),
 
   reset: () => set({ ...SEED_SETTINGS }),
 }));

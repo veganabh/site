@@ -16,6 +16,7 @@ import {
   buildDailySeries,
   buildTimingMetrics,
   buildGeoMetrics,
+  splitOrdersForMetrics,
 } from "@/lib/order-insights";
 import { RelatoriosToolbar } from "@/components/admin/relatorios/relatorios-toolbar";
 import { ImportIfoodButton } from "@/components/admin/relatorios/import-ifood-dialog";
@@ -64,8 +65,17 @@ export default async function RelatoriosPage({
     getIfoodSnapshot({ start: range.start, end: range.end }),
     getIfoodFinancials({ start: range.start, end: range.end }),
   ]);
-  const orders = filterOrdersByRange(allOrders, range);
-  const dailySeries = buildDailySeries(orders, range);
+  const ordersInRange = filterOrdersByRange(allOrders, range);
+  // ADR 0013 D3/D7: separa daily vs encomendas. Encomendas só entram nas
+  // métricas quando ENTREGUE. "orders" = pedidos diários (para canais/timing).
+  // "forMetrics" = daily + preorders entregues (para totais gerais).
+  const {
+    daily: orders,
+    deliveredPreorders,
+    pendingPreorders,
+  } = splitOrdersForMetrics(ordersInRange);
+  const ordersForMetrics = [...orders, ...deliveredPreorders];
+  const dailySeries = buildDailySeries(ordersForMetrics, range);
 
   // Receita iFood: prefere o financeiro real (P1, com nº de pedidos/ticket);
   // senão cai pro snapshot por produto (P0, só receita).
@@ -78,7 +88,7 @@ export default async function RelatoriosPage({
   const channel = buildChannelMetrics(orders, ifoodRevenueInput);
   const couponRoi = buildCouponRoi(orders);
   const profit = buildChannelProfit(
-    orders,
+    ordersForMetrics,
     products,
     ifoodSnap.hasData
       ? ifoodSnap.byProduct.map((p) => ({ productId: p.productId, units: p.units }))
@@ -600,6 +610,83 @@ export default async function RelatoriosPage({
                       <td className="px-3 py-2 text-caption text-olive-700">{g.orders}</td>
                       <td className="px-3 py-2 text-caption font-semibold text-olive-900">
                         {formatBRL(g.revenue)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          )}
+        </section>
+
+        {/* ── Encomendas — seção separada (ADR 0013 D7) ────────────────── */}
+        <section className="flex flex-col gap-3">
+          <div className="flex flex-col gap-0.5">
+            <h2 className="text-body font-bold text-olive-900">Encomendas</h2>
+            <p className="text-caption text-olive-700">
+              Encomendas entregues entram no total geral. Não entregues ficam como &ldquo;a
+              reconhecer&rdquo; e não afetam receita/itens.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+            <SimpleStat
+              label="Entregues"
+              value={String(deliveredPreorders.length)}
+              hint="no período — entram nos totais"
+            />
+            <SimpleStat
+              label="Receita entregues"
+              value={formatBRL(deliveredPreorders.reduce((s, o) => s + o.total, 0))}
+              hint="reconhecida na entrega"
+            />
+            <SimpleStat
+              label="A reconhecer"
+              value={String(pendingPreorders.length)}
+              hint="pagas mas não entregues"
+            />
+            <SimpleStat
+              label="Valor a reconhecer"
+              value={formatBRL(pendingPreorders.reduce((s, o) => s + o.total, 0))}
+              hint="fora das métricas até entrega"
+            />
+          </div>
+
+          {pendingPreorders.length > 0 && (
+            <Card padding="none" className="overflow-x-auto">
+              <table className="w-full min-w-[560px] border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-divider">
+                    {["#", "Cliente", "Data encomendada", "Hora", "Status", "Valor"].map((h) => (
+                      <th
+                        key={h}
+                        className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingPreorders.map((o) => (
+                    <tr key={o.id} className="border-b border-divider last:border-0">
+                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">
+                        #{o.orderNumber}
+                      </td>
+                      <td className="px-3 py-2 text-caption text-olive-700">{o.customerName}</td>
+                      <td className="px-3 py-2 text-caption text-olive-700">
+                        {o.scheduledDate ?? "—"}
+                      </td>
+                      <td className="px-3 py-2 text-caption text-olive-700">
+                        {o.scheduledHour !== undefined
+                          ? `${String(o.scheduledHour).padStart(2, "0")}h`
+                          : "—"}
+                      </td>
+                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">
+                        {o.status}
+                      </td>
+                      <td className="px-3 py-2 text-caption font-semibold text-olive-900 tabular-nums">
+                        {formatBRL(o.total)}
                       </td>
                     </tr>
                   ))}

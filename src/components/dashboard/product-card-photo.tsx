@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Plus, Star, Truck, CalendarClock } from "lucide-react";
 import { ProductPhoto } from "@/components/features/product-photo";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
-import { useCartStore } from "@/stores/cart-store";
+import { useCartStore, type OrderContext } from "@/stores/cart-store";
 import { useDeliveryStore } from "@/stores/delivery-store";
 import { useCategoryLabelMap } from "@/stores/categories-store";
 import { labelForCategory } from "@/types/category";
@@ -15,9 +16,30 @@ import type { Product } from "@/types/product";
 type ProductCardPhotoProps = {
   product: Product;
   className?: string;
+  /**
+   * Contexto de origem do card:
+   * - 'daily' (default): cardápio do dia — respeita estoque, CTA "Encomendar" em esgotados com preorder.
+   * - 'preorder': catálogo de encomendas — ignora estoque, quick-add + entra no carrinho em modo preorder.
+   *
+   * @deprecated preorderMode — substituído por orderContext. Mantido para compat durante migração.
+   */
+  orderContext?: OrderContext;
+  /** @deprecated Use orderContext='preorder' */
+  preorderMode?: boolean;
+  /** Callback chamado quando addItem detecta conflito de contexto no carrinho */
+  onContextConflict?: (product: Product, targetContext: OrderContext) => void;
 };
 
-export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) {
+export function ProductCardPhoto({
+  product,
+  className,
+  orderContext,
+  preorderMode = false,
+  onContextConflict,
+}: ProductCardPhotoProps) {
+  // Compat: preorderMode antigo mapeia para orderContext='preorder'
+  const effectiveContext: OrderContext = orderContext ?? (preorderMode ? "preorder" : "daily");
+
   const addItem = useCartStore((s) => s.addItem);
   const deliveryQuote = useDeliveryStore((s) => s.quote);
   const categoryLabels = useCategoryLabelMap();
@@ -25,15 +47,24 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
   const hasSavings = savings > 0;
 
   const [popping, setPopping] = useState(false);
+
   const handleAdd = () => {
-    if (product.stock === 0) return;
-    addItem(product);
+    // Em modo preorder, ignora estoque; em daily, bloqueia se esgotado.
+    if (effectiveContext === "daily" && product.stock === 0) return;
+
+    const result = addItem(product, effectiveContext);
+    if (result === "conflict") {
+      onContextConflict?.(product, effectiveContext);
+      return;
+    }
     setPopping(true);
     setTimeout(() => setPopping(false), 380);
   };
 
-  const isSoldOut = product.stock === 0;
-  const isLowStock = !isSoldOut && product.stock <= product.lowStockThreshold;
+  // Em preorder, produto sempre "disponível" independente do estoque
+  const isPreorder = effectiveContext === "preorder";
+  const isSoldOut = isPreorder ? false : product.stock === 0;
+  const isLowStock = !isPreorder && !isSoldOut && product.stock <= product.lowStockThreshold;
 
   return (
     <Card
@@ -85,8 +116,10 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
           </div>
         )}
 
-        {/* Quick-add — top-right with pop animation. Escondido quando esgotado (vira CTA Encomendar).
-            Hit area expandida via ::before (WCAG 2.5.5 — 44x44 mínimo) sem inflar visual. */}
+        {/* Quick-add — top-right com pop animation.
+            Visível sempre no modo preorder (ignora estoque).
+            No modo daily, escondido quando esgotado.
+            Hit area expandida via ::before (WCAG 2.5.5 — 44×44 mínimo). */}
         {!isSoldOut && (
           <button
             type="button"
@@ -139,17 +172,23 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
             )}
           </div>
 
-          {/* Esgotado vira lead de encomenda — CTA fica "vivo" (não esmaecido).
-              Visual apenas nesta etapa; a funcionalidade de encomenda vem depois. */}
-          {isSoldOut && (
-            <button
-              type="button"
+          {/* Esgotado no catálogo diário → CTA leva pra /encomendas (gancho) */}
+          {effectiveContext === "daily" && product.stock === 0 && product.availableForPreorder && (
+            <Link
+              href={`/encomendas`}
               className="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-sm bg-terra-500 text-body-sm font-semibold text-paper-50 transition hover:bg-terra-700 focus-visible:ring-2 focus-visible:ring-olive-900/30 focus-visible:outline-none"
             >
               <CalendarClock className="h-4 w-4" aria-hidden="true" />
               Encomendar
-            </button>
+            </Link>
           )}
+          {/* Esgotado sem preorder habilitado — label informativo */}
+          {effectiveContext === "daily" && product.stock === 0 && !product.availableForPreorder && (
+            <span className="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-sm bg-paper-100 text-body-sm font-semibold text-olive-700">
+              Esgotado
+            </span>
+          )}
+          {/* Modo preorder: sem CTA extra — quick-add já está na foto */}
         </div>
       </div>
     </Card>
