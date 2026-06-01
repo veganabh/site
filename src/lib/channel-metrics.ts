@@ -42,37 +42,62 @@ function emptyStat(): ChannelStat {
   return { orders: 0, revenue: 0, avgTicket: 0 };
 }
 
-export function buildChannelMetrics(orders: Order[]): ChannelMetrics {
+/** Receita iFood do snapshot importado (ADR 0012), agregada por mês. */
+export type IfoodRevenueInput = {
+  totalRevenue: number;
+  byMonth: { month: string; revenue: number }[];
+};
+
+export function buildChannelMetrics(
+  orders: Order[],
+  ifoodInput?: IfoodRevenueInput,
+): ChannelMetrics {
   const real = orders.filter((o) => o.status !== "CANCELADO");
 
   const site = emptyStat();
   const ifood = emptyStat();
   const months = new Map<string, MonthChannel>();
 
+  function monthBucket(key: string): MonthChannel {
+    const m = months.get(key) ?? {
+      month: key,
+      siteRevenue: 0,
+      ifoodRevenue: 0,
+      siteOrders: 0,
+      ifoodOrders: 0,
+      siteSharePct: null,
+    };
+    months.set(key, m);
+    return m;
+  }
+
+  // Com snapshot iFood, a receita iFood vem dele — ignora pedidos source='ifood'
+  // nos orders pra não contar duas vezes.
+  const useSnapshot = ifoodInput !== undefined;
+
   for (const o of real) {
-    const target = o.source === "ifood" ? ifood : site;
+    const isIfood = o.source === "ifood";
+    if (isIfood && useSnapshot) continue;
+    const target = isIfood ? ifood : site;
     target.orders += 1;
     target.revenue += o.total;
 
-    const key = monthKey(o.createdAt);
-    const m =
-      months.get(key) ??
-      {
-        month: key,
-        siteRevenue: 0,
-        ifoodRevenue: 0,
-        siteOrders: 0,
-        ifoodOrders: 0,
-        siteSharePct: null,
-      };
-    if (o.source === "ifood") {
+    const m = monthBucket(monthKey(o.createdAt));
+    if (isIfood) {
       m.ifoodRevenue += o.total;
       m.ifoodOrders += 1;
     } else {
       m.siteRevenue += o.total;
       m.siteOrders += 1;
     }
-    months.set(key, m);
+  }
+
+  // Injeta receita iFood do snapshot (sem nº de pedidos — vem em P1).
+  if (ifoodInput) {
+    ifood.revenue += ifoodInput.totalRevenue;
+    for (const { month, revenue } of ifoodInput.byMonth) {
+      monthBucket(month).ifoodRevenue += revenue;
+    }
   }
 
   site.avgTicket = site.orders > 0 ? site.revenue / site.orders : 0;

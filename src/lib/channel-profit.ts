@@ -48,20 +48,44 @@ export type ChannelProfitSummary = {
   missingCostCount: number;
 };
 
-export function buildChannelProfit(orders: Order[], products: Product[]): ChannelProfitSummary {
+/** Vendas iFood por produto vindas do snapshot importado (ADR 0012). */
+export type IfoodProductUnits = { productId: string | null; units: number };
+
+export function buildChannelProfit(
+  orders: Order[],
+  products: Product[],
+  ifoodSales?: IfoodProductUnits[],
+): ChannelProfitSummary {
   const productById = new Map(products.map((p) => [p.id, p]));
 
   type Agg = { unitsIfood: number; unitsSite: number };
   const byProduct = new Map<string, Agg>();
 
+  // Com snapshot iFood, o lado iFood vem dele — ignora pedidos source='ifood'
+  // nos orders pra não contar em dobro (em prod não há; mantém correto caso a
+  // API futura passe a inserir pedidos iFood reais).
+  const useSnapshot = ifoodSales !== undefined;
+
   for (const o of orders) {
     if (o.status === "CANCELADO") continue;
     const isIfood = o.source === "ifood";
+    if (isIfood && useSnapshot) continue;
     for (const item of o.items) {
       const agg = byProduct.get(item.productId) ?? { unitsIfood: 0, unitsSite: 0 };
       if (isIfood) agg.unitsIfood += item.qty;
       else agg.unitsSite += item.qty;
       byProduct.set(item.productId, agg);
+    }
+  }
+
+  // Injeta unidades iFood do snapshot (só nomes já casados — não casado não tem
+  // CPV, fica fora do lucro por produto).
+  if (ifoodSales) {
+    for (const s of ifoodSales) {
+      if (!s.productId) continue;
+      const agg = byProduct.get(s.productId) ?? { unitsIfood: 0, unitsSite: 0 };
+      agg.unitsIfood += s.units;
+      byProduct.set(s.productId, agg);
     }
   }
 
