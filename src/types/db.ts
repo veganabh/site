@@ -362,6 +362,124 @@ export type Database = {
         };
         Relationships: [];
       };
+      ifood_imports: {
+        Row: {
+          file_name: string;
+          id: string;
+          imported_at: string;
+          imported_by: string | null;
+          kind: string;
+          period_end: string;
+          period_start: string;
+          row_count: number;
+          totals: Json;
+        };
+        Insert: {
+          file_name: string;
+          id?: string;
+          imported_at?: string;
+          imported_by?: string | null;
+          kind: string;
+          period_end: string;
+          period_start: string;
+          row_count?: number;
+          totals?: Json;
+        };
+        Update: {
+          file_name?: string;
+          id?: string;
+          imported_at?: string;
+          imported_by?: string | null;
+          kind?: string;
+          period_end?: string;
+          period_start?: string;
+          row_count?: number;
+          totals?: Json;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ifood_imports_imported_by_fkey";
+            columns: ["imported_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ifood_product_map: {
+        Row: {
+          ifood_name: string;
+          product_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          ifood_name: string;
+          product_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          ifood_name?: string;
+          product_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ifood_product_map_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ifood_product_sales: {
+        Row: {
+          id: string;
+          ifood_item_name: string;
+          import_id: string;
+          period_end: string;
+          period_start: string;
+          product_id: string | null;
+          qty: number;
+          revenue_cents: number;
+        };
+        Insert: {
+          id?: string;
+          ifood_item_name: string;
+          import_id: string;
+          period_end: string;
+          period_start: string;
+          product_id?: string | null;
+          qty?: number;
+          revenue_cents?: number;
+        };
+        Update: {
+          id?: string;
+          ifood_item_name?: string;
+          import_id?: string;
+          period_end?: string;
+          period_start?: string;
+          product_id?: string | null;
+          qty?: number;
+          revenue_cents?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ifood_product_sales_import_id_fkey";
+            columns: ["import_id"];
+            isOneToOne: false;
+            referencedRelation: "ifood_imports";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ifood_product_sales_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notification_anon_reads: {
         Row: {
           anon_id: string;

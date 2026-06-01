@@ -1,0 +1,127 @@
+import "server-only";
+
+import { createSupabaseServerClient } from "@/server/supabase/server";
+
+/**
+ * Leitura do snapshot iFood importado (ADR 0012) pros Relatórios. Agrega
+ * `ifood_product_sales` por produto + por mês, filtrando pelo período do
+ * relatório (intersecção com [start, end] em ms; null = tudo).
+ *
+ * Valores em REAIS (converte de centavos na borda, como o resto do domínio).
+ */
+
+export type IfoodProductAgg = {
+  /** null = nome do iFood ainda não casado com produto do catálogo. */
+  productId: string | null;
+  ifoodName: string;
+  units: number;
+  revenue: number;
+};
+
+export type IfoodMonthRevenue = { month: string; revenue: number };
+
+export type IfoodImportInfo = {
+  kind: string;
+  periodStart: string;
+  periodEnd: string;
+  fileName: string;
+  importedAt: string;
+  rowCount: number;
+};
+
+export type IfoodSnapshot = {
+  hasData: boolean;
+  byProduct: IfoodProductAgg[];
+  totalUnits: number;
+  totalRevenue: number;
+  byMonth: IfoodMonthRevenue[];
+  imports: IfoodImportInfo[];
+};
+
+const centsToReais = (cents: number): number => Math.round(cents) / 100;
+
+function emptySnapshot(): IfoodSnapshot {
+  return {
+    hasData: false,
+    byProduct: [],
+    totalUnits: 0,
+    totalRevenue: 0,
+    byMonth: [],
+    imports: [],
+  };
+}
+
+export async function getIfoodSnapshot(range?: {
+  start: number | null;
+  end: number | null;
+}): Promise<IfoodSnapshot> {
+  const supabase = await createSupabaseServerClient();
+
+  const { data: sales, error } = await supabase
+    .from("ifood_product_sales")
+    .select("product_id, ifood_item_name, qty, revenue_cents, period_start, period_end");
+
+  if (error) {
+    console.error("[server/ifood] sales:", error.message);
+    return emptySnapshot();
+  }
+
+  const start = range?.start ?? null;
+  const end = range?.end ?? null;
+  const inRange = (ps: string, pe: string): boolean => {
+    const psMs = new Date(`${ps}T00:00:00`).getTime();
+    const peMs = new Date(`${pe}T23:59:59`).getTime();
+    if (start !== null && peMs < start) return false;
+    if (end !== null && psMs > end) return false;
+    return true;
+  };
+
+  const rows = (sales ?? []).filter((s) => inRange(s.period_start, s.period_end));
+
+  const byKey = new Map<string, IfoodProductAgg>();
+  const byMonth = new Map<string, number>();
+  let totalUnits = 0;
+  let totalRevenue = 0;
+
+  for (const s of rows) {
+    const revenue = centsToReais(s.revenue_cents);
+    const key = s.product_id ?? `name:${s.ifood_item_name}`;
+    const agg = byKey.get(key) ?? {
+      productId: s.product_id,
+      ifoodName: s.ifood_item_name,
+      units: 0,
+      revenue: 0,
+    };
+    agg.units += s.qty;
+    agg.revenue += revenue;
+    byKey.set(key, agg);
+
+    totalUnits += s.qty;
+    totalRevenue += revenue;
+    const month = s.period_start.slice(0, 7); // YYYY-MM
+    byMonth.set(month, (byMonth.get(month) ?? 0) + revenue);
+  }
+
+  const { data: imports } = await supabase
+    .from("ifood_imports")
+    .select("kind, period_start, period_end, file_name, imported_at, row_count")
+    .order("period_start", { ascending: false });
+
+  return {
+    hasData: rows.length > 0,
+    byProduct: [...byKey.values()].sort((a, b) => b.revenue - a.revenue),
+    totalUnits,
+    totalRevenue,
+    byMonth: [...byMonth.entries()]
+      .map(([month, revenue]) => ({ month, revenue }))
+      .sort((a, b) => a.month.localeCompare(b.month)),
+    imports: (imports ?? []).map((i) => ({
+      kind: i.kind,
+      periodStart: i.period_start,
+      periodEnd: i.period_end,
+      fileName: i.file_name,
+      importedAt: i.imported_at,
+      rowCount: i.row_count,
+    })),
+  };
+}

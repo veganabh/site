@@ -16,12 +16,13 @@ import {
   buildDailySeries,
   buildTimingMetrics,
   buildGeoMetrics,
-  buildAbandonmentMetrics,
 } from "@/lib/order-insights";
 import { RelatoriosToolbar } from "@/components/admin/relatorios/relatorios-toolbar";
+import { ImportIfoodButton } from "@/components/admin/relatorios/import-ifood-dialog";
 import { listAllOrders } from "@/server/orders";
 import { listProducts } from "@/server/products";
 import { getNotificationAttribution } from "@/server/notification-attribution";
+import { getIfoodSnapshot } from "@/server/ifood";
 
 export const metadata: Metadata = {
   title: "Relatórios — Gestão Vegana BH",
@@ -56,22 +57,39 @@ export default async function RelatoriosPage({
   const period = rawPeriod ?? "all";
   const range = resolveReportRange(period, from, to);
 
-  const [allOrders, products] = await Promise.all([
+  const [allOrders, products, ifoodSnap] = await Promise.all([
     listAllOrders(),
     listProducts({ onlyActive: false }),
+    getIfoodSnapshot({ start: range.start, end: range.end }),
   ]);
   const orders = filterOrdersByRange(allOrders, range);
   const dailySeries = buildDailySeries(orders, range);
 
-  const channel = buildChannelMetrics(orders);
+  const channel = buildChannelMetrics(
+    orders,
+    ifoodSnap.hasData
+      ? { totalRevenue: ifoodSnap.totalRevenue, byMonth: ifoodSnap.byMonth }
+      : undefined,
+  );
   const couponRoi = buildCouponRoi(orders);
-  const profit = buildChannelProfit(orders, products);
+  const profit = buildChannelProfit(
+    orders,
+    products,
+    ifoodSnap.hasData
+      ? ifoodSnap.byProduct.map((p) => ({ productId: p.productId, units: p.units }))
+      : undefined,
+  );
   const geo = buildGeoMetrics(orders);
   const timing = buildTimingMetrics(orders);
-  const abandonment = buildAbandonmentMetrics(orders);
   const attribution = await getNotificationAttribution();
 
   const sitePct = channel.siteSharePct === null ? null : Math.round(channel.siteSharePct * 100);
+
+  // iFood vem do snapshot importado (ADR 0012) — em P0 sem nº de pedidos/ticket.
+  const ifoodHint = ifoodSnap.hasData
+    ? `do relatório iFood · ${ifoodSnap.totalUnits} itens`
+    : `${channel.ifood.orders} pedidos · ${formatBRL(channel.ifood.avgTicket)} ticket`;
+  const lastImport = ifoodSnap.imports[0] ?? null;
 
   // ── Alertas estratégicos (derivados) ──────────────────────────────────────
   const alerts: string[] = [];
@@ -133,12 +151,20 @@ export default async function RelatoriosPage({
 
         {/* ── Canais: site vs iFood ─────────────────────────────────────── */}
         <section className="flex flex-col gap-3">
-          <div className="flex flex-col gap-0.5">
-            <h2 className="text-body font-bold text-olive-900">Canais — migração do iFood</h2>
-            <p className="text-caption text-olive-700">
-              Quanto da receita já vem do canal próprio. Objetivo: subir o site, reduzir dependência
-              do iFood.
-            </p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex flex-col gap-0.5">
+              <h2 className="text-body font-bold text-olive-900">Canais — migração do iFood</h2>
+              <p className="text-caption text-olive-700">
+                Quanto da receita já vem do canal próprio. Objetivo: subir o site, reduzir
+                dependência do iFood.
+              </p>
+              <p className="text-micro text-olive-700">
+                {lastImport
+                  ? `iFood: último relatório importado ${lastImport.periodStart} a ${lastImport.periodEnd}.`
+                  : "iFood: nenhum relatório importado ainda — importe pra comparar canais."}
+              </p>
+            </div>
+            <ImportIfoodButton />
           </div>
 
           {/* Cards */}
@@ -154,7 +180,7 @@ export default async function RelatoriosPage({
               icon={Bike}
               label="Receita iFood"
               value={formatBRL(channel.ifood.revenue)}
-              hint={`${channel.ifood.orders} pedidos · ${formatBRL(channel.ifood.avgTicket)} ticket`}
+              hint={ifoodHint}
               tone="terra"
             />
             <Card padding="none" className="flex flex-col gap-2 p-4">
