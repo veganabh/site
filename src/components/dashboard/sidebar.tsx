@@ -64,7 +64,11 @@ const CONTA_ITEM_ANON: NavItem = {
 export function Sidebar() {
   const pathname = usePathname() ?? "/";
   const cartCount = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
-  const { isAuthed } = useSession();
+  const { isAuthed, user } = useSession();
+  // Área interna (Gestão + Configurações) só pra admin — cliente comum não vê.
+  // O acesso já é barrado no servidor (layout (gestao)); aqui escondemos a UI
+  // pra não exibir atalhos de uma área que não é dele.
+  const isAdmin = user?.role === "admin";
   const expanded = useSidebarStore((s) => s.publicExpanded);
   const toggleExpanded = useSidebarStore((s) => s.togglePublic);
 
@@ -161,51 +165,60 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Rodapé: divider + gestão + dev + settings + toggle (quando collapsed) */}
+      {/* Rodapé: área interna (admin) + toggle quando collapsed */}
       <div className={cn("flex flex-col gap-2", expanded ? "items-stretch px-2" : "items-center")}>
-        <div
-          className={cn("border-t border-divider", expanded ? "w-full" : "w-6 self-center")}
-          role="separator"
-          aria-label="Área interna"
-        />
+        {/* Gestão + Configurações: só admin. Cliente comum nem vê o atalho —
+            o acesso já é barrado no servidor (layout (gestao)); aqui evitamos
+            exibir atalho de uma área que não é dele. */}
+        {isAdmin && (
+          <>
+            <div
+              className={cn("border-t border-divider", expanded ? "w-full" : "w-6 self-center")}
+              role="separator"
+              aria-label="Área interna"
+            />
 
-        <Link
-          href="/gestao"
-          aria-current={pathname.startsWith("/gestao") ? "page" : undefined}
-          aria-label="Gestão — painel interno"
-          title={expanded ? undefined : "Gestão"}
-          className={cn(
-            "relative flex items-center transition-colors",
-            expanded
-              ? "h-10 gap-3 rounded-sm px-3"
-              : "h-10 w-10 justify-center self-center rounded-full",
-            pathname.startsWith("/gestao")
-              ? "bg-olive-900 text-paper-50 shadow-sm"
-              : "text-olive-700 hover:bg-paper-100 hover:text-olive-900",
-          )}
-        >
-          <LayoutDashboard
-            className="h-[18px] w-[18px] shrink-0"
-            aria-hidden="true"
-            strokeWidth={pathname.startsWith("/gestao") ? 2.25 : 1.75}
-          />
-          {expanded && <span className="truncate text-body-sm font-semibold">Gestão</span>}
-        </Link>
+            <Link
+              href="/gestao"
+              aria-current={pathname.startsWith("/gestao") ? "page" : undefined}
+              aria-label="Gestão — painel interno"
+              title={expanded ? undefined : "Gestão"}
+              className={cn(
+                "relative flex items-center transition-colors",
+                expanded
+                  ? "h-10 gap-3 rounded-sm px-3"
+                  : "h-10 w-10 justify-center self-center rounded-full",
+                pathname.startsWith("/gestao")
+                  ? "bg-olive-900 text-paper-50 shadow-sm"
+                  : "text-olive-700 hover:bg-paper-100 hover:text-olive-900",
+              )}
+            >
+              <LayoutDashboard
+                className="h-[18px] w-[18px] shrink-0"
+                aria-hidden="true"
+                strokeWidth={pathname.startsWith("/gestao") ? 2.25 : 1.75}
+              />
+              {expanded && <span className="truncate text-body-sm font-semibold">Gestão</span>}
+            </Link>
 
-        <button
-          type="button"
-          aria-label="Configurações"
-          title={expanded ? undefined : "Configurações"}
-          className={cn(
-            "flex items-center text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900",
-            expanded
-              ? "h-10 gap-3 rounded-sm px-3"
-              : "h-10 w-10 justify-center self-center rounded-full",
-          )}
-        >
-          <Settings className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
-          {expanded && <span className="truncate text-body-sm font-semibold">Configurações</span>}
-        </button>
+            <button
+              type="button"
+              aria-label="Configurações"
+              title={expanded ? undefined : "Configurações"}
+              className={cn(
+                "flex items-center text-olive-700 transition-colors hover:bg-paper-100 hover:text-olive-900",
+                expanded
+                  ? "h-10 gap-3 rounded-sm px-3"
+                  : "h-10 w-10 justify-center self-center rounded-full",
+              )}
+            >
+              <Settings className="h-[18px] w-[18px] shrink-0" aria-hidden="true" />
+              {expanded && (
+                <span className="truncate text-body-sm font-semibold">Configurações</span>
+              )}
+            </button>
+          </>
+        )}
 
         {/* Toggle fica no rodapé quando collapsed */}
         {!expanded && (
