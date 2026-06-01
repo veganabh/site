@@ -644,6 +644,65 @@ export default async function RelatoriosPage({
               })}
             </ul>
           </Card>
+
+          {/* Pico + mix de pagamento do iFood (P2) — derivado do financeiro */}
+          {ifoodFin.hasData && (
+            <Card padding="none" className="flex flex-col gap-3 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-caption font-semibold text-olive-700">
+                  iFood — por dia da semana
+                </span>
+                <span className="text-micro text-olive-700">
+                  Pico:{" "}
+                  <strong className="text-olive-900">{ifoodFin.timing.peakWeekday ?? "—"}</strong>
+                  {ifoodFin.timing.peakHour !== null
+                    ? `, ~${String(ifoodFin.timing.peakHour).padStart(2, "0")}h`
+                    : ""}
+                </span>
+              </div>
+              <ul className="flex flex-col gap-1.5">
+                {ifoodFin.timing.byWeekday.map((w) => {
+                  const pct =
+                    ifoodFin.timing.maxWeekdayOrders > 0
+                      ? (w.orders / ifoodFin.timing.maxWeekdayOrders) * 100
+                      : 0;
+                  return (
+                    <li key={w.day} className="flex items-center gap-3">
+                      <span className="w-10 shrink-0 text-caption text-olive-700">{w.day}</span>
+                      <div className="h-4 flex-1 overflow-hidden rounded-sm bg-paper-100">
+                        <div
+                          className="h-full bg-terra-500"
+                          style={{ width: `${pct}%` }}
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <span className="w-8 shrink-0 text-right text-caption font-semibold text-olive-900">
+                        {w.orders}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {ifoodFin.timing.paymentMix.length > 0 && (
+                <div className="flex flex-col gap-1.5 border-t border-divider pt-3">
+                  <span className="text-caption font-semibold text-olive-700">
+                    Como pagam no iFood
+                  </span>
+                  <ul className="flex flex-wrap gap-x-4 gap-y-1">
+                    {ifoodFin.timing.paymentMix.map((p) => (
+                      <li key={p.label} className="text-caption text-olive-700">
+                        {p.label}{" "}
+                        <span className="font-semibold text-olive-900 tabular-nums">
+                          {p.orders}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </Card>
+          )}
         </section>
       </div>
     </AdminGate>

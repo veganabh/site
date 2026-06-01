@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createSupabaseServerClient } from "@/server/supabase/server";
+import { buildIfoodTiming, type IfoodTiming } from "@/lib/ifood-timing";
 
 /**
  * Leitura do snapshot iFood importado (ADR 0012) pros Relatórios. Agrega
@@ -142,6 +143,8 @@ export type IfoodFinancials = {
   /** taxa efetiva real = fees / revenue (0..1). null se sem receita. */
   effectiveRate: number | null;
   byMonth: IfoodMonthRevenue[];
+  /** Pico de pedidos + mix de pagamento (P2) — derivado do ordered_at. */
+  timing: IfoodTiming;
 };
 
 function emptyFinancials(): IfoodFinancials {
@@ -154,6 +157,7 @@ function emptyFinancials(): IfoodFinancials {
     avgTicket: 0,
     effectiveRate: null,
     byMonth: [],
+    timing: buildIfoodTiming([]),
   };
 }
 
@@ -165,7 +169,7 @@ export async function getIfoodFinancials(range?: {
 
   const { data, error } = await supabase
     .from("ifood_order_financials")
-    .select("ordered_at, status, total_paid_cents, fees_cents, net_cents");
+    .select("ordered_at, status, total_paid_cents, fees_cents, net_cents, payment_method");
 
   if (error) {
     console.error("[server/ifood] financials:", error.message);
@@ -197,6 +201,9 @@ export async function getIfoodFinancials(range?: {
   }
 
   const revenue = centsToReais(revenueCents);
+  const timing = buildIfoodTiming(
+    rows.map((r) => ({ orderedAt: r.ordered_at, paymentMethod: r.payment_method })),
+  );
   return {
     hasData: true,
     orders: rows.length,
@@ -208,5 +215,6 @@ export async function getIfoodFinancials(range?: {
     byMonth: [...byMonth.entries()]
       .map(([month, cents]) => ({ month, revenue: centsToReais(cents) }))
       .sort((a, b) => a.month.localeCompare(b.month)),
+    timing,
   };
 }
