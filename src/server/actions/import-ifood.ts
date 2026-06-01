@@ -4,21 +4,24 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireAdmin } from "@/server/auth/require-admin";
-import { parseIfoodItemsReport } from "@/lib/ifood-report";
+import { parseIfoodReport, type IfoodOrderRow } from "@/lib/ifood-report";
 import { bestProductMatch } from "@/lib/ifood-match";
 
 /**
- * Import do relatório iFood "Itens do cardápio" (ADR 0012, P0). Dois passos:
- *  1) parseIfoodReportAction — parseia o xlsx no server + sugere o casamento de
- *     nomes (mapa salvo > aproximado). Devolve preview pro admin conferir.
- *  2) commitIfoodImportAction — grava o snapshot do período (substitui o
- *     anterior) + persiste o mapeamento confirmado.
+ * Import dos relatórios iFood (ADR 0012). O tipo do arquivo é detectado pelo
+ * cabeçalho (parseIfoodReport): "Itens do cardápio" (P0, por produto) ou
+ * "relatório de pedidos" (P1, financeiro). Dois passos:
+ *  1) parseIfoodReportAction — parseia o xlsx no server, detecta o tipo e
+ *     (itens) sugere o casamento de nomes. Devolve preview pro admin conferir.
+ *  2) commitIfoodItemsAction / commitIfoodOrdersAction — grava o snapshot.
  *
  * O arquivo nunca é parseado no client (exceljs é node-only). O preview trafega
- * só os dados extraídos (poucas linhas), então o commit não re-sobe o arquivo.
+ * só os dados extraídos, então o commit não re-sobe o arquivo.
  */
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
+
+const isCancelled = (status: string): boolean => /cancel/i.test(status);
 
 export type IfoodPreviewRow = {
   ifoodName: string;
@@ -31,15 +34,32 @@ export type IfoodPreviewRow = {
 
 export type IfoodProductOption = { id: string; name: string };
 
+export type IfoodOrdersTotals = {
+  orders: number;
+  totalPaidCents: number;
+  feesCents: number;
+  netCents: number;
+};
+
 export type ParseIfoodResult =
   | { ok: false; error: string }
   | {
       ok: true;
+      kind: "items";
       sheetName: string;
       fileName: string;
       rows: IfoodPreviewRow[];
       products: IfoodProductOption[];
       totals: { items: number; qty: number; revenueCents: number };
+    }
+  | {
+      ok: true;
+      kind: "orders";
+      fileName: string;
+      periodStart: string;
+      periodEnd: string;
+      rows: IfoodOrderRow[];
+      totals: IfoodOrdersTotals;
     };
 
 export async function parseIfoodReportAction(formData: FormData): Promise<ParseIfoodResult> {
@@ -55,8 +75,33 @@ export async function parseIfoodReportAction(formData: FormData): Promise<ParseI
   }
 
   const buffer = await file.arrayBuffer();
-  const parsed = await parseIfoodItemsReport(buffer);
+  const parsed = await parseIfoodReport(buffer);
   if (!parsed.ok) return { ok: false, error: parsed.error };
+
+  // ── Financeiro (por pedido) ────────────────────────────────────────────────
+  if (parsed.kind === "orders") {
+    const valid = parsed.rows.filter((r) => !isCancelled(r.status));
+    const totals = valid.reduce<IfoodOrdersTotals>(
+      (acc, r) => ({
+        orders: acc.orders + 1,
+        totalPaidCents: acc.totalPaidCents + r.totalPaidCents,
+        feesCents: acc.feesCents + r.feesCents,
+        netCents: acc.netCents + r.netCents,
+      }),
+      { orders: 0, totalPaidCents: 0, feesCents: 0, netCents: 0 },
+    );
+    return {
+      ok: true,
+      kind: "orders",
+      fileName: file.name,
+      periodStart: parsed.periodStart,
+      periodEnd: parsed.periodEnd,
+      rows: parsed.rows,
+      totals,
+    };
+  }
+
+  // ── Itens (por produto) ────────────────────────────────────────────────────
   if (parsed.rows.length === 0) {
     return { ok: false, error: "A planilha de itens está vazia." };
   }
@@ -95,7 +140,15 @@ export async function parseIfoodReportAction(formData: FormData): Promise<ParseI
     { items: 0, qty: 0, revenueCents: 0 },
   );
 
-  return { ok: true, sheetName: parsed.sheetName, fileName: file.name, rows, products, totals };
+  return {
+    ok: true,
+    kind: "items",
+    sheetName: parsed.sheetName,
+    fileName: file.name,
+    rows,
+    products,
+    totals,
+  };
 }
 
 const commitSchema = z.object({
@@ -122,7 +175,7 @@ export type CommitIfoodResult = {
   mappedCount?: number;
 };
 
-export async function commitIfoodImportAction(input: unknown): Promise<CommitIfoodResult> {
+export async function commitIfoodItemsAction(input: unknown): Promise<CommitIfoodResult> {
   const { supabase, error: authError } = await requireAdmin();
   if (authError) return { ok: false, error: authError };
 
@@ -205,4 +258,102 @@ export async function commitIfoodImportAction(input: unknown): Promise<CommitIfo
 
   revalidatePath("/gestao/relatorios");
   return { ok: true, importedRows: rows.length, mappedCount };
+}
+
+// ── Commit do relatório financeiro (por pedido) — P1 ────────────────────────────
+
+const ordersCommitSchema = z.object({
+  periodStart: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Período inválido."),
+  periodEnd: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Período inválido."),
+  fileName: z.string().min(1).max(255),
+  rows: z
+    .array(
+      z.object({
+        ifoodOrderId: z.string().min(1),
+        orderedAt: z.string().min(1),
+        status: z.string(),
+        totalPaidCents: z.number().int(),
+        feesCents: z.number().int(),
+        netCents: z.number().int(),
+        paymentMethod: z.string().nullable(),
+      }),
+    )
+    .min(1, "Nada pra importar."),
+});
+
+export async function commitIfoodOrdersAction(input: unknown): Promise<CommitIfoodResult> {
+  const { supabase, error: authError } = await requireAdmin();
+  if (authError) return { ok: false, error: authError };
+
+  const parsed = ordersCommitSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
+  }
+  const { periodStart, periodEnd, fileName, rows } = parsed.data;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Idempotência do lote: re-upload do mesmo período substitui o registro de
+  // import (os financials são deduplicados por ifood_order_id no upsert abaixo).
+  await supabase
+    .from("ifood_imports")
+    .delete()
+    .eq("kind", "orders")
+    .eq("period_start", periodStart)
+    .eq("period_end", periodEnd);
+
+  const totals = rows
+    .filter((r) => !isCancelled(r.status))
+    .reduce(
+      (a, r) => ({
+        orders: a.orders + 1,
+        totalPaidCents: a.totalPaidCents + r.totalPaidCents,
+        feesCents: a.feesCents + r.feesCents,
+        netCents: a.netCents + r.netCents,
+      }),
+      { orders: 0, totalPaidCents: 0, feesCents: 0, netCents: 0 },
+    );
+
+  const { data: imp, error: impErr } = await supabase
+    .from("ifood_imports")
+    .insert({
+      kind: "orders",
+      period_start: periodStart,
+      period_end: periodEnd,
+      file_name: fileName,
+      row_count: rows.length,
+      totals,
+      imported_by: user?.id ?? null,
+    })
+    .select("id")
+    .single();
+
+  if (impErr || !imp) {
+    return { ok: false, error: "Não consegui registrar o import. Tente de novo." };
+  }
+
+  // Upsert por ifood_order_id — idempotente mesmo com períodos sobrepostos.
+  const payload = rows.map((r) => ({
+    ifood_order_id: r.ifoodOrderId,
+    import_id: imp.id,
+    ordered_at: r.orderedAt,
+    status: r.status,
+    total_paid_cents: r.totalPaidCents,
+    fees_cents: r.feesCents,
+    net_cents: r.netCents,
+    payment_method: r.paymentMethod,
+  }));
+
+  const { error: finErr } = await supabase
+    .from("ifood_order_financials")
+    .upsert(payload, { onConflict: "ifood_order_id" });
+  if (finErr) {
+    await supabase.from("ifood_imports").delete().eq("id", imp.id);
+    return { ok: false, error: "Falha ao gravar o financeiro dos pedidos." };
+  }
+
+  revalidatePath("/gestao/relatorios");
+  return { ok: true, importedRows: totals.orders };
 }

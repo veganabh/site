@@ -4,8 +4,21 @@ import {
   parseMoneyToCents,
   parseIntCell,
   normalizeHeader,
+  parseDateBR,
   parseIfoodItemsReport,
+  parseIfoodOrdersReport,
+  parseIfoodReport,
 } from "./ifood-report";
+
+const ORDERS_HEADER = [
+  "ID COMPLETO DO PEDIDO",
+  "DATA E HORA DO PEDIDO",
+  "STATUS FINAL DO PEDIDO",
+  "TOTAL PAGO PELO CLIENTE (R$)",
+  "TAXAS E COMISSOES (R$)",
+  "VALOR LIQUIDO (R$)",
+  "FORMA DE PAGAMENTO",
+];
 
 /** Monta um xlsx em memória com as abas dadas → Buffer pro parser. */
 async function buildXlsx(
@@ -194,6 +207,99 @@ describe("parseIfoodItemsReport", () => {
       { name: "Qualquer", header: ["A", "B", "C"], rows: [["x", "y", "z"]] },
     ]);
     const res = await parseIfoodItemsReport(buf);
+    expect(res.ok).toBe(false);
+  });
+});
+
+describe("parseDateBR", () => {
+  it("DD/MM/YYYY HH:MM:SS → ISO (UTC, data estável)", () => {
+    expect(parseDateBR("28/02/2026 21:40:24")).toBe("2026-02-28T21:40:24.000Z");
+    expect(parseDateBR("01/03/2026")).toBe("2026-03-01T00:00:00.000Z");
+  });
+  it("Date → ISO; inválido → null", () => {
+    expect(parseDateBR(new Date("2026-05-10T12:00:00Z"))).toBe("2026-05-10T12:00:00.000Z");
+    expect(parseDateBR("xx")).toBeNull();
+    expect(parseDateBR(null)).toBeNull();
+  });
+});
+
+describe("parseIfoodOrdersReport", () => {
+  it("parseia pedidos: números crus, taxa negativa vira módulo, período dos dados", async () => {
+    const buf = await buildXlsx([
+      {
+        name: "Página 1",
+        header: ORDERS_HEADER,
+        rows: [
+          ["uuid-1", "28/02/2026 21:40:24", "CONCLUIDO", 80.99, -20.96, 59.04, "Crédito"],
+          ["uuid-2", "01/03/2026 12:00:00", "CONCLUIDO", 26.1, -9.9, 27.9, "Pix"],
+          ["uuid-3", "19/03/2026 10:00:00", "CANCELADO", 22.9, -6.0, 0, "Pix"],
+        ],
+      },
+    ]);
+    const res = await parseIfoodOrdersReport(buf);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.rows).toHaveLength(3);
+    expect(res.periodStart).toBe("2026-02-28");
+    expect(res.periodEnd).toBe("2026-03-19");
+    const o1 = res.rows[0];
+    expect(o1.ifoodOrderId).toBe("uuid-1");
+    expect(o1.totalPaidCents).toBe(8099);
+    expect(o1.feesCents).toBe(2096); // módulo
+    expect(o1.netCents).toBe(5904);
+    expect(o1.status).toBe("CONCLUIDO");
+  });
+
+  it("dedup por ID do pedido", async () => {
+    const buf = await buildXlsx([
+      {
+        name: "Página 1",
+        header: ORDERS_HEADER,
+        rows: [
+          ["uuid-1", "28/02/2026 21:40:24", "CONCLUIDO", 80.99, -20.96, 59.04, "Crédito"],
+          ["uuid-1", "28/02/2026 21:40:24", "CONCLUIDO", 80.99, -20.96, 59.04, "Crédito"],
+        ],
+      },
+    ]);
+    const res = await parseIfoodOrdersReport(buf);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.rows).toHaveLength(1);
+  });
+});
+
+describe("parseIfoodReport (auto-detect)", () => {
+  it("detecta 'orders' pelo cabeçalho financeiro", async () => {
+    const buf = await buildXlsx([
+      {
+        name: "Página 1",
+        header: ORDERS_HEADER,
+        rows: [["uuid-1", "28/02/2026 21:40:24", "CONCLUIDO", 80.99, -20.96, 59.04, "Pix"]],
+      },
+    ]);
+    const res = await parseIfoodReport(buf);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.kind).toBe("orders");
+  });
+
+  it("detecta 'items' pelo cabeçalho de produto", async () => {
+    const buf = await buildXlsx([
+      {
+        name: "Itens do cardápio",
+        header: ITEMS_HEADER,
+        rows: [["1", "Docinhos", "Palha Italiana", "313", "459", "R$ 3.672,00"]],
+      },
+    ]);
+    const res = await parseIfoodReport(buf);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.kind).toBe("items");
+  });
+
+  it("arquivo irreconhecível → erro", async () => {
+    const buf = await buildXlsx([{ name: "X", header: ["A", "B"], rows: [["1", "2"]] }]);
+    const res = await parseIfoodReport(buf);
     expect(res.ok).toBe(false);
   });
 });

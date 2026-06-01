@@ -42,10 +42,12 @@ function emptyStat(): ChannelStat {
   return { orders: 0, revenue: 0, avgTicket: 0 };
 }
 
-/** Receita iFood do snapshot importado (ADR 0012), agregada por mês. */
+/** Receita iFood importada (ADR 0012), agregada por mês. */
 export type IfoodRevenueInput = {
   totalRevenue: number;
   byMonth: { month: string; revenue: number }[];
+  /** nº de pedidos reais (financeiro/P1). Sem isso, fica sem ticket (itens/P0). */
+  orders?: number;
 };
 
 export function buildChannelMetrics(
@@ -92,9 +94,10 @@ export function buildChannelMetrics(
     }
   }
 
-  // Injeta receita iFood do snapshot (sem nº de pedidos — vem em P1).
+  // Injeta receita iFood importada. nº de pedidos só com o financeiro (P1).
   if (ifoodInput) {
     ifood.revenue += ifoodInput.totalRevenue;
+    if (ifoodInput.orders !== undefined) ifood.orders += ifoodInput.orders;
     for (const { month, revenue } of ifoodInput.byMonth) {
       monthBucket(month).ifoodRevenue += revenue;
     }

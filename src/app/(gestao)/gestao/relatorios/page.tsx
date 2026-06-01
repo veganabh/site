@@ -22,7 +22,8 @@ import { ImportIfoodButton } from "@/components/admin/relatorios/import-ifood-di
 import { listAllOrders } from "@/server/orders";
 import { listProducts } from "@/server/products";
 import { getNotificationAttribution } from "@/server/notification-attribution";
-import { getIfoodSnapshot } from "@/server/ifood";
+import { getIfoodSnapshot, getIfoodFinancials } from "@/server/ifood";
+import { FEES } from "@/lib/fees";
 
 export const metadata: Metadata = {
   title: "Relatórios — Gestão Vegana BH",
@@ -57,20 +58,24 @@ export default async function RelatoriosPage({
   const period = rawPeriod ?? "all";
   const range = resolveReportRange(period, from, to);
 
-  const [allOrders, products, ifoodSnap] = await Promise.all([
+  const [allOrders, products, ifoodSnap, ifoodFin] = await Promise.all([
     listAllOrders(),
     listProducts({ onlyActive: false }),
     getIfoodSnapshot({ start: range.start, end: range.end }),
+    getIfoodFinancials({ start: range.start, end: range.end }),
   ]);
   const orders = filterOrdersByRange(allOrders, range);
   const dailySeries = buildDailySeries(orders, range);
 
-  const channel = buildChannelMetrics(
-    orders,
-    ifoodSnap.hasData
+  // Receita iFood: prefere o financeiro real (P1, com nº de pedidos/ticket);
+  // senão cai pro snapshot por produto (P0, só receita).
+  const ifoodRevenueInput = ifoodFin.hasData
+    ? { totalRevenue: ifoodFin.revenue, byMonth: ifoodFin.byMonth, orders: ifoodFin.orders }
+    : ifoodSnap.hasData
       ? { totalRevenue: ifoodSnap.totalRevenue, byMonth: ifoodSnap.byMonth }
-      : undefined,
-  );
+      : undefined;
+
+  const channel = buildChannelMetrics(orders, ifoodRevenueInput);
   const couponRoi = buildCouponRoi(orders);
   const profit = buildChannelProfit(
     orders,
@@ -85,11 +90,20 @@ export default async function RelatoriosPage({
 
   const sitePct = channel.siteSharePct === null ? null : Math.round(channel.siteSharePct * 100);
 
-  // iFood vem do snapshot importado (ADR 0012) — em P0 sem nº de pedidos/ticket.
-  const ifoodHint = ifoodSnap.hasData
-    ? `do relatório iFood · ${ifoodSnap.totalUnits} itens`
-    : `${channel.ifood.orders} pedidos · ${formatBRL(channel.ifood.avgTicket)} ticket`;
+  // Hint do card iFood: financeiro → pedidos/ticket reais; itens → nº de itens.
+  const ifoodHint = ifoodFin.hasData
+    ? `${channel.ifood.orders} pedidos · ${formatBRL(channel.ifood.avgTicket)} ticket`
+    : ifoodSnap.hasData
+      ? `do relatório iFood · ${ifoodSnap.totalUnits} itens`
+      : `${channel.ifood.orders} pedidos · ${formatBRL(channel.ifood.avgTicket)} ticket`;
   const lastImport = ifoodSnap.imports[0] ?? null;
+
+  // Insights do financeiro real (P1): taxa efetiva vs estimativa + líquido recebido.
+  const estimatedRatePct = Math.round(FEES.ifoodRate * 1000) / 10; // 26.2
+  const effectiveRatePct =
+    ifoodFin.hasData && ifoodFin.effectiveRate !== null
+      ? Math.round(ifoodFin.effectiveRate * 1000) / 10
+      : null;
 
   // ── Alertas estratégicos (derivados) ──────────────────────────────────────
   const alerts: string[] = [];
@@ -202,6 +216,39 @@ export default async function RelatoriosPage({
               <span className="text-caption text-olive-700">site + iFood</span>
             </Card>
           </div>
+
+          {/* Insights do financeiro real do iFood (P1) */}
+          {ifoodFin.hasData && (
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+              <Card padding="none" className="flex flex-col gap-2 p-4">
+                <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">
+                  Taxa real iFood
+                </span>
+                <span className="text-h4 font-bold text-olive-900">
+                  {effectiveRatePct === null ? "—" : `${effectiveRatePct}%`}
+                </span>
+                <span className="text-caption text-olive-700">
+                  do relatório · estimativa {estimatedRatePct}%
+                </span>
+              </Card>
+              <Card padding="none" className="flex flex-col gap-2 p-4">
+                <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">
+                  Líquido recebido
+                </span>
+                <span className="text-h4 font-bold text-olive-900">{formatBRL(ifoodFin.net)}</span>
+                <span className="text-caption text-olive-700">o que o iFood repassou</span>
+              </Card>
+              <Card padding="none" className="flex flex-col gap-2 p-4">
+                <span className="text-caption font-semibold tracking-wide text-olive-700 uppercase">
+                  Taxas iFood
+                </span>
+                <span className="text-h4 font-bold text-terra-700">
+                  −{formatBRL(ifoodFin.fees)}
+                </span>
+                <span className="text-caption text-olive-700">comissão + pagamento</span>
+              </Card>
+            </div>
+          )}
 
           {/* Tendência mensal — barras empilhadas (site vs iFood) */}
           <Card padding="none" className="flex flex-col gap-3 p-4">

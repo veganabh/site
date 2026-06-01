@@ -125,3 +125,88 @@ export async function getIfoodSnapshot(range?: {
     })),
   };
 }
+
+// ── Financeiro por pedido (relatorio-pedidos) — P1 ──────────────────────────────
+
+export type IfoodFinancials = {
+  hasData: boolean;
+  /** pedidos não cancelados no período. */
+  orders: number;
+  /** TOTAL PAGO PELO CLIENTE (comparável ao total de um pedido do site). */
+  revenue: number;
+  /** VALOR LIQUIDO — líquido real recebido (pode passar a receita via incentivo). */
+  net: number;
+  /** TAXAS E COMISSOES (módulo). */
+  fees: number;
+  avgTicket: number;
+  /** taxa efetiva real = fees / revenue (0..1). null se sem receita. */
+  effectiveRate: number | null;
+  byMonth: IfoodMonthRevenue[];
+};
+
+function emptyFinancials(): IfoodFinancials {
+  return {
+    hasData: false,
+    orders: 0,
+    revenue: 0,
+    net: 0,
+    fees: 0,
+    avgTicket: 0,
+    effectiveRate: null,
+    byMonth: [],
+  };
+}
+
+export async function getIfoodFinancials(range?: {
+  start: number | null;
+  end: number | null;
+}): Promise<IfoodFinancials> {
+  const supabase = await createSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("ifood_order_financials")
+    .select("ordered_at, status, total_paid_cents, fees_cents, net_cents");
+
+  if (error) {
+    console.error("[server/ifood] financials:", error.message);
+    return emptyFinancials();
+  }
+
+  const start = range?.start ?? null;
+  const end = range?.end ?? null;
+  const rows = (data ?? []).filter((r) => {
+    if (/cancel/i.test(r.status)) return false;
+    const t = new Date(r.ordered_at).getTime();
+    if (start !== null && t < start) return false;
+    if (end !== null && t > end) return false;
+    return true;
+  });
+
+  if (rows.length === 0) return emptyFinancials();
+
+  const byMonth = new Map<string, number>();
+  let revenueCents = 0;
+  let netCents = 0;
+  let feesCents = 0;
+  for (const r of rows) {
+    revenueCents += r.total_paid_cents;
+    netCents += r.net_cents;
+    feesCents += r.fees_cents;
+    const month = r.ordered_at.slice(0, 7); // YYYY-MM
+    byMonth.set(month, (byMonth.get(month) ?? 0) + r.total_paid_cents);
+  }
+
+  const revenue = centsToReais(revenueCents);
+  return {
+    hasData: true,
+    orders: rows.length,
+    revenue,
+    net: centsToReais(netCents),
+    fees: centsToReais(feesCents),
+    avgTicket: rows.length > 0 ? revenue / rows.length : 0,
+    effectiveRate: revenueCents > 0 ? feesCents / revenueCents : null,
+    byMonth: [...byMonth.entries()]
+      .map(([month, cents]) => ({ month, revenue: centsToReais(cents) }))
+      .sort((a, b) => a.month.localeCompare(b.month)),
+  };
+}
