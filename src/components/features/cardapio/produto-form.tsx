@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { forwardRef, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +19,7 @@ import { createProductAction, updateProductAction } from "@/server/actions/produ
 import { uploadProductPhotoAction } from "@/server/actions/upload-product-photo";
 import { Input, TextArea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const ACCEPTED_IMAGE_TYPES = "image/jpeg,image/png,image/webp";
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
@@ -250,41 +251,28 @@ export function ProdutoForm(props: ProdutoFormProps) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Field label="Preço no site (R$)" error={errors.price_site?.message}>
-          <Input
+        <Field label="Preço no site" error={errors.price_site?.message}>
+          <MoneyInput
             {...register("price_site")}
-            type="number"
-            step="0.01"
-            min={0}
-            placeholder="17.90"
+            placeholder="17,90"
             hasError={!!errors.price_site}
           />
         </Field>
 
-        <Field label="Preço no iFood (R$)" error={errors.price_ifood?.message}>
-          <Input
+        <Field label="Preço no iFood" error={errors.price_ifood?.message}>
+          <MoneyInput
             {...register("price_ifood")}
-            type="number"
-            step="0.01"
-            min={0}
-            placeholder="18.90"
+            placeholder="18,90"
             hasError={!!errors.price_ifood}
           />
         </Field>
 
         <Field
-          label="Custo / CPV (R$)"
+          label="Custo / CPV"
           error={errors.cost?.message}
           hint="Custo de produção por unidade. Usado pra calcular margem em Relatórios."
         >
-          <Input
-            {...register("cost")}
-            type="number"
-            step="0.01"
-            min={0}
-            placeholder="6.50"
-            hasError={!!errors.cost}
-          />
+          <MoneyInput {...register("cost")} placeholder="6,50" hasError={!!errors.cost} />
         </Field>
       </div>
 
@@ -439,3 +427,33 @@ function Field({
     </div>
   );
 }
+
+/**
+ * Input monetário — prefixo "R$" fixo dentro do campo, à esquerda, pra o
+ * número não ficar "solto". Compatível com RHF (forwardRef + spread). Mantém
+ * type=number (step 0,01) pra teclado numérico e validação nativa.
+ */
+const MoneyInput = forwardRef<HTMLInputElement, React.ComponentPropsWithoutRef<typeof Input>>(
+  function MoneyInput({ hasError, className, ...rest }, ref) {
+    return (
+      <div className="relative">
+        <span
+          className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-body-sm text-olive-700"
+          aria-hidden="true"
+        >
+          R$
+        </span>
+        <Input
+          ref={ref}
+          type="number"
+          step="0.01"
+          min={0}
+          inputMode="decimal"
+          hasError={hasError}
+          className={cn("pl-9", className)}
+          {...rest}
+        />
+      </div>
+    );
+  },
+);

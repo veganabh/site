@@ -39,7 +39,7 @@ type StatusFilter = "todos" | "ativos" | "inativos";
  * - Densidade: thumb 48px, linhas py-2, badges compactos (text-micro px-1.5 py-0).
  */
 export function CardapioList() {
-  const { products, toggleActive, adjustStock } = useMenuStore();
+  const { products, toggleActive, adjustStock, setStock } = useMenuStore();
   const categories = useActiveCategories();
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -68,6 +68,22 @@ export function CardapioList() {
       const result = await setStockAction({ id, value: next });
       if (!result.ok) {
         adjustStock(id, -delta);
+        setActionError(result.message);
+      } else {
+        router.refresh();
+      }
+    });
+  };
+
+  /** Define o estoque por valor absoluto (input editável). Reverte no erro. */
+  const persistSetStock = (id: string, value: number, prevStock: number) => {
+    const next = Math.max(0, Math.trunc(value));
+    if (next === prevStock) return;
+    setStock(id, next);
+    startTransition(async () => {
+      const result = await setStockAction({ id, value: next });
+      if (!result.ok) {
+        setStock(id, prevStock);
         setActionError(result.message);
       } else {
         router.refresh();
@@ -391,6 +407,10 @@ export function CardapioList() {
                   const product = list.find((p) => p.id === id);
                   if (product) persistAdjustStock(id, delta, product.stock);
                 }}
+                onSetStock={(id, value) => {
+                  const product = list.find((p) => p.id === id);
+                  if (product) persistSetStock(id, value, product.stock);
+                }}
               />
             );
           })}
@@ -413,6 +433,10 @@ export function CardapioList() {
               onAdjustStock={(id, delta) => {
                 const product = grouped.orphan.find((p) => p.id === id);
                 if (product) persistAdjustStock(id, delta, product.stock);
+              }}
+              onSetStock={(id, value) => {
+                const product = grouped.orphan.find((p) => p.id === id);
+                if (product) persistSetStock(id, value, product.stock);
               }}
             />
           )}
@@ -481,6 +505,7 @@ function CategorySection({
   onToggleSelectAll,
   onToggleActive,
   onAdjustStock,
+  onSetStock,
 }: {
   categoryLabel: string;
   /** Categoria sem nenhum item ativo em estoque → cinza + tag "sem estoque". */
@@ -492,11 +517,8 @@ function CategorySection({
   onToggleSelectAll: (ids: string[], checked: boolean) => void;
   onToggleActive: (id: string) => void;
   onAdjustStock: (id: string, delta: number) => void;
+  onSetStock: (id: string, value: number) => void;
 }) {
-  const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
-  const esgotados = products.filter((p) => p.stock === 0).length;
-  const baixos = products.filter((p) => p.stock > 0 && p.stock <= p.lowStockThreshold).length;
-
   const categoryIds = products.map((p) => p.id);
   const allSelected = categoryIds.length > 0 && categoryIds.every((id) => selectedIds.has(id));
 
@@ -519,30 +541,17 @@ function CategorySection({
             </span>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-micro text-olive-700">{totalStock} em estoque</span>
-          {esgotados > 0 && (
-            <span className="rounded-full bg-terra-500/15 px-1.5 py-0 text-micro leading-4 font-semibold text-terra-700">
-              {esgotados} esgotado{esgotados > 1 ? "s" : ""}
-            </span>
-          )}
-          {baixos > 0 && (
-            <span className="bg-terra-300/25 rounded-full px-1.5 py-0 text-micro leading-4 font-semibold text-terra-700">
-              {baixos} baixo{baixos > 1 ? "s" : ""}
-            </span>
-          )}
-        </div>
       </header>
 
       {/* Tabela da categoria */}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[780px] table-fixed border-collapse text-left">
+        <table className="w-full min-w-[680px] table-fixed border-collapse text-left">
           <colgroup>
             {selectionMode && <col className="w-[44px]" />}
             <col className="w-[80px]" />
             <col />
             <col className="w-[104px]" />
-            <col className="w-[15rem]" />
+            <col className="w-[152px]" />
             <col className="w-[96px]" />
             <col className="w-[64px]" />
           </colgroup>
@@ -632,45 +641,13 @@ function CategorySection({
                   {formatBRL(product.price_site)}
                 </td>
 
-                {/* Coluna de estoque */}
-                <td className="w-[15rem] px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex w-[7rem] shrink-0 items-center">
-                      {product.stock === 0 ? (
-                        <span className="inline-flex items-center rounded-full bg-terra-500/15 px-1.5 py-0 text-micro leading-4 font-semibold text-terra-700">
-                          Esgotado
-                        </span>
-                      ) : product.stock <= product.lowStockThreshold ? (
-                        <span className="bg-terra-300/25 inline-flex items-center rounded-full px-1.5 py-0 text-micro leading-4 font-semibold text-terra-700">
-                          Baixo — {product.stock}
-                        </span>
-                      ) : (
-                        <span className="text-micro text-olive-700">
-                          {product.stock} em estoque
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex shrink-0 items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => onAdjustStock(product.id, -1)}
-                        disabled={product.stock === 0}
-                        aria-label={`Remover 1 de ${product.name}`}
-                        className="relative flex h-6 w-6 items-center justify-center rounded-full border border-divider text-olive-700 transition-colors before:absolute before:-inset-2.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <Minus className="h-3 w-3" aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onAdjustStock(product.id, 1)}
-                        aria-label={`Adicionar 1 a ${product.name}`}
-                        className="relative flex h-6 w-6 items-center justify-center rounded-full border border-divider text-olive-700 transition-colors before:absolute before:-inset-2.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
-                      >
-                        <Plus className="h-3 w-3" aria-hidden="true" />
-                      </button>
-                    </div>
-                  </div>
+                {/* Coluna de estoque — input editável + cor pelo estado */}
+                <td className="px-3 py-2">
+                  <StockCell
+                    product={product}
+                    onSetStock={(value) => onSetStock(product.id, value)}
+                    onAdjustStock={(delta) => onAdjustStock(product.id, delta)}
+                  />
                 </td>
 
                 <td className="px-3 py-2">
@@ -711,5 +688,102 @@ function CategorySection({
         </table>
       </div>
     </Card>
+  );
+}
+
+/**
+ * Célula de estoque editável.
+ *
+ * O número é um input que a gestora digita direto e salva ao sair do campo
+ * (blur) ou apertar Enter. A cor do número comunica o estado — sem texto
+ * redundante ("em estoque"/"Baixo"):
+ * - vermelho (terra-700) = esgotado (0)
+ * - terra-500 = baixo (≤ alerta)
+ * - verde discreto (leaf-700) = em dia
+ * Os botões +/− continuam para ajuste rápido de 1 em 1.
+ */
+function StockCell({
+  product,
+  onSetStock,
+  onAdjustStock,
+}: {
+  product: Product;
+  onSetStock: (value: number) => void;
+  onAdjustStock: (delta: number) => void;
+}) {
+  // Estado local do input — sincroniza com o produto, mas permite digitar livre.
+  const [draft, setDraft] = useState(String(product.stock));
+
+  // Reflete mudança externa (botões +/−, refetch) no campo quando não focado.
+  const [focused, setFocused] = useState(false);
+  if (!focused && draft !== String(product.stock)) {
+    setDraft(String(product.stock));
+  }
+
+  const commit = () => {
+    setFocused(false);
+    const parsed = Number(draft);
+    if (draft.trim() === "" || Number.isNaN(parsed)) {
+      setDraft(String(product.stock)); // valor inválido → restaura
+      return;
+    }
+    onSetStock(parsed);
+  };
+
+  const stockColor =
+    product.stock === 0
+      ? "text-terra-700"
+      : product.stock <= product.lowStockThreshold
+        ? "text-terra-500"
+        : "text-leaf-700";
+
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        type="number"
+        min={0}
+        step={1}
+        inputMode="numeric"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+        }}
+        aria-label={`Estoque de ${product.name} em unidades`}
+        title={
+          product.stock === 0
+            ? "Esgotado"
+            : product.stock <= product.lowStockThreshold
+              ? "Estoque baixo"
+              : "Estoque em dia"
+        }
+        className={cn(
+          "h-7 w-14 rounded-sm border border-divider bg-paper-50 px-2 text-caption font-bold tabular-nums",
+          "focus:border-olive-700 focus:outline-none",
+          stockColor,
+        )}
+      />
+      <div className="flex shrink-0 items-center gap-1">
+        <button
+          type="button"
+          onClick={() => onAdjustStock(-1)}
+          disabled={product.stock === 0}
+          aria-label={`Remover 1 de ${product.name}`}
+          className="relative flex h-6 w-6 items-center justify-center rounded-full border border-divider text-olive-700 transition-colors before:absolute before:-inset-2.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <Minus className="h-3 w-3" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onAdjustStock(1)}
+          aria-label={`Adicionar 1 a ${product.name}`}
+          className="relative flex h-6 w-6 items-center justify-center rounded-full border border-divider text-olive-700 transition-colors before:absolute before:-inset-2.5 before:content-[''] hover:bg-paper-100 hover:text-olive-900"
+        >
+          <Plus className="h-3 w-3" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
   );
 }
