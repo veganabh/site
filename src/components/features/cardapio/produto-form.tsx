@@ -62,6 +62,7 @@ const produtoSchema = z.object({
   active: z.boolean(),
   stock: nonNegativeNum("Estoque não pode ser negativo."),
   lowStockThreshold: positiveNum("Alerta precisa ser pelo menos 1.", 0),
+  availableForPreorder: z.boolean(),
 });
 
 type ProdutoFormValues = z.infer<typeof produtoSchema>;
@@ -94,6 +95,7 @@ export function ProdutoForm(props: ProdutoFormProps) {
           active: props.product.active,
           stock: String(props.product.stock),
           lowStockThreshold: String(props.product.lowStockThreshold),
+          availableForPreorder: props.product.availableForPreorder,
         }
       : {
           name: "",
@@ -108,6 +110,7 @@ export function ProdutoForm(props: ProdutoFormProps) {
           active: true,
           stock: "0",
           lowStockThreshold: "3",
+          availableForPreorder: false,
         };
 
   const {
@@ -180,6 +183,7 @@ export function ProdutoForm(props: ProdutoFormProps) {
         active: values.active,
         stock: Number(values.stock),
         lowStockThreshold: Number(values.lowStockThreshold),
+        availableForPreorder: values.availableForPreorder,
         attributes: ["sem-lactose", "vegano"] as ("sem-lactose" | "vegano")[],
         tags: [] as never[],
         contains: [] as never[],
@@ -374,16 +378,35 @@ export function ProdutoForm(props: ProdutoFormProps) {
         />
       </Field>
 
-      <div className="flex items-center gap-3">
-        <input
-          {...register("active")}
-          id="active"
-          type="checkbox"
-          className="h-4 w-4 accent-olive-900"
-        />
-        <label htmlFor="active" className="text-body-sm text-olive-900">
-          Produto ativo (visível no cardápio)
-        </label>
+      <div className="flex flex-col gap-3 rounded-sm border border-divider bg-paper-50 p-4">
+        <div className="flex items-center gap-3">
+          <input
+            {...register("active")}
+            id="active"
+            type="checkbox"
+            className="h-4 w-4 accent-olive-900"
+          />
+          <label htmlFor="active" className="text-body-sm text-olive-900">
+            Produto ativo (visível no cardápio)
+          </label>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <input
+            {...register("availableForPreorder")}
+            id="availableForPreorder"
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 accent-olive-900"
+          />
+          <div className="flex flex-col gap-0.5">
+            <label htmlFor="availableForPreorder" className="text-body-sm text-olive-900">
+              Disponível para encomenda
+            </label>
+            <p className="text-caption text-olive-700">
+              Aparece na aba Encomendas e aceita pedidos futuros, independente do estoque.
+            </p>
+          </div>
+        </div>
       </div>
 
       {serverError && (

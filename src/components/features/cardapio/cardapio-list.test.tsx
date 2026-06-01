@@ -38,6 +38,7 @@ const makeProduct = (overrides: Partial<Product> = {}): Product => ({
   active: true,
   stock: 10,
   lowStockThreshold: 3,
+  availableForPreorder: false,
   ...overrides,
 });
 

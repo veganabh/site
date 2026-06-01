@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Gift, Package, MessageCircle, MapPin } from "lucide-react";
 import { ProductGridPhoto } from "@/components/dashboard/product-grid-photo";
 import { CategoryCircles } from "@/components/dashboard/category-circles";
+import { DeliveryGate } from "@/components/dashboard/delivery-gate";
 import { listProducts } from "@/server/products";
 import { KitGrid } from "@/components/gift/kit-grid";
 
@@ -67,8 +68,19 @@ export default async function PresentearPage() {
         <h2 id="categorias" className="text-h3 font-bold text-olive-900">
           Categorias
         </h2>
-        <CategoryCircles active="presentear" basePath="/" />
+        <div className="flex items-stretch gap-3">
+          <CategoryCircles active="presentear" basePath="/" className="min-w-0 flex-1" />
+          <DeliveryGate
+            variant="card"
+            label="Presenteamos nesse CEP?"
+            className="hidden w-[300px] shrink-0 md:flex"
+          />
+        </div>
       </section>
+
+      <div className="md:hidden">
+        <DeliveryGate label="Presenteamos nesse CEP?" />
+      </div>
 
       <section aria-labelledby="kits-titulo" className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">

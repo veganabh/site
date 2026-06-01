@@ -13,6 +13,12 @@ type DeliveryGateProps = {
    * "card" = bloco compacto pra encaixar dentro de hero escuro (olive-900).
    */
   variant?: "bar" | "card";
+  /**
+   * Frase customizável exibida antes do input de CEP.
+   * Default: "Entregamos aí?"
+   * Exemplos: "Presenteamos nesse CEP?" · "Entregamos encomendas aí?"
+   */
+  label?: string;
 };
 
 /**
@@ -20,7 +26,11 @@ type DeliveryGateProps = {
  * "entregam aqui?" + "quando chega?" antes do usuário montar carrinho.
  * Mostra 3 estados: vazio (input), OK (área coberta), fora de área.
  */
-export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) {
+export function DeliveryGate({
+  className,
+  variant = "bar",
+  label = "Entregamos aí?",
+}: DeliveryGateProps) {
   const quote = useDeliveryStore((s) => s.quote);
   const setCep = useDeliveryStore((s) => s.setCep);
   const clear = useDeliveryStore((s) => s.clear);
@@ -50,7 +60,7 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
       >
         <div className="inline-flex items-center gap-1 text-micro font-semibold tracking-wide text-olive-700 uppercase">
           <MapPin className="h-3 w-3 text-olive-700" aria-hidden="true" />
-          Entregamos aí?
+          {label}
         </div>
 
         {showForm && (
@@ -155,7 +165,7 @@ export function DeliveryGate({ className, variant = "bar" }: DeliveryGateProps) 
           <label htmlFor="delivery-cep" className="sr-only">
             CEP de entrega
           </label>
-          <span className="shrink-0 text-caption font-medium text-olive-900">Entregamos aí?</span>
+          <span className="shrink-0 text-caption font-medium text-olive-900">{label}</span>
           <input
             id="delivery-cep"
             type="text"

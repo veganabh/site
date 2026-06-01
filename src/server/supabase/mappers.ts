@@ -7,7 +7,14 @@ import type { Coupon } from "@/types/coupon";
 import type { DeliveryPerson } from "@/types/delivery-person";
 import type { DeliveryRing } from "@/types/delivery-ring";
 import type { GiftKitSlot, GiftKitTemplate } from "@/types/gift-kit";
-import type { Order, OrderItem, OrderStatus, PaymentStatus, ShippingAddress } from "@/types/order";
+import type {
+  Order,
+  OrderItem,
+  OrderStatus,
+  OrderType,
+  PaymentStatus,
+  ShippingAddress,
+} from "@/types/order";
 import type {
   Product,
   ProductAttribute,
@@ -57,6 +64,7 @@ type ProductRow = {
   serves: number | null;
   freezable: boolean | null;
   deleted_at: string | null;
+  available_for_preorder: boolean;
 };
 
 export function productFromRow(row: ProductRow): Product {
@@ -85,6 +93,7 @@ export function productFromRow(row: ProductRow): Product {
     ifoodOrderCount: row.ifood_order_count ?? undefined,
     serves: row.serves ?? undefined,
     freezable: row.freezable ?? undefined,
+    availableForPreorder: row.available_for_preorder,
   };
 }
 
@@ -434,6 +443,11 @@ type OrderRow = {
   delivery_call_id: string | null;
   created_at: string;
   updated_at: string;
+  // ADR 0013 — campos de encomenda
+  order_type: string;
+  scheduled_date: string | null;
+  scheduled_hour: number | null;
+  delivered_at: string | null;
 };
 
 type OrderItemRow = {
@@ -492,6 +506,11 @@ export function orderFromRow(
     source: row.source as Order["source"],
     deliveryCallId: row.delivery_call_id ?? undefined,
     statusHistory: history.map((h) => ({ status: h.status as OrderStatus, at: h.at })),
+    // ADR 0013 — campos de encomenda
+    orderType: (row.order_type as OrderType) ?? "daily",
+    scheduledDate: row.scheduled_date ?? undefined,
+    scheduledHour: row.scheduled_hour ?? undefined,
+    deliveredAt: row.delivered_at ?? undefined,
   };
 }
 
@@ -516,6 +535,10 @@ export type OrderInsertRow = {
   coupon_discount_cents: number | null;
   cancel_reason: string | null;
   delivery_call_id: string | null;
+  // ADR 0013 — campos de encomenda (opcionais, default 'daily')
+  order_type?: OrderType;
+  scheduled_date?: string | null;
+  scheduled_hour?: number | null;
 };
 
 export type OrderItemInsertRow = {
@@ -606,5 +629,6 @@ export function productToInsert(
     ifood_order_count: product.ifoodOrderCount ?? null,
     serves: product.serves ?? null,
     freezable: product.freezable ?? null,
+    available_for_preorder: product.availableForPreorder,
   };
 }

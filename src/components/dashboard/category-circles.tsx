@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { LayoutGrid, ChevronRight } from "lucide-react";
+import { LayoutGrid, ChevronRight, CalendarClock } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { resolveCollectionIcon } from "@/lib/collection-icons";
@@ -95,6 +95,19 @@ export function CategoryCircles({ active = "all", basePath, className }: Categor
     available: true,
   }));
 
+  // Encomendas: destino fixo (igual "Para Presentear"), sempre visível.
+  // Catálogo próprio em /encomendas, independente de estoque do cardápio.
+  const specialItems: Item[] = [
+    ...collectionItems,
+    {
+      slug: "encomendas",
+      label: "Encomendas",
+      icon: CalendarClock,
+      href: "/encomendas",
+      available: true,
+    },
+  ];
+
   return (
     <div className={cn("relative", className)}>
       <nav
@@ -105,9 +118,9 @@ export function CategoryCircles({ active = "all", basePath, className }: Categor
           <CategoryChip key={item.slug} item={item} active={active === item.slug} tier="primary" />
         ))}
 
-        {collectionItems.length > 0 && <TierDivider />}
+        {specialItems.length > 0 && <TierDivider />}
 
-        {collectionItems.map((item) => (
+        {specialItems.map((item) => (
           <CategoryChip
             key={item.slug}
             item={item}

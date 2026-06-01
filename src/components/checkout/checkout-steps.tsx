@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { placeOrderAction } from "@/server/actions/place-order";
+// NOTE: placePreorderAction is intentionally NOT imported here.
+// Preorder checkout is handled exclusively by /encomendas/finalizar
+// (PreorderCartCheckoutForm). This file must never call placePreorderAction.
 import {
   createAddressAction,
   removeAddressAction,
@@ -149,7 +152,11 @@ const MOCK_SHIPPING_FEE = 0;
 function StepResumo() {
   const items = useCartStore((s) => s.items);
   const kits = useCartStore((s) => s.kits);
+  const orderContext = useCartStore((s) => s.orderContext);
   const setStep = useCheckoutStore((s) => s.setStep);
+  const router = useRouter();
+
+  const isPreorder = orderContext === "preorder";
 
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
   const applyCoupon = useCartStore((s) => s.applyCoupon);
@@ -217,13 +224,15 @@ function StepResumo() {
   return (
     <>
       <header className="flex items-center justify-between gap-3">
-        <h1 className="text-h3 leading-snug font-bold text-olive-900 md:text-h2">Seu pedido</h1>
+        <h1 className="text-h3 leading-snug font-bold text-olive-900 md:text-h2">
+          {isPreorder ? "Sua encomenda" : "Seu pedido"}
+        </h1>
         <Link
-          href="/"
+          href={isPreorder ? "/encomendas" : "/"}
           className="inline-flex items-center gap-1 text-caption font-semibold text-olive-700 transition-colors hover:text-olive-900"
         >
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-          cardápio
+          {isPreorder ? "encomendas" : "cardápio"}
         </Link>
       </header>
 
@@ -357,20 +366,33 @@ function StepResumo() {
       </section>
 
       {/* CTA desktop inline — mobile usa sticky bar */}
-      <button
-        type="button"
-        onClick={() => setStep("endereco")}
-        className="hidden h-11 items-center justify-center gap-2 rounded-full bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex"
-      >
-        Confirmar endereço
-        <ArrowRight className="h-4 w-4" aria-hidden="true" />
-      </button>
+      {isPreorder ? (
+        <button
+          type="button"
+          onClick={() => router.push("/encomendas/finalizar")}
+          className="hidden h-11 items-center justify-center gap-2 rounded-full bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex"
+        >
+          Agendar entrega
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setStep("endereco")}
+          className="hidden h-11 items-center justify-center gap-2 rounded-full bg-terra-500 px-6 text-body-sm font-semibold text-paper-50 transition-colors hover:bg-terra-700 focus-visible:outline-2 focus-visible:outline-olive-500 md:inline-flex"
+        >
+          Confirmar endereço
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </button>
+      )}
 
       <StickyCTA
         total={total}
         itemCount={items.reduce((acc, i) => acc + i.quantity, 0) + kits.length}
-        label="Confirmar endereço"
-        onClick={() => setStep("endereco")}
+        label={isPreorder ? "Agendar entrega" : "Confirmar endereço"}
+        onClick={
+          isPreorder ? () => router.push("/encomendas/finalizar") : () => setStep("endereco")
+        }
       />
     </>
   );
@@ -1179,6 +1201,7 @@ function StepPagamento() {
   const kits = useCartStore((s) => s.kits);
   const appliedCoupon = useCartStore((s) => s.appliedCoupon);
   const clearCart = useCartStore((s) => s.clearCart);
+  const orderContext = useCartStore((s) => s.orderContext);
   const setStep = useCheckoutStore((s) => s.setStep);
   const setOrderId = useCheckoutStore((s) => s.setOrderId);
   const selectedAddress = useAddressStore(selectCurrentAddress);
@@ -1212,6 +1235,14 @@ function StepPagamento() {
   function handleConfirm() {
     if (isPending) return;
     setError(null);
+
+    // BLOQUEIO DE SEGURANÇA: carrinho de encomenda NUNCA finaliza aqui.
+    // O fluxo preorder tem rota dedicada (/encomendas/finalizar) que chama
+    // placePreorderAction com agendamento + validação de mínimo.
+    if (orderContext === "preorder") {
+      router.push("/encomendas/finalizar");
+      return;
+    }
 
     if (!selectedAddress) {
       setError("Selecione um endereço de entrega.");

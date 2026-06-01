@@ -67,6 +67,10 @@ export type OrderItem = {
   notes?: string;
 };
 
+// ── Encomenda (preorder) ──────────────────────────────────────────────────────
+
+export type OrderType = "daily" | "preorder";
+
 // ── Order v2 ──────────────────────────────────────────────────────────────────
 
 export type Order = {
@@ -120,4 +124,28 @@ export type Order = {
    * Inicializada com `[{ status: "NOVO", at: createdAt }]`.
    */
   statusHistory: Array<{ status: OrderStatus; at: string }>;
+
+  // ── Campos de encomenda (ADR 0013) ─────────────────────────────────────────
+
+  /**
+   * Discriminador: 'daily' = pedido do dia; 'preorder' = encomenda futura.
+   * Quando 'preorder', scheduledDate e scheduledHour são obrigatórios.
+   */
+  orderType: OrderType;
+
+  /**
+   * Data de entrega acordada ("YYYY-MM-DD"). Preenchida apenas em encomendas.
+   */
+  scheduledDate?: string;
+
+  /**
+   * Hora inteira (0–23) de entrega acordada. Preenchida apenas em encomendas.
+   */
+  scheduledHour?: number;
+
+  /**
+   * Timestamptz gravado quando status → ENTREGUE (ADR 0013 D3).
+   * Null até a confirmação de entrega. Reconhecimento financeiro depende deste campo.
+   */
+  deliveredAt?: string;
 };

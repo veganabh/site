@@ -89,9 +89,15 @@ export type DayMetrics = {
   cancelCount: number;
 };
 
-/** Calcula métricas de faturamento para um conjunto de pedidos num dia. */
+/** Calcula métricas de faturamento para um conjunto de pedidos num dia.
+ * Encomendas (order_type='preorder') são excluídas das métricas do dia —
+ * elas só entram nos totais quando ENTREGUE (ADR 0013 D3/D7).
+ */
 export function calcDayMetrics(orders: Order[], day: Date): DayMetrics {
-  const dayOrders = orders.filter((o) => isSameDay(o.createdAt, day));
+  // Filtra só pedidos diários (order_type='daily' ou sem order_type para back-compat)
+  const dayOrders = orders.filter(
+    (o) => isSameDay(o.createdAt, day) && (o.orderType === "daily" || !o.orderType),
+  );
   const active = dayOrders.filter((o) => o.status !== "CANCELADO");
   const revenue = active.reduce((acc, o) => acc + o.total, 0);
   const orderCount = active.length;
@@ -164,10 +170,20 @@ export type SkuStat = {
 
 /**
  * Calcula top N SKUs vendidos num dia específico.
+ * Inclui pedidos diários E encomendas entregues (ADR 0013 D7).
  * Agrega por productId (soma qty e receita dos itens de cada pedido).
  */
 export function calcTopSkus(orders: Order[], day: Date, topN = 5): SkuStat[] {
-  const dayOrders = orders.filter((o) => isSameDay(o.createdAt, day) && o.status !== "CANCELADO");
+  const dayOrders = orders.filter((o) => {
+    if (o.status === "CANCELADO") return false;
+    // Pedido diário criado hoje
+    if ((o.orderType === "daily" || !o.orderType) && isSameDay(o.createdAt, day)) return true;
+    // Encomenda entregue hoje (pela data de entrega, não de criação)
+    if (o.orderType === "preorder" && o.status === "ENTREGUE" && o.deliveredAt) {
+      return isSameDay(o.deliveredAt, day);
+    }
+    return false;
+  });
 
   const map = new Map<string, SkuStat>();
 

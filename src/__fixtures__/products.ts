@@ -36,6 +36,7 @@ export const productFixtures: readonly Product[] = [
     serves: 1,
     contains: ["castanha-de-caju", "cacau"],
     freezable: false,
+    availableForPreorder: false,
   },
   {
     id: "2",
@@ -65,6 +66,7 @@ export const productFixtures: readonly Product[] = [
     serves: 1,
     contains: ["castanha-de-caju", "coco", "cacau"],
     freezable: false,
+    availableForPreorder: false,
   },
   {
     id: "3",
@@ -94,6 +96,7 @@ export const productFixtures: readonly Product[] = [
     serves: 8,
     contains: ["castanha-de-caju", "cacau"],
     freezable: true,
+    availableForPreorder: false,
   },
   {
     id: "4",
@@ -123,6 +126,7 @@ export const productFixtures: readonly Product[] = [
     serves: 3,
     contains: ["castanha-de-caju", "cacau"],
     freezable: true,
+    availableForPreorder: false,
   },
   {
     id: "5",
@@ -152,6 +156,7 @@ export const productFixtures: readonly Product[] = [
     serves: 1,
     contains: ["castanha-de-caju", "cacau"],
     freezable: false,
+    availableForPreorder: false,
   },
   {
     id: "6",
@@ -181,6 +186,7 @@ export const productFixtures: readonly Product[] = [
     serves: 1,
     contains: ["castanha-de-caju", "coco"],
     freezable: false,
+    availableForPreorder: false,
   },
   {
     id: "7",
@@ -210,6 +216,7 @@ export const productFixtures: readonly Product[] = [
     serves: 1,
     contains: ["coco"],
     freezable: false,
+    availableForPreorder: false,
   },
   {
     id: "8",
@@ -239,6 +246,7 @@ export const productFixtures: readonly Product[] = [
     serves: 6,
     contains: ["cacau", "coco"],
     freezable: true,
+    availableForPreorder: false,
   },
   {
     id: "9",
@@ -268,6 +276,7 @@ export const productFixtures: readonly Product[] = [
     serves: 8,
     contains: ["cacau"],
     freezable: true,
+    availableForPreorder: false,
   },
   {
     id: "10",
@@ -297,6 +306,7 @@ export const productFixtures: readonly Product[] = [
     serves: 1,
     contains: ["castanha-de-caju", "coco"],
     freezable: false,
+    availableForPreorder: false,
   },
   {
     id: "11",
@@ -326,6 +336,7 @@ export const productFixtures: readonly Product[] = [
     serves: 1,
     contains: ["castanha-de-caju", "cacau"],
     freezable: false,
+    availableForPreorder: false,
   },
   {
     id: "12",
@@ -355,5 +366,6 @@ export const productFixtures: readonly Product[] = [
     serves: 1,
     contains: ["castanha-de-caju", "cacau"],
     freezable: false,
+    availableForPreorder: false,
   },
 ] as const;
