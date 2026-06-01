@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
 import {
   parseIfoodReportAction,
-  commitIfoodImportAction,
+  commitIfoodItemsAction,
+  commitIfoodOrdersAction,
   type ParseIfoodResult,
   type IfoodProductOption,
 } from "@/server/actions/import-ifood";
@@ -42,7 +43,7 @@ function isoDate(d: Date): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
-/** Padrão: mês anterior fechado (caso comum de importar o relatório do mês). */
+/** Padrão p/ itens (sem data no arquivo): mês anterior fechado. */
 function defaultPeriod(): { start: string; end: string } {
   const now = new Date();
   const firstThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -58,9 +59,13 @@ export function ImportIfoodButton() {
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>("upload");
   const [parsed, setParsed] = useState<ParsedOk | null>(null);
-  const [mapping, setMapping] = useState<Record<string, string>>({}); // ifoodName -> productId | NONE
+  const [mapping, setMapping] = useState<Record<string, string>>({}); // só itens
   const [period, setPeriod] = useState(defaultPeriod);
-  const [doneMsg, setDoneMsg] = useState<{ rows: number; mapped: number } | null>(null);
+  const [doneMsg, setDoneMsg] = useState<{
+    kind: "items" | "orders";
+    rows: number;
+    mapped: number;
+  } | null>(null);
 
   function reset() {
     setPhase("upload");
@@ -89,12 +94,15 @@ export function ImportIfoodButton() {
         reset();
         return;
       }
-      const initialMap: Record<string, string> = {};
-      for (const r of res.rows) {
-        initialMap[r.ifoodName] = r.suggestedProductId ?? NONE;
+      if (res.kind === "items") {
+        const initialMap: Record<string, string> = {};
+        for (const r of res.rows) initialMap[r.ifoodName] = r.suggestedProductId ?? NONE;
+        setMapping(initialMap);
+      } else {
+        // Financeiro: período vem das datas dos pedidos.
+        setPeriod({ start: res.periodStart, end: res.periodEnd });
       }
       setParsed(res);
-      setMapping(initialMap);
       setPhase("preview");
     } catch {
       toast.error("Falha ao ler o arquivo. Tente de novo.");
@@ -105,29 +113,49 @@ export function ImportIfoodButton() {
   async function handleConfirm() {
     if (!parsed) return;
     setPhase("submitting");
-    const rows = parsed.rows.map((r) => ({
-      ifoodName: r.ifoodName,
-      category: r.category,
-      qty: r.qty,
-      revenueCents: r.revenueCents,
-      productId:
-        mapping[r.ifoodName] && mapping[r.ifoodName] !== NONE ? mapping[r.ifoodName] : null,
-    }));
     try {
-      const res = await commitIfoodImportAction({
-        periodStart: period.start,
-        periodEnd: period.end,
-        fileName: parsed.fileName,
-        rows,
-      });
-      if (!res.ok) {
-        toast.error(res.error ?? "Falha ao importar.");
-        setPhase("preview");
-        return;
+      if (parsed.kind === "items") {
+        const rows = parsed.rows.map((r) => ({
+          ifoodName: r.ifoodName,
+          category: r.category,
+          qty: r.qty,
+          revenueCents: r.revenueCents,
+          productId:
+            mapping[r.ifoodName] && mapping[r.ifoodName] !== NONE ? mapping[r.ifoodName] : null,
+        }));
+        const res = await commitIfoodItemsAction({
+          periodStart: period.start,
+          periodEnd: period.end,
+          fileName: parsed.fileName,
+          rows,
+        });
+        if (!res.ok) {
+          toast.error(res.error ?? "Falha ao importar.");
+          setPhase("preview");
+          return;
+        }
+        setDoneMsg({
+          kind: "items",
+          rows: res.importedRows ?? rows.length,
+          mapped: res.mappedCount ?? 0,
+        });
+        toast.success(`${res.importedRows} itens importados do iFood.`);
+      } else {
+        const res = await commitIfoodOrdersAction({
+          periodStart: parsed.periodStart,
+          periodEnd: parsed.periodEnd,
+          fileName: parsed.fileName,
+          rows: parsed.rows,
+        });
+        if (!res.ok) {
+          toast.error(res.error ?? "Falha ao importar.");
+          setPhase("preview");
+          return;
+        }
+        setDoneMsg({ kind: "orders", rows: res.importedRows ?? parsed.rows.length, mapped: 0 });
+        toast.success(`${res.importedRows} pedidos do iFood importados.`);
       }
-      setDoneMsg({ rows: res.importedRows ?? rows.length, mapped: res.mappedCount ?? 0 });
       setPhase("done");
-      toast.success(`${res.importedRows} itens importados do iFood.`);
       router.refresh();
     } catch {
       toast.error("Falha ao importar. Tente de novo.");
@@ -135,10 +163,13 @@ export function ImportIfoodButton() {
     }
   }
 
-  const matchedCount = parsed
-    ? parsed.rows.filter((r) => mapping[r.ifoodName] && mapping[r.ifoodName] !== NONE).length
-    : 0;
-  const unmatchedCount = parsed ? parsed.rows.length - matchedCount : 0;
+  // ── Derivados do preview de itens ───────────────────────────────────────────
+  const isItems = parsed?.kind === "items";
+  const matchedCount =
+    parsed?.kind === "items"
+      ? parsed.rows.filter((r) => mapping[r.ifoodName] && mapping[r.ifoodName] !== NONE).length
+      : 0;
+  const unmatchedCount = parsed?.kind === "items" ? parsed.rows.length - matchedCount : 0;
   const periodInvalid = period.start === "" || period.end === "" || period.end < period.start;
 
   function productLabel(products: IfoodProductOption[], id: string): string {
@@ -161,8 +192,8 @@ export function ImportIfoodButton() {
               Importar relatório do iFood
             </DialogTitle>
             <DialogDescription className="text-caption text-olive-700">
-              Suba o relatório “Itens do cardápio” (.xlsx) do iFood. As vendas entram nos Relatórios
-              por canal — sem virar pedido no sistema.
+              Suba o relatório de “Itens do cardápio” (por produto) ou o de pedidos (financeiro). O
+              sistema detecta o tipo sozinho.
             </DialogDescription>
           </div>
           <DialogClose
@@ -177,9 +208,8 @@ export function ImportIfoodButton() {
         {phase === "upload" && (
           <div className="flex flex-col gap-4">
             <ol className="ml-4 list-decimal space-y-1 text-caption text-olive-700">
-              <li>No iFood, baixe o relatório de desempenho “Itens do cardápio”.</li>
-              <li>Confira que tem as colunas Nome do item, Vendas e Total vendas.</li>
-              <li>Suba o .xlsx aqui embaixo.</li>
+              <li>No iFood, baixe o relatório de “Itens do cardápio” ou o de pedidos.</li>
+              <li>Suba o .xlsx aqui — detectamos o tipo pelo conteúdo.</li>
             </ol>
 
             <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-sm border-2 border-dashed border-divider bg-paper-100 px-4 py-8 text-center transition hover:border-olive-900/40 hover:bg-paper-50">
@@ -199,15 +229,15 @@ export function ImportIfoodButton() {
           </div>
         )}
 
-        {/* ── PREVIEW ────────────────────────────────────────────────── */}
-        {phase === "preview" && parsed && (
+        {/* ── PREVIEW: ITENS (por produto) ───────────────────────────── */}
+        {phase === "preview" && parsed?.kind === "items" && (
           <div className="flex flex-col gap-4">
             <p className="text-caption text-olive-700">
-              Arquivo: <span className="font-semibold text-olive-900">{parsed.fileName}</span> · aba{" "}
-              <span className="font-semibold text-olive-900">{parsed.sheetName}</span>
+              <span className="font-semibold text-leaf-700">Relatório por produto.</span> Arquivo:{" "}
+              <span className="font-semibold text-olive-900">{parsed.fileName}</span>
             </p>
 
-            {/* Período do relatório */}
+            {/* Período do relatório (itens não trazem data) */}
             <div className="flex flex-col gap-2 rounded-sm border border-divider bg-paper-100 p-3">
               <span className="text-caption font-semibold text-olive-900">
                 Período do relatório
@@ -241,11 +271,11 @@ export function ImportIfoodButton() {
 
             {/* Resumo */}
             <div className="grid grid-cols-3 gap-2">
-              <SummaryCard label="Itens" value={parsed.totals.items} tone="muted" />
-              <SummaryCard label="Casados" value={matchedCount} tone="leaf" />
+              <SummaryCard label="Itens" value={String(parsed.totals.items)} tone="muted" />
+              <SummaryCard label="Casados" value={String(matchedCount)} tone="leaf" />
               <SummaryCard
                 label="Sem produto"
-                value={unmatchedCount}
+                value={String(unmatchedCount)}
                 tone={unmatchedCount > 0 ? "alert" : "muted"}
               />
             </div>
@@ -328,25 +358,68 @@ export function ImportIfoodButton() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
 
-            <div className="flex items-center justify-between gap-2 pt-1">
-              <button
-                type="button"
-                onClick={reset}
-                className="text-caption font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900"
-              >
-                Escolher outro arquivo
-              </button>
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                onClick={handleConfirm}
-                disabled={periodInvalid}
-              >
-                Importar {parsed.totals.items} itens
-              </Button>
+        {/* ── PREVIEW: FINANCEIRO (por pedido) ───────────────────────── */}
+        {phase === "preview" && parsed?.kind === "orders" && (
+          <div className="flex flex-col gap-4">
+            <p className="text-caption text-olive-700">
+              <span className="font-semibold text-terra-700">
+                Relatório financeiro (por pedido).
+              </span>{" "}
+              Arquivo: <span className="font-semibold text-olive-900">{parsed.fileName}</span> ·
+              período <span className="font-semibold text-olive-900">{parsed.periodStart}</span> a{" "}
+              <span className="font-semibold text-olive-900">{parsed.periodEnd}</span>
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
+              <SummaryCard label="Pedidos" value={String(parsed.totals.orders)} tone="muted" />
+              <SummaryCard
+                label="Total pago"
+                value={formatBRL(parsed.totals.totalPaidCents / 100)}
+                tone="muted"
+              />
+              <SummaryCard
+                label="Taxas iFood"
+                value={`−${formatBRL(parsed.totals.feesCents / 100)}`}
+                tone="alert"
+              />
+              <SummaryCard
+                label="Líquido"
+                value={formatBRL(parsed.totals.netCents / 100)}
+                tone="leaf"
+              />
             </div>
+
+            <p className="text-micro text-olive-700">
+              Entra como receita/taxa/líquido reais por canal nos Relatórios (sem virar pedido no
+              sistema). Re-importar o mesmo período atualiza os pedidos.
+            </p>
+          </div>
+        )}
+
+        {/* Ações do preview (comum) */}
+        {phase === "preview" && parsed && (
+          <div className="mt-4 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={reset}
+              className="text-caption font-medium text-olive-700 underline underline-offset-2 hover:text-olive-900"
+            >
+              Escolher outro arquivo
+            </button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={handleConfirm}
+              disabled={isItems && periodInvalid}
+            >
+              {parsed.kind === "items"
+                ? `Importar ${parsed.totals.items} itens`
+                : `Importar ${parsed.totals.orders} pedidos`}
+            </Button>
           </div>
         )}
 
@@ -364,10 +437,22 @@ export function ImportIfoodButton() {
             <div className="flex items-start gap-2 rounded-sm border border-leaf-500/30 bg-leaf-500/5 p-3">
               <Check className="mt-0.5 h-4 w-4 shrink-0 text-leaf-700" aria-hidden="true" />
               <div className="text-caption text-olive-700">
-                <p className="font-bold text-leaf-700">{doneMsg.rows} itens do iFood importados.</p>
-                <p className="mt-0.5">
-                  {doneMsg.mapped} casado(s) com produto — o casamento fica salvo pro próximo mês.
-                </p>
+                {doneMsg.kind === "items" ? (
+                  <>
+                    <p className="font-bold text-leaf-700">
+                      {doneMsg.rows} itens do iFood importados.
+                    </p>
+                    <p className="mt-0.5">
+                      {doneMsg.mapped} casado(s) com produto — o casamento fica salvo pro próximo
+                      mês.
+                    </p>
+                  </>
+                ) : (
+                  <p className="font-bold text-leaf-700">
+                    {doneMsg.rows} pedidos do iFood importados — taxa e líquido reais nos
+                    Relatórios.
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex items-center justify-end gap-2 pt-1">
@@ -393,7 +478,7 @@ function SummaryCard({
   tone,
 }: {
   label: string;
-  value: number;
+  value: string;
   tone: "leaf" | "alert" | "muted";
 }) {
   const toneClass = {
@@ -403,8 +488,8 @@ function SummaryCard({
   }[tone];
   return (
     <div className={cn("flex flex-col gap-1 rounded-sm border p-3", toneClass)}>
-      <span className="text-micro font-semibold tracking-wide uppercase">{label}</span>
-      <span className="text-h3 font-bold text-olive-900 tabular-nums">{value}</span>
+      <span className="text-caption font-semibold tracking-wide uppercase">{label}</span>
+      <span className="text-h4 font-bold text-olive-900 tabular-nums">{value}</span>
     </div>
   );
 }

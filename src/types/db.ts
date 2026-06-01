@@ -406,6 +406,53 @@ export type Database = {
           },
         ];
       };
+      ifood_order_financials: {
+        Row: {
+          created_at: string;
+          fees_cents: number;
+          id: string;
+          ifood_order_id: string;
+          import_id: string | null;
+          net_cents: number;
+          ordered_at: string;
+          payment_method: string | null;
+          status: string;
+          total_paid_cents: number;
+        };
+        Insert: {
+          created_at?: string;
+          fees_cents?: number;
+          id?: string;
+          ifood_order_id: string;
+          import_id?: string | null;
+          net_cents?: number;
+          ordered_at: string;
+          payment_method?: string | null;
+          status: string;
+          total_paid_cents?: number;
+        };
+        Update: {
+          created_at?: string;
+          fees_cents?: number;
+          id?: string;
+          ifood_order_id?: string;
+          import_id?: string | null;
+          net_cents?: number;
+          ordered_at?: string;
+          payment_method?: string | null;
+          status?: string;
+          total_paid_cents?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ifood_order_financials_import_id_fkey";
+            columns: ["import_id"];
+            isOneToOne: false;
+            referencedRelation: "ifood_imports";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       ifood_product_map: {
         Row: {
           ifood_name: string;
