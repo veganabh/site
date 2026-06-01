@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Star, Truck } from "lucide-react";
+import { Plus, Star, Truck, CalendarClock } from "lucide-react";
 import { ProductPhoto } from "@/components/features/product-photo";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -39,14 +39,17 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
     <Card
       as="article"
       padding="none"
-      interactive
+      interactive={!isSoldOut}
       className={cn("group relative flex flex-col overflow-hidden", className)}
     >
       <div className="relative block aspect-[4/3] overflow-hidden bg-paper-100">
         <ProductPhoto
           product={product}
-          withHoverSecondary
-          className="transition-transform duration-500 md:group-hover:scale-[1.03]"
+          withHoverSecondary={!isSoldOut}
+          className={cn(
+            "transition-transform duration-500",
+            isSoldOut ? "opacity-80 grayscale" : "md:group-hover:scale-[1.03]",
+          )}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
 
@@ -82,26 +85,31 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
           </div>
         )}
 
-        {/* Quick-add — top-right with pop animation.
+        {/* Quick-add — top-right with pop animation. Escondido quando esgotado (vira CTA Encomendar).
             Hit area expandida via ::before (WCAG 2.5.5 — 44x44 mínimo) sem inflar visual. */}
-        <button
-          type="button"
-          aria-label={`Adicionar ${product.name} ao carrinho`}
-          onClick={handleAdd}
-          disabled={isSoldOut}
-          className={cn(
-            "absolute top-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-full text-paper-50 shadow-md transition-transform duration-200 active:scale-95",
-            "before:absolute before:-inset-2 before:content-['']",
-            isSoldOut ? "cursor-not-allowed bg-olive-500/60" : "bg-leaf-500 hover:bg-terra-500",
-            popping && !isSoldOut ? "scale-125 rotate-12" : !isSoldOut && "hover:scale-105",
-          )}
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" />
-        </button>
+        {!isSoldOut && (
+          <button
+            type="button"
+            aria-label={`Adicionar ${product.name} ao carrinho`}
+            onClick={handleAdd}
+            className={cn(
+              "absolute top-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-leaf-500 text-paper-50 shadow-md transition-transform duration-200 hover:bg-terra-500 active:scale-95",
+              "before:absolute before:-inset-2 before:content-['']",
+              popping ? "scale-125 rotate-12" : "hover:scale-105",
+            )}
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" />
+          </button>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-1 p-3">
-        <h3 className="font-sans text-body-sm leading-snug font-semibold text-olive-900">
+        <h3
+          className={cn(
+            "font-sans text-body-sm leading-snug font-semibold",
+            isSoldOut ? "text-olive-700" : "text-olive-900",
+          )}
+        >
           {product.name}
         </h3>
         <p className="text-micro text-olive-700">
@@ -117,9 +125,11 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
           </p>
         )}
 
-        <div className="mt-auto flex items-end justify-between pt-2">
+        <div className="mt-auto flex flex-col gap-2 pt-2">
           <div className="flex flex-col leading-tight">
-            <span className="text-body font-bold text-olive-900">
+            <span
+              className={cn("text-body font-bold", isSoldOut ? "text-olive-700" : "text-olive-900")}
+            >
               {formatBRL(product.price_site)}
             </span>
             {hasSavings && (
@@ -128,6 +138,18 @@ export function ProductCardPhoto({ product, className }: ProductCardPhotoProps) 
               </span>
             )}
           </div>
+
+          {/* Esgotado vira lead de encomenda — CTA fica "vivo" (não esmaecido).
+              Visual apenas nesta etapa; a funcionalidade de encomenda vem depois. */}
+          {isSoldOut && (
+            <button
+              type="button"
+              className="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-sm bg-terra-500 text-body-sm font-semibold text-paper-50 transition hover:bg-terra-700 focus-visible:ring-2 focus-visible:ring-olive-900/30 focus-visible:outline-none"
+            >
+              <CalendarClock className="h-4 w-4" aria-hidden="true" />
+              Encomendar
+            </button>
+          )}
         </div>
       </div>
     </Card>
