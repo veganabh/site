@@ -20,6 +20,9 @@ import { uploadProductPhotoAction } from "@/server/actions/upload-product-photo"
 import { Input, TextArea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { marginByChannel, type ChannelMargin } from "@/lib/fees";
+import { formatBRL } from "@/lib/format";
+import { Store, Bike } from "lucide-react";
 
 const ACCEPTED_IMAGE_TYPES = "image/jpeg,image/png,image/webp";
 const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
@@ -121,6 +124,10 @@ export function ProdutoForm(props: ProdutoFormProps) {
 
   const categories = useActiveCategories();
   const previewUrl = watch("photo_url");
+  // Campos observados pra calcular a margem por canal ao vivo (read-only).
+  const watchedPriceSite = watch("price_site");
+  const watchedPriceIfood = watch("price_ifood");
+  const watchedCost = watch("cost");
 
   async function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -276,6 +283,13 @@ export function ProdutoForm(props: ProdutoFormProps) {
         </Field>
       </div>
 
+      {/* Margem por canal — somente leitura, calculada ao vivo */}
+      <MarginPanel
+        priceSite={Number(watchedPriceSite)}
+        priceIfood={Number(watchedPriceIfood)}
+        cost={Number(watchedCost)}
+      />
+
       {/* Estoque */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field
@@ -424,6 +438,82 @@ function Field({
       {hint && <p className="text-caption text-olive-500">{hint}</p>}
       {children}
       {error && <p className="text-caption text-terra-700">{error}</p>}
+    </div>
+  );
+}
+
+/**
+ * Painel de margem por canal — SOMENTE LEITURA. Mostra o lucro líquido do
+ * produto em cada canal (iFood, site PIX, site cartão), recalculado ao vivo
+ * conforme o admin edita preço/CPV. Não é editável — é um espelho do que o
+ * produto rende. Taxas em `lib/fees.ts`.
+ *
+ * Sem CPV (custo 0) → mostra aviso, não inventa número.
+ */
+function MarginPanel({
+  priceSite,
+  priceIfood,
+  cost,
+}: {
+  priceSite: number;
+  priceIfood: number;
+  cost: number;
+}) {
+  const hasCost = cost > 0;
+  const m = marginByChannel({
+    priceSite: Number.isFinite(priceSite) ? priceSite : 0,
+    priceIfood: Number.isFinite(priceIfood) ? priceIfood : 0,
+    cost: Number.isFinite(cost) ? cost : 0,
+  });
+
+  return (
+    <div className="flex flex-col gap-2 rounded-sm border border-divider bg-paper-100/60 p-4">
+      <div className="flex items-center justify-between">
+        <span className="text-body-sm font-semibold text-olive-900">Margem por canal</span>
+        <span className="text-micro text-olive-700">somente leitura · lucro por unidade</span>
+      </div>
+
+      {!hasCost ? (
+        <p className="text-caption text-olive-700">
+          Cadastre o <strong>Custo / CPV</strong> acima pra ver a margem de lucro em cada canal.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <MarginStat icon={Bike} label="iFood" tone="terra" m={m.ifood} />
+          <MarginStat icon={Store} label="Site · PIX" tone="leaf" m={m.pix} />
+          <MarginStat icon={Store} label="Site · Cartão" tone="leaf" m={m.card} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MarginStat({
+  icon: Icon,
+  label,
+  tone,
+  m,
+}: {
+  icon: React.ElementType;
+  label: string;
+  tone: "leaf" | "terra";
+  m: ChannelMargin;
+}) {
+  const pct = m.pct === null ? "—" : `${Math.round(m.pct * 100)}%`;
+  const profit = m.profit === null ? "—" : `${formatBRL(m.profit)}/un`;
+  return (
+    <div className="flex flex-col gap-1 rounded-sm border border-divider bg-paper-50 px-3 py-2">
+      <div
+        className={cn(
+          "flex items-center gap-1.5 text-micro font-semibold tracking-wide uppercase",
+          tone === "leaf" ? "text-leaf-700" : "text-terra-700",
+        )}
+      >
+        <Icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
+        {label}
+      </div>
+      <span className="text-h4 font-bold text-olive-900 tabular-nums">{pct}</span>
+      <span className="text-caption text-olive-700 tabular-nums">{profit} de lucro</span>
     </div>
   );
 }

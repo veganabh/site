@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { formatBRL } from "@/lib/format";
 import { buildChannelMetrics } from "@/lib/channel-metrics";
 import { buildCouponRoi } from "@/lib/coupon-roi";
-import { buildProductMargin } from "@/lib/product-margin";
+import { buildChannelProfit } from "@/lib/channel-profit";
 import {
   resolveReportRange,
   filterOrdersByRange,
@@ -65,7 +65,7 @@ export default async function RelatoriosPage({
 
   const channel = buildChannelMetrics(orders);
   const couponRoi = buildCouponRoi(orders);
-  const margin = buildProductMargin(orders, products);
+  const profit = buildChannelProfit(orders, products);
   const geo = buildGeoMetrics(orders);
   const timing = buildTimingMetrics(orders);
   const abandonment = buildAbandonmentMetrics(orders);
@@ -80,13 +80,18 @@ export default async function RelatoriosPage({
       alerts.push(`Cupom ${c.code} com ROI ${c.roi.toFixed(1)}x — desconto maior que retorno.`);
     }
   }
-  if (margin.missingCostCount > 0) {
+  if (profit.missingCostCount > 0) {
     alerts.push(
-      `${margin.missingCostCount} produto(s) vendido(s) sem CPV cadastrado — margem incompleta.`,
+      `${profit.missingCostCount} produto(s) vendido(s) sem CPV cadastrado — lucro incompleto.`,
     );
   }
   if (sitePct !== null && sitePct < 50 && channel.totalRevenue > 0) {
     alerts.push(`Só ${sitePct}% da receita vem do site — dependência alta do iFood.`);
+  }
+  if (profit.totalMigrationGain > 0) {
+    alerts.push(
+      `Migrar as vendas do iFood pro site renderia +${formatBRL(profit.totalMigrationGain)} no período (mesmo volume, taxa menor).`,
+    );
   }
 
   return (
@@ -377,53 +382,68 @@ export default async function RelatoriosPage({
           )}
         </section>
 
-        {/* ── Margem por produto ────────────────────────────────────────── */}
+        {/* ── Lucratividade por produto e canal ─────────────────────────── */}
         <section className="flex flex-col gap-3">
           <div className="flex flex-col gap-0.5">
-            <h2 className="text-body font-bold text-olive-900">Margem por produto</h2>
+            <h2 className="text-body font-bold text-olive-900">Lucratividade por canal</h2>
             <p className="text-caption text-olive-700">
-              Receita − custo (CPV). Cadastre o CPV no produto pra ver margem real. Sem CPV = margem
-              incompleta.
+              Lucro líquido real = preço do canal − CPV − taxa do canal (iFood 26,2% · site PIX
+              R$0,80). Sem CPV cadastrado, o lucro não é calculável.
             </p>
           </div>
 
+          {/* Cards: lucro líquido real por canal + ganho de migração */}
           <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-            <SimpleStat
-              label="Receita"
-              value={formatBRL(margin.totalRevenue)}
-              hint="produtos vendidos"
+            <ChannelCard
+              icon={Bike}
+              label="Lucro líq. iFood"
+              value={formatBRL(profit.totalProfitIfood)}
+              hint="após CPV + taxa 26,2%"
+              tone="terra"
+            />
+            <ChannelCard
+              icon={Store}
+              label="Lucro líq. site"
+              value={formatBRL(profit.totalProfitSite)}
+              hint="após CPV + PIX R$0,80"
+              tone="leaf"
             />
             <SimpleStat
-              label="Custo (CPV)"
-              value={formatBRL(margin.totalCost)}
-              hint="só com CPV informado"
+              label="Lucro líq. total"
+              value={formatBRL(profit.totalProfit)}
+              hint="site + iFood, no período"
             />
-            <SimpleStat
-              label="Margem"
-              value={formatBRL(margin.totalMargin)}
-              hint="receita − custo"
-            />
-            <SimpleStat
-              label="Margem %"
-              value={
-                margin.overallMarginPct === null
-                  ? "—"
-                  : `${Math.round(margin.overallMarginPct * 100)}%`
-              }
-              hint="margem ÷ receita"
-            />
+            <Card
+              padding="none"
+              className="flex flex-col gap-2 border border-leaf-500/40 bg-leaf-500/8 p-4"
+            >
+              <span className="text-caption font-semibold tracking-wide text-leaf-700 uppercase">
+                Ganho migrando p/ site
+              </span>
+              <span className="text-h4 font-bold text-leaf-700">
+                +{formatBRL(profit.totalMigrationGain)}
+              </span>
+              <span className="text-caption text-olive-700">se vendas iFood fossem no site</span>
+            </Card>
           </div>
 
-          {margin.rows.length === 0 ? (
+          {profit.rows.length === 0 ? (
             <Card padding="none" className="border-dashed p-6 text-center">
               <p className="text-caption text-olive-700">Nenhuma venda no período.</p>
             </Card>
           ) : (
             <Card padding="none" className="overflow-x-auto">
-              <table className="w-full min-w-[560px] border-collapse text-left">
+              <table className="w-full min-w-[720px] border-collapse text-left">
                 <thead>
                   <tr className="border-b border-divider">
-                    {["Produto", "Vendidos", "Receita", "Custo", "Margem", "Margem %"].map((h) => (
+                    {[
+                      "Produto",
+                      "Vendas (iF · site)",
+                      "Lucro iFood",
+                      "Lucro site",
+                      "Margem iF · site",
+                      "Ganho migração",
+                    ].map((h) => (
                       <th
                         key={h}
                         className="px-3 py-2 text-caption font-semibold tracking-wide text-olive-700 uppercase"
@@ -434,27 +454,36 @@ export default async function RelatoriosPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {margin.rows.map((r) => (
+                  {profit.rows.map((r) => (
                     <tr key={r.productId} className="border-b border-divider last:border-0">
                       <td className="px-3 py-2 text-caption font-semibold text-olive-900">
                         {r.name}
-                      </td>
-                      <td className="px-3 py-2 text-caption text-olive-700">{r.unitsSold}</td>
-                      <td className="px-3 py-2 text-caption text-olive-900">
-                        {formatBRL(r.revenue)}
-                      </td>
-                      <td className="px-3 py-2 text-caption text-olive-700">
-                        {r.hasCost ? (
-                          formatBRL(r.cost)
-                        ) : (
-                          <span className="text-terra-700">sem CPV</span>
+                        {!r.hasCost && (
+                          <span className="ml-1.5 text-micro font-semibold text-terra-700">
+                            sem CPV
+                          </span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-caption font-semibold text-olive-900">
-                        {r.hasCost ? formatBRL(r.margin) : "—"}
+                      <td className="px-3 py-2 text-caption text-olive-700 tabular-nums">
+                        {r.unitsIfood} · {r.unitsSite}
                       </td>
-                      <td className="px-3 py-2 text-caption font-semibold text-leaf-700">
-                        {r.marginPct === null ? "—" : `${Math.round(r.marginPct * 100)}%`}
+                      <td className="px-3 py-2 text-caption font-semibold text-olive-900 tabular-nums">
+                        {r.profitIfood === null ? "—" : formatBRL(r.profitIfood)}
+                      </td>
+                      <td className="px-3 py-2 text-caption font-semibold text-olive-900 tabular-nums">
+                        {r.profitSite === null ? "—" : formatBRL(r.profitSite)}
+                      </td>
+                      <td className="px-3 py-2 text-caption text-olive-700 tabular-nums">
+                        {r.pctIfood === null ? "—" : `${Math.round(r.pctIfood * 100)}%`}
+                        {" · "}
+                        <span className="font-semibold text-leaf-700">
+                          {r.pctSite === null ? "—" : `${Math.round(r.pctSite * 100)}%`}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-caption font-semibold text-leaf-700 tabular-nums">
+                        {r.migrationGain === null || r.migrationGain === 0
+                          ? "—"
+                          : `+${formatBRL(r.migrationGain)}`}
                       </td>
                     </tr>
                   ))}
