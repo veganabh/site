@@ -1,5 +1,6 @@
 import { ProductCardPhoto } from "@/components/dashboard/product-card-photo";
 import { cn } from "@/lib/utils";
+import { sortSoldOutLast } from "@/lib/product-sort";
 import type { Product } from "@/types/product";
 
 type ProductGridPhotoProps = {
@@ -21,6 +22,9 @@ export function ProductGridPhoto({
     );
   }
 
+  // Esgotados sempre por último (sort estável; disponíveis mantêm a ordem).
+  const ordered = sortSoldOutLast(products);
+
   return (
     <div
       className={cn(
@@ -28,7 +32,7 @@ export function ProductGridPhoto({
         className,
       )}
     >
-      {products.map((p) => (
+      {ordered.map((p) => (
         <ProductCardPhoto key={p.id} product={p} />
       ))}
     </div>
