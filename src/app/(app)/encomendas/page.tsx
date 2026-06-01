@@ -29,7 +29,7 @@ export default async function EncomendasPage() {
       {/* Hero banner — mesmo padrão do /presentear */}
       <section
         aria-labelledby="encomendas-hero"
-        className="relative flex min-h-[270px] flex-col justify-center overflow-hidden rounded-sm bg-olive-900 p-5 text-paper-50 shadow-lg md:min-h-[305px] md:p-8"
+        className="relative flex min-h-[216px] flex-col justify-center overflow-hidden rounded-sm bg-olive-900 p-5 text-paper-50 shadow-lg md:min-h-[244px] md:p-8"
       >
         <CalendarClock
           className="pointer-events-none absolute -top-6 -right-6 h-36 w-36 text-terra-500/30"
@@ -49,8 +49,7 @@ export default async function EncomendasPage() {
             Encomendas
           </p>
           <h1 className="text-h2 leading-tight font-extrabold text-paper-50 md:text-h1">
-            Doces feitos sob medida
-            <br className="hidden md:block" /> pra sua data.
+            Doces feitos sob medida.
           </h1>
           <p className="max-w-xl text-body-sm text-paper-50 md:text-body-sm">
             Pague agora, receba na hora combinada — a gente cuida de tudo com o mesmo cuidado de
