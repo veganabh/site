@@ -17,7 +17,10 @@ async function joinItemsAndHistory(orderRows: ReadonlyArray<Record<string, unkno
   const supabase = await createSupabaseServerClient();
   const ids = orderRows.map((o) => o.id as string);
   if (ids.length === 0) {
-    return { itemsByOrder: new Map<string, unknown[]>(), historyByOrder: new Map<string, unknown[]>() };
+    return {
+      itemsByOrder: new Map<string, unknown[]>(),
+      historyByOrder: new Map<string, unknown[]>(),
+    };
   }
 
   const [itemsRes, historyRes] = await Promise.all([
@@ -55,12 +58,18 @@ async function joinItemsAndHistory(orderRows: ReadonlyArray<Record<string, unkno
   return { itemsByOrder, historyByOrder };
 }
 
-export async function listAllOrders(): Promise<Order[]> {
+/**
+ * Lista pedidos. Por padrão inclui tudo; `excludePreorders` remove encomendas
+ * (order_type='preorder') — usado no painel diário, que não deve misturar
+ * encomendas (essas vivem só em /gestao/encomendas).
+ */
+export async function listAllOrders(opts?: { excludePreorders?: boolean }): Promise<Order[]> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .order("created_at", { ascending: false });
+  let query = supabase.from("orders").select("*").order("created_at", { ascending: false });
+  if (opts?.excludePreorders) {
+    query = query.neq("order_type", "preorder");
+  }
+  const { data, error } = await query;
 
   if (error) {
     console.error("[server/orders] listAllOrders:", error.message);
@@ -106,11 +115,7 @@ export async function listOrdersByStatus(status: OrderStatus): Promise<Order[]> 
 
 export async function getOrderById(id: string): Promise<Order | null> {
   const supabase = await createSupabaseServerClient();
-  const { data: row, error } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+  const { data: row, error } = await supabase.from("orders").select("*").eq("id", id).maybeSingle();
 
   if (error) {
     console.error("[server/orders] getOrderById:", error.message);

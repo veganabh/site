@@ -19,6 +19,7 @@ import { CalendarDays, Kanban } from "lucide-react";
 import type { Order, OrderStatus } from "@/types/order";
 import { OrderCard } from "@/components/features/order-card";
 import { OrderDrawer } from "@/components/features/order-drawer";
+import { PreorderStatsStrip } from "@/components/admin/encomendas/preorder-stats-strip";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -123,6 +124,9 @@ export function PreordersKanban({ initialPreorders }: PreordersKanbanProps) {
         </div>
       </div>
 
+      {/* Métricas do mês (espelha a strip dos pedidos do dia) */}
+      <PreorderStatsStrip preorders={initialPreorders} />
+
       {/* Kanban view */}
       {view === "kanban" && (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
@@ -130,20 +134,19 @@ export function PreordersKanban({ initialPreorders }: PreordersKanbanProps) {
             const orders = byStatus.get(status) ?? [];
             return (
               <div key={status} className="flex flex-col gap-2">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-caption font-semibold text-olive-900">
+                {/* Header da coluna — mesmo padrão do kanban de Pedidos do dia */}
+                <div className="flex items-center justify-between rounded-sm bg-paper-100 px-2.5 py-1.5">
+                  <p className="text-micro font-bold tracking-wide text-olive-700 uppercase">
                     {PREORDER_STATUS_LABELS[status]}
+                  </p>
+                  <span
+                    className={cn(
+                      "flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-micro leading-none font-bold",
+                      orders.length > 0 ? badgeClass : "bg-paper-50 text-olive-700",
+                    )}
+                  >
+                    {orders.length}
                   </span>
-                  {orders.length > 0 && (
-                    <span
-                      className={cn(
-                        "inline-flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-micro font-bold",
-                        badgeClass,
-                      )}
-                    >
-                      {orders.length}
-                    </span>
-                  )}
                 </div>
 
                 {orders.length === 0 ? (
