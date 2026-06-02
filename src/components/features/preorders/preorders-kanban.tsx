@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 
 // Labels específicos para encomendas (ADR 0013 D2)
 const PREORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  NOVO: "Paga / Nova",
+  NOVO: "Nova",
   PREPARANDO: "Em produção",
   PRONTO: "Pronta",
   A_CAMINHO: "Saiu p/ entrega",
@@ -50,30 +50,40 @@ export function PreordersKanban({ initialPreorders }: PreordersKanbanProps) {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [view, setView] = useState<View>("kanban");
 
-  // Estado local — encomendas não passam pelo store de pedidos diários
-  const active = initialPreorders.filter((o) => o.status !== "CANCELADO");
+  // Pipeline de produção = só encomendas CONFIRMADAS (pagas). ADR 0013:
+  // "encomenda confirmada ao receber o pagamento". Não-pagas não entram nas
+  // colunas (não se produz sem pagamento) — viram só um aviso no topo.
+  const confirmed = useMemo(
+    () => initialPreorders.filter((o) => o.status !== "CANCELADO" && o.paymentStatus === "PAGO"),
+    [initialPreorders],
+  );
+  const awaitingPayment = useMemo(
+    () =>
+      initialPreorders.filter((o) => o.status !== "CANCELADO" && o.paymentStatus !== "PAGO").length,
+    [initialPreorders],
+  );
 
   const byStatus = useMemo(() => {
     const map = new Map<OrderStatus, Order[]>();
     for (const col of KANBAN_COLUMNS) map.set(col.status, []);
-    for (const o of active) {
+    for (const o of confirmed) {
       const col = map.get(o.status);
       if (col) col.push(o);
     }
     return map;
-  }, [active]);
+  }, [confirmed]);
 
   // Calendário: agrupa por scheduled_date
   const byDate = useMemo(() => {
     const map = new Map<string, Order[]>();
-    for (const o of active) {
+    for (const o of confirmed) {
       const d = o.scheduledDate ?? "sem data";
       const list = map.get(d) ?? [];
       list.push(o);
       map.set(d, list);
     }
     return new Map([...map.entries()].sort(([a], [b]) => a.localeCompare(b)));
-  }, [active]);
+  }, [confirmed]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -82,8 +92,11 @@ export function PreordersKanban({ initialPreorders }: PreordersKanbanProps) {
         <div className="flex flex-col gap-1">
           <h1 className="text-h2 font-bold text-olive-900">Encomendas</h1>
           <p className="text-body-sm text-olive-700">
-            {active.length} encomenda{active.length !== 1 ? "s" : ""} ativa
-            {active.length !== 1 ? "s" : ""}
+            {confirmed.length} encomenda{confirmed.length !== 1 ? "s" : ""} confirmada
+            {confirmed.length !== 1 ? "s" : ""}
+            {awaitingPayment > 0 && (
+              <span className="text-olive-500"> · {awaitingPayment} aguardando pagamento</span>
+            )}
           </p>
         </div>
 
