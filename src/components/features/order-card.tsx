@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { CalendarClock } from "lucide-react";
 import type { Order, OrderStatus } from "@/types/order";
 import { canTransitionTo } from "@/types/order";
 import { useAdminOrdersStore } from "@/stores/admin-orders-store";
@@ -12,6 +13,12 @@ import { cn } from "@/lib/utils";
 function formatTime(isoString: string): string {
   const d = new Date(isoString);
   return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+/** "2026-06-18" → "18/06" (sem shift de fuso). */
+function formatScheduledShort(dateStr: string): string {
+  const [, month, day] = dateStr.split("-");
+  return `${day}/${month}`;
 }
 
 /** Minutos decorridos desde `isoString`. */
@@ -171,6 +178,14 @@ export function OrderCard({ order, onOpen, className }: OrderCardProps) {
         <p className="mt-0.5 text-micro text-olive-700">
           {formatTime(order.createdAt)} · {itemCount} {itemCount === 1 ? "item" : "itens"}
         </p>
+        {/* Encomenda: data/hora de entrega agendada — destaque (info-chave do preorder) */}
+        {order.orderType === "preorder" && order.scheduledDate && (
+          <p className="mt-1 inline-flex items-center gap-1 text-micro font-semibold text-terra-700">
+            <CalendarClock className="h-3 w-3 shrink-0" aria-hidden="true" />
+            Entrega {formatScheduledShort(order.scheduledDate)}
+            {order.scheduledHour != null && ` · ${String(order.scheduledHour).padStart(2, "0")}h`}
+          </p>
+        )}
       </div>
 
       {/* Timer PREPARANDO */}
