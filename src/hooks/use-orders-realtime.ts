@@ -31,7 +31,17 @@ export function useOrdersRealtime() {
         router.refresh();
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders" }, (payload) => {
-        const next = payload.new as { id?: string; payment_status?: string } | null;
+        const next = payload.new as {
+          id?: string;
+          payment_status?: string;
+          order_type?: string;
+        } | null;
+        // Encomendas (preorder) vivem só em /gestao/encomendas — não tocam o
+        // painel diário nem o badge/som de "pedido novo".
+        if (next?.order_type === "preorder") {
+          router.refresh();
+          return;
+        }
         const id = next?.id;
         if (id && next?.payment_status === "PAGO") {
           // Pedido só "entra" no painel quando paga. Conta como novo na

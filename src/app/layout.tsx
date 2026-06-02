@@ -59,7 +59,7 @@ export default async function RootLayout({
     listAllRings(),
     listCollections({ onlyActive: false }),
     listGiftKitTemplates({ onlyActive: false }),
-    listAllOrders(),
+    listAllOrders({ excludePreorders: true }),
     listActiveDeliveryPersons(),
     listMyAddresses(),
     listCategories({ onlyActive: false }),

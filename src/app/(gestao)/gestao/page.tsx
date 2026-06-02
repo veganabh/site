@@ -41,7 +41,7 @@ export default async function GestaoPage() {
   yesterday.setDate(yesterday.getDate() - 1);
 
   const [orders, products] = await Promise.all([
-    listAllOrders(),
+    listAllOrders({ excludePreorders: true }),
     listProducts({ onlyActive: false }),
   ]);
   const todayMetrics = calcDayMetrics(orders, today);
