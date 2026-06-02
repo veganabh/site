@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   ClipboardList,
+  CalendarClock,
   Users,
   Package,
   Tag,
@@ -50,6 +51,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: "/gestao", label: "Painel", icon: LayoutDashboard },
       { href: "/gestao/pedidos", label: "Pedidos", icon: ClipboardList, showOrderBadge: true },
+      { href: "/gestao/encomendas", label: "Encomendas", icon: CalendarClock },
       { href: "/gestao/clientes", label: "Clientes", icon: Users },
     ],
   },
