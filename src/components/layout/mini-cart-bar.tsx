@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ShoppingBag, ArrowRight } from "lucide-react";
 import { useCartStore } from "@/stores/cart-store";
 import { formatBRL } from "@/lib/format";
+import { CalendarClock } from "lucide-react";
 
 /**
  * Barra sticky mobile sobre o BottomNav — aparece quando há itens no carrinho.
@@ -14,28 +15,43 @@ import { formatBRL } from "@/lib/format";
  */
 export function MiniCartBar() {
   const items = useCartStore((s) => s.items);
+  const orderContext = useCartStore((s) => s.orderContext);
   const pathname = usePathname() ?? "/";
 
-  const hideRoute = pathname.startsWith("/carrinho") || pathname.startsWith("/gestao");
+  const hideRoute =
+    pathname.startsWith("/carrinho") ||
+    pathname.startsWith("/encomendas/finalizar") ||
+    pathname.startsWith("/gestao");
   if (hideRoute || items.length === 0) return null;
 
+  const isPreorder = orderContext === "preorder";
   const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
   const subtotal = items.reduce((acc, i) => acc + i.product.price_site * i.quantity, 0);
 
+  const label = isPreorder
+    ? `Ver encomenda com ${itemCount} ${itemCount === 1 ? "item" : "itens"}, total ${formatBRL(subtotal)}`
+    : `Ver carrinho com ${itemCount} ${itemCount === 1 ? "item" : "itens"}, total ${formatBRL(subtotal)}`;
+
+  const Icon = isPreorder ? CalendarClock : ShoppingBag;
+  const ctaText = isPreorder ? "Ver encomenda" : "Ver carrinho";
+
+  // Preorder tem rota dedicada de checkout — nunca passa pelo /carrinho normal.
+  const href = isPreorder ? "/encomendas/finalizar" : "/carrinho";
+
   return (
     <Link
-      href="/carrinho"
-      aria-label={`Ver carrinho com ${itemCount} ${itemCount === 1 ? "item" : "itens"}, total ${formatBRL(subtotal)}`}
+      href={href}
+      aria-label={label}
       className="fixed inset-x-6 bottom-[calc(env(safe-area-inset-bottom)+3rem)] z-20 flex items-center justify-between gap-3 rounded-full bg-terra-500 px-5 pt-2.5 pb-6 text-paper-50 shadow-md transition-transform active:scale-[0.98] md:hidden"
     >
       <span className="flex items-center gap-2">
         <span className="relative inline-flex">
-          <ShoppingBag className="h-5 w-5" aria-hidden="true" strokeWidth={2} />
+          <Icon className="h-5 w-5" aria-hidden="true" strokeWidth={2} />
           <span className="absolute -top-1.5 -right-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-terra-500 px-1 text-micro font-bold text-paper-50">
             {itemCount}
           </span>
         </span>
-        <span className="text-body-sm font-semibold">Ver carrinho</span>
+        <span className="text-body-sm font-semibold">{ctaText}</span>
       </span>
       <span className="flex items-center gap-2">
         <span className="text-body-sm font-bold tabular-nums">{formatBRL(subtotal)}</span>

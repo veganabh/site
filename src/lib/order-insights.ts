@@ -108,6 +108,41 @@ export function filterOrdersByRange(orders: Order[], range: ResolvedRange): Orde
   });
 }
 
+/**
+ * Separa pedidos diários de encomendas e aplica a regra de reconhecimento:
+ *   - `daily`: todos os não-cancelados (como antes).
+ *   - `preorders`: só os que chegaram ao status ENTREGUE (ADR 0013 D3).
+ *
+ * As funções de métricas devem receber `forMetrics` (daily + preorders entregues)
+ * para o total geral, ou `daily` para canais (sem encomendas contaminando).
+ */
+export function splitOrdersForMetrics(orders: Order[]): {
+  /** Pedidos diários não-cancelados. */
+  daily: Order[];
+  /** Encomendas entregues (reconhecimento financeiro). */
+  deliveredPreorders: Order[];
+  /** Encomendas não entregues (ativas, a reconhecer). */
+  pendingPreorders: Order[];
+  /** daily + deliveredPreorders — para total geral de receita/itens. */
+  forMetrics: Order[];
+} {
+  const daily = orders.filter(
+    (o) => (o.orderType === "daily" || !o.orderType) && o.status !== "CANCELADO",
+  );
+  const deliveredPreorders = orders.filter(
+    (o) => o.orderType === "preorder" && o.status === "ENTREGUE",
+  );
+  const pendingPreorders = orders.filter(
+    (o) => o.orderType === "preorder" && o.status !== "CANCELADO" && o.status !== "ENTREGUE",
+  );
+  return {
+    daily,
+    deliveredPreorders,
+    pendingPreorders,
+    forMetrics: [...daily, ...deliveredPreorders],
+  };
+}
+
 // ── Série diária (pra exportação CSV / análise) ─────────────────────────────────
 
 export type DailyRow = {

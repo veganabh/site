@@ -17,6 +17,21 @@ export type WeekDay = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
 export type WeekHours = Record<WeekDay, DayHours>;
 
+export type PreorderSettings = {
+  /** Dias mínimos de antecedência para encomenda. */
+  minLeadDays: number;
+  /** Dias máximos de antecedência para encomenda. */
+  maxLeadDays: number;
+  /** Valor mínimo do pedido de encomenda (reais). */
+  minValueCents: number;
+  /** Capacidade máxima de encomendas por dia. null = ilimitado. */
+  dailyCapacity: number | null;
+  /** Hora inicial (0–23) da janela de entrega. */
+  hourFrom: number;
+  /** Hora final (0–23) da janela de entrega. */
+  hourTo: number;
+};
+
 export type AdminSettings = {
   storeStatus: StoreStatus;
   hours: WeekHours;
@@ -24,6 +39,8 @@ export type AdminSettings = {
   printerName: string;
   /** Auto-aceitar: pedido pago entra direto em PREPARANDO (true) vs NOVO (false). */
   autoAccept: boolean;
+  /** Configurações de encomendas (ADR 0013). */
+  preorder: PreorderSettings;
 };
 
 export const SEED_HOURS: WeekHours = {
@@ -36,12 +53,22 @@ export const SEED_HOURS: WeekHours = {
   sun: { open: true, from: "11:00", to: "17:00" },
 };
 
+export const SEED_PREORDER: PreorderSettings = {
+  minLeadDays: 3,
+  maxLeadDays: 60,
+  minValueCents: 10000,
+  dailyCapacity: null,
+  hourFrom: 9,
+  hourTo: 18,
+};
+
 export const SEED_SETTINGS: AdminSettings = {
   storeStatus: "ATIVO",
   hours: SEED_HOURS,
   printerEnabled: false,
   printerName: "",
   autoAccept: false,
+  preorder: SEED_PREORDER,
 };
 
 /** Dia da semana atual no formato WeekDay. */

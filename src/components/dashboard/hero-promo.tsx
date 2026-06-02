@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Star, Truck, Heart, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,13 +20,22 @@ export function HeroPromo({ className }: HeroPromoProps) {
         className,
       )}
     >
+      <Image
+        src="/banner-home.webp"
+        alt=""
+        fill
+        priority
+        sizes="(max-width: 768px) 100vw, 1300px"
+        className="object-cover object-right"
+      />
+      {/* Overlay olive: forte na esquerda (texto legível) → leve na direita (foto aparece) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-terra-500/20 blur-3xl"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-olive-900 via-olive-900/80 to-olive-900/30"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-terra-500/10 blur-3xl"
+        className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-terra-500/10 blur-3xl"
       />
 
       <div className="relative flex flex-col gap-3">

@@ -5,11 +5,7 @@ import { z } from "zod";
 
 import { requireAdmin } from "@/server/auth/require-admin";
 import type { Database } from "@/types/db";
-import {
-  PRODUCT_ATTRIBUTES,
-  PRODUCT_CONTAINS,
-  PRODUCT_TAGS,
-} from "@/types/product";
+import { PRODUCT_ATTRIBUTES, PRODUCT_CONTAINS, PRODUCT_TAGS } from "@/types/product";
 import { PRICE_BULK_MODES, type PriceBulkMode, type BulkActionResult } from "@/lib/products-bulk";
 
 type ProductUpdate = Database["public"]["Tables"]["products"]["Update"];
@@ -54,6 +50,7 @@ const baseProductSchema = z.object({
   active: z.boolean().default(true),
   stock: z.coerce.number().int().nonnegative("Estoque não pode ser negativo.").default(0),
   lowStockThreshold: z.coerce.number().int().positive("Alerta precisa ser >= 1.").default(3),
+  availableForPreorder: z.boolean().default(false),
 });
 
 const createProductSchema = baseProductSchema.extend({
@@ -109,6 +106,7 @@ export async function createProductAction(
       active: data.active,
       stock: data.stock,
       low_stock_threshold: data.lowStockThreshold,
+      available_for_preorder: data.availableForPreorder,
     })
     .select("id")
     .single();
@@ -163,6 +161,8 @@ export async function updateProductAction(
   if (data.active !== undefined) patch.active = data.active;
   if (data.stock !== undefined) patch.stock = data.stock;
   if (data.lowStockThreshold !== undefined) patch.low_stock_threshold = data.lowStockThreshold;
+  if (data.availableForPreorder !== undefined)
+    patch.available_for_preorder = data.availableForPreorder;
 
   if (Object.keys(patch).length === 0) {
     return { ok: true };
@@ -301,10 +301,7 @@ export async function bulkSetActiveProductsAction(
   const { supabase, error: authError } = await requireAdmin();
   if (authError) return { ok: false, message: authError };
 
-  const { error } = await supabase
-    .from("products")
-    .update({ active })
-    .in("id", parsed.data);
+  const { error } = await supabase.from("products").update({ active }).in("id", parsed.data);
 
   if (error) {
     console.error("[products/bulkSetActive]", error.message);

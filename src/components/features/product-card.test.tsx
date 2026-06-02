@@ -22,6 +22,7 @@ const mock: Product = {
   active: true,
   stock: 10,
   lowStockThreshold: 3,
+  availableForPreorder: false,
 };
 
 describe("ProductCard", () => {

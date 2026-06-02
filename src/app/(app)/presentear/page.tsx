@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Gift, Package, MessageCircle, MapPin } from "lucide-react";
 import { ProductGridPhoto } from "@/components/dashboard/product-grid-photo";
 import { CategoryCircles } from "@/components/dashboard/category-circles";
+import { DeliveryGate } from "@/components/dashboard/delivery-gate";
 import { listProducts } from "@/server/products";
 import { KitGrid } from "@/components/gift/kit-grid";
 
@@ -18,7 +19,7 @@ export default async function PresentearPage() {
     <div className="flex flex-col gap-5">
       <section
         aria-labelledby="presentear-hero"
-        className="relative flex min-h-[270px] flex-col justify-center overflow-hidden rounded-sm bg-olive-900 p-5 text-paper-50 shadow-lg md:min-h-[305px] md:p-8"
+        className="relative flex min-h-[216px] flex-col justify-center overflow-hidden rounded-sm bg-olive-900 p-5 text-paper-50 shadow-lg md:min-h-[244px] md:p-8"
       >
         <Gift
           className="pointer-events-none absolute -top-6 -right-6 h-36 w-36 text-terra-500/30"
@@ -38,8 +39,7 @@ export default async function PresentearPage() {
             Para Presentear
           </p>
           <h1 className="text-h2 leading-tight font-extrabold text-paper-50 md:text-h1">
-            Doces que viajam bonito
-            <br className="hidden md:block" /> até quem você gosta.
+            Doces que viajam bonito.
           </h1>
           <p className="max-w-xl text-body-sm text-paper-50 md:text-body-sm">
             Monte um kit com os sabores da pessoa, deixe uma mensagem no cartão e a gente entrega na
@@ -67,8 +67,19 @@ export default async function PresentearPage() {
         <h2 id="categorias" className="text-h3 font-bold text-olive-900">
           Categorias
         </h2>
-        <CategoryCircles active="presentear" basePath="/" />
+        <div className="flex items-stretch gap-3">
+          <CategoryCircles active="presentear" basePath="/" className="min-w-0 flex-1" />
+          <DeliveryGate
+            variant="card"
+            label="Presenteamos nesse CEP?"
+            className="hidden w-[300px] shrink-0 md:flex"
+          />
+        </div>
       </section>
+
+      <div className="md:hidden">
+        <DeliveryGate label="Presenteamos nesse CEP?" />
+      </div>
 
       <section aria-labelledby="kits-titulo" className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">

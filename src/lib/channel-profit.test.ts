@@ -21,6 +21,7 @@ function product(p: Partial<Product>): Product {
     attributes: [],
     tags: [],
     contains: [],
+    availableForPreorder: false,
     ...p,
   } as Product;
 }
@@ -67,6 +68,7 @@ function order(
     total: 0,
     statusHistory: [],
     source,
+    orderType: "daily",
   } as Order;
 }
 
