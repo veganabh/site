@@ -30,6 +30,11 @@ export default async function Home({ searchParams }: HomeProps) {
     query,
   });
 
+  // Visibilidade do cardápio (Modelo A): produto ativo aparece se tem estoque
+  // OU aceita encomenda. Esgotado + não-apto some (não dá pra comprar nem
+  // encomendar). listProducts já filtra ativo + não-deletado.
+  const visibleProducts = products.filter((p) => p.stock > 0 || p.availableForPreorder);
+
   const active = collection ? collection.slug : (category ?? "all");
   const headerLabel = query
     ? `Resultados para "${query}"`
@@ -67,10 +72,11 @@ export default async function Home({ searchParams }: HomeProps) {
           </div>
           <p className="inline-flex items-center gap-1.5 text-micro text-olive-700">
             <span className="h-1.5 w-1.5 rounded-full bg-leaf-500" aria-hidden="true" />
-            {products.length} {products.length === 1 ? "item" : "itens"} · sem lactose, vegano
+            {visibleProducts.length} {visibleProducts.length === 1 ? "item" : "itens"} · sem
+            lactose, vegano
           </p>
         </div>
-        <ProductGridPhoto products={products} />
+        <ProductGridPhoto products={visibleProducts} />
       </section>
     </div>
   );
