@@ -242,7 +242,7 @@ export default function PedidosPage() {
               {/* Cards */}
               <div className="flex flex-col gap-2 overflow-y-auto">
                 {colOrders.length === 0 ? (
-                  <p className="px-3 py-4 text-center text-micro text-olive-700">
+                  <p className="rounded-sm border border-dashed border-divider px-3 py-4 text-center text-caption text-olive-700">
                     {col.emptyLabel}
                   </p>
                 ) : (
