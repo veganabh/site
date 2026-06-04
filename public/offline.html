@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sem conexão — Veg.ana</title>
+    <style>
+      :root {
+        --olive-900: #2b3210;
+        --olive-700: #3c4221;
+        --paper-50: #fbf8ef;
+        --leaf-500: #6b9f41;
+        --terra-500: #de6e27;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        padding: 2rem;
+        text-align: center;
+        background: var(--paper-50);
+        color: var(--olive-900);
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+      }
+      .badge {
+        width: 84px;
+        height: 84px;
+        border-radius: 9999px;
+        background: var(--leaf-500);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--paper-50);
+        font-size: 2rem;
+        font-weight: 700;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 0;
+      }
+      p {
+        margin: 0;
+        max-width: 22rem;
+        color: var(--olive-700);
+        line-height: 1.5;
+      }
+      button {
+        margin-top: 0.5rem;
+        border: 0;
+        border-radius: 9999px;
+        background: var(--terra-500);
+        color: var(--paper-50);
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 0.7rem 1.4rem;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="badge">Veg</div>
+    <h1>Você está sem internet</h1>
+    <p>
+      Não foi possível carregar a Veg.ana agora. Verifique sua conexão e tente de novo — seus doces
+      esperam por você.
+    </p>
+    <button type="button" onclick="location.reload()">Tentar de novo</button>
+  </body>
+</html>

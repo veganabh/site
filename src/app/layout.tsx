@@ -1,7 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
+
+import { ServiceWorkerRegister } from "@/components/providers/service-worker-register";
 
 import { AddressesStoreHydrator } from "@/components/providers/addresses-store-hydrator";
 import { AdminOrdersStoreHydrator } from "@/components/providers/admin-orders-store-hydrator";
@@ -35,6 +37,19 @@ export const metadata: Metadata = {
   title: "Veg.ana — doces sem lactose em BH",
   description:
     "Doceria vegana feita à mão em Belo Horizonte. Bolos, bombons e bolo no pote sem lactose e sem ingredientes de origem animal.",
+  applicationName: "Veg.ana",
+  // PWA no iOS: permite abrir em tela cheia quando adicionado à home.
+  appleWebApp: {
+    capable: true,
+    title: "Veg.ana",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#2b3210",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default async function RootLayout({
@@ -84,6 +99,7 @@ export default async function RootLayout({
           </AuthProvider>
         </QueryProvider>
         <Toaster position="bottom-center" richColors closeButton />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
