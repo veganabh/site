@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { placeOrderAction } from "@/server/actions/place-order";
+import { readTracking } from "@/lib/tracking";
 // NOTE: placePreorderAction is intentionally NOT imported here.
 // Preorder checkout is handled exclusively by /encomendas/finalizar
 // (PreorderCartCheckoutForm). This file must never call placePreorderAction.
@@ -1288,6 +1289,7 @@ function StepPagamento() {
         shippingFee: selectedAddress.shippingFee,
         couponCode: appliedCoupon?.code,
         paymentMethod: tab === "cartao" ? "card" : "pix",
+        tracking: readTracking(),
       });
 
       if (!result.ok) {

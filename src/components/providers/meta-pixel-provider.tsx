@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
+import { captureUtmFromUrl } from "@/lib/tracking";
+
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 /** Acessor tipado do `fbq` injetado no window. undefined antes do base code. */
@@ -27,6 +29,11 @@ function getFbq(): ((...args: unknown[]) => void) | undefined {
  * Base do Pixel suporta `fbq("consent","revoke")` antes do aceite.
  */
 export function MetaPixelProvider({ children }: { children: React.ReactNode }) {
+  // Captura UTM do landing — roda mesmo sem Pixel (atribuição independe da Meta).
+  useEffect(() => {
+    captureUtmFromUrl();
+  }, []);
+
   // Injeta o base code uma vez.
   useEffect(() => {
     if (!PIXEL_ID || typeof window === "undefined" || getFbq()) return;

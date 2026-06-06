@@ -62,6 +62,21 @@ const inputSchema = z.object({
    * Card = checkout hospedado AbacatePay (redirect, parcelamento até 3x).
    */
   paymentMethod: z.enum(["pix", "card"]).default("pix"),
+  /**
+   * Atribuição de tráfego pago (Etapa 4). UTM capturados no landing + cookies
+   * de match do Meta Pixel. Gravados no pedido pra reconciliação e CAPI.
+   */
+  tracking: z
+    .object({
+      utm_source: z.string().max(200).optional(),
+      utm_medium: z.string().max(200).optional(),
+      utm_campaign: z.string().max(200).optional(),
+      utm_content: z.string().max(200).optional(),
+      utm_term: z.string().max(200).optional(),
+      fbp: z.string().max(400).optional(),
+      fbc: z.string().max(400).optional(),
+    })
+    .optional(),
 });
 
 export type PlaceOrderInput = z.infer<typeof inputSchema>;
@@ -233,6 +248,15 @@ export async function placeOrderAction(input: PlaceOrderInput): Promise<PlaceOrd
       coupon_id: couponId,
       coupon_code: couponCode,
       coupon_discount_cents: couponCode ? couponDiscountCents : null,
+      // Atribuição de tráfego pago (Etapa 4). purchase_event_id usa o default
+      // do banco (gen_random_uuid) — webhook lê pra dedup do Purchase no CAPI.
+      utm_source: parsed.data.tracking?.utm_source ?? null,
+      utm_medium: parsed.data.tracking?.utm_medium ?? null,
+      utm_campaign: parsed.data.tracking?.utm_campaign ?? null,
+      utm_content: parsed.data.tracking?.utm_content ?? null,
+      utm_term: parsed.data.tracking?.utm_term ?? null,
+      fbp: parsed.data.tracking?.fbp ?? null,
+      fbc: parsed.data.tracking?.fbc ?? null,
     })
     .select("id, order_number")
     .single();
