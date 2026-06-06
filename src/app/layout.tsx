@@ -14,6 +14,7 @@ import { CollectionsStoreHydrator } from "@/components/providers/collections-sto
 import { DeliveryPersonsStoreHydrator } from "@/components/providers/delivery-persons-store-hydrator";
 import { GiftKitsStoreHydrator } from "@/components/providers/gift-kits-store-hydrator";
 import { MenuStoreHydrator } from "@/components/providers/menu-store-hydrator";
+import { MetaPixelProvider } from "@/components/providers/meta-pixel-provider";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { RingsStoreHydrator } from "@/components/providers/rings-store-hydrator";
@@ -95,7 +96,9 @@ export default async function RootLayout({
         <AddressesStoreHydrator addresses={addresses} />
         <QueryProvider>
           <AuthProvider>
-            <PostHogProvider>{children}</PostHogProvider>
+            <PostHogProvider>
+              <MetaPixelProvider>{children}</MetaPixelProvider>
+            </PostHogProvider>
           </AuthProvider>
         </QueryProvider>
         <Toaster position="bottom-center" richColors closeButton />
