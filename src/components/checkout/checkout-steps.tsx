@@ -201,6 +201,17 @@ function StepResumo() {
   const [couponError, setCouponError] = useState<string | null>(null);
   const [couponPending, setCouponPending] = useState(false);
 
+  // InitiateCheckout (Meta Pixel): dispara uma vez ao abrir o checkout com
+  // carrinho não-vazio. event_id/dedup tratados dentro de captureEvent.
+  const checkoutTrackedRef = useRef(false);
+  useEffect(() => {
+    if (checkoutTrackedRef.current) return;
+    const count = items.length + kits.length;
+    if (count === 0) return;
+    checkoutTrackedRef.current = true;
+    captureEvent("checkout_started", { value: total, items: count });
+  }, [items.length, kits.length, total]);
+
   if (items.length === 0 && kits.length === 0) return <EmptyCart />;
 
   async function handleApplyCode() {
