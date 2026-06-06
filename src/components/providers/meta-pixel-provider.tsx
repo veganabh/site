@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 import { captureUtmFromUrl } from "@/lib/tracking";
+import { useConsent } from "@/components/providers/consent-provider";
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
@@ -19,24 +20,28 @@ function getFbq(): ((...args: unknown[]) => void) | undefined {
  *
  * Dormente sem `NEXT_PUBLIC_META_PIXEL_ID` — nada roda até a env existir.
  *
+ * LGPD (Etapa 7): só injeta/dispara com `consent === "granted"`. Sem aceite, o
+ * Pixel nunca carrega (gate mais estrito que `consent:revoke`). Ao aceitar, o
+ * efeito reage e injeta + dispara o PageView atual.
+ *
  * Estratégia: o base code do Pixel cria um `fbq` que ENFILEIRA chamadas até o
  * script carregar; por isso `init` + `track` disparados logo já ficam na fila.
  * Não disparamos PageView no init — deixamos o efeito de `pathname` cuidar disso
  * (mesma lógica do PostHog: `capture_pageview:false` + pageview manual), evitando
  * PageView duplicado no primeiro carregamento.
- *
- * TODO (Etapa 7 — LGPD): gatear o disparo atrás de consentimento de cookies.
- * Base do Pixel suporta `fbq("consent","revoke")` antes do aceite.
  */
 export function MetaPixelProvider({ children }: { children: React.ReactNode }) {
-  // Captura UTM do landing — roda mesmo sem Pixel (atribuição independe da Meta).
+  const { consent } = useConsent();
+
+  // Captura UTM do landing — roda mesmo sem Pixel/consent (atribuição é dado
+  // próprio, não compartilhado com a Meta).
   useEffect(() => {
     captureUtmFromUrl();
   }, []);
 
-  // Injeta o base code uma vez.
+  // Injeta o base code uma vez, só após consentimento.
   useEffect(() => {
-    if (!PIXEL_ID || typeof window === "undefined" || getFbq()) return;
+    if (consent !== "granted" || !PIXEL_ID || typeof window === "undefined" || getFbq()) return;
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
     (function (f: any, b: Document, e: string, v: string) {
@@ -62,20 +67,22 @@ export function MetaPixelProvider({ children }: { children: React.ReactNode }) {
     /* eslint-enable @typescript-eslint/no-explicit-any */
 
     getFbq()?.("init", PIXEL_ID);
-  }, []);
+  }, [consent]);
 
   return <MetaPixelTracker>{children}</MetaPixelTracker>;
 }
 
 function MetaPixelTracker({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { consent } = useConsent();
 
-  // PageView manual a cada navegação (e no primeiro mount).
+  // PageView manual a cada navegação (e logo após o aceite).
   useEffect(() => {
+    if (consent !== "granted") return;
     const fbq = getFbq();
     if (!PIXEL_ID || !fbq) return;
     fbq("track", "PageView");
-  }, [pathname]);
+  }, [pathname, consent]);
 
   return <>{children}</>;
 }

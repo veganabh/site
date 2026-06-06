@@ -13,6 +13,7 @@ import { CategoriesStoreHydrator } from "@/components/providers/categories-store
 import { CollectionsStoreHydrator } from "@/components/providers/collections-store-hydrator";
 import { DeliveryPersonsStoreHydrator } from "@/components/providers/delivery-persons-store-hydrator";
 import { GiftKitsStoreHydrator } from "@/components/providers/gift-kits-store-hydrator";
+import { ConsentProvider } from "@/components/providers/consent-provider";
 import { MenuStoreHydrator } from "@/components/providers/menu-store-hydrator";
 import { MetaPixelProvider } from "@/components/providers/meta-pixel-provider";
 import { PostHogProvider } from "@/components/providers/posthog-provider";
@@ -97,7 +98,9 @@ export default async function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <PostHogProvider>
-              <MetaPixelProvider>{children}</MetaPixelProvider>
+              <ConsentProvider>
+                <MetaPixelProvider>{children}</MetaPixelProvider>
+              </ConsentProvider>
             </PostHogProvider>
           </AuthProvider>
         </QueryProvider>

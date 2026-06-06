@@ -20,7 +20,8 @@ export type AnalyticsEvent =
   | "order_placed"
   | "notification_cta_clicked"
   | "view_content"
-  | "payment_info_added";
+  | "payment_info_added"
+  | "contact_whatsapp";
 
 function ready(): boolean {
   return typeof window !== "undefined" && posthog.__loaded === true;
@@ -94,6 +95,8 @@ function toMeta(event: AnalyticsEvent, props?: Record<string, unknown>): MetaEve
           currency: "BRL",
         }),
       };
+    case "contact_whatsapp":
+      return { name: "Contact", params: compact({ method: "whatsapp" }) };
     default:
       return null;
   }
