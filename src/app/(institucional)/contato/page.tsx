@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MessageCircle, MapPin, Clock } from "lucide-react";
 import { STORE_LOCATION } from "@/lib/store-location";
+import { WhatsAppLeadLink } from "@/components/features/whatsapp-lead-link";
 import { Card } from "@/components/ui/card";
 
 /** Lucide 1.x removeu brand icons — Instagram vai como SVG inline. */
@@ -47,10 +48,8 @@ export default function ContatoPage() {
       </header>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <a
+        <WhatsAppLeadLink
           href={waLink}
-          target="_blank"
-          rel="noopener noreferrer"
           className="flex flex-col gap-1.5 rounded-sm border border-divider bg-paper-50 p-4 transition hover:border-leaf-500/50 hover:bg-leaf-500/5"
         >
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-leaf-500/10 text-leaf-700">
@@ -58,7 +57,7 @@ export default function ContatoPage() {
           </span>
           <span className="mt-1 text-body font-bold text-olive-900">WhatsApp</span>
           <span className="text-body-sm text-olive-700">{waPretty}</span>
-        </a>
+        </WhatsAppLeadLink>
 
         <a
           href={igLink}

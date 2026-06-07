@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { STORE_LOCATION } from "@/lib/store-location";
+import { WhatsAppLeadLink } from "@/components/features/whatsapp-lead-link";
 
 /**
  * Lucide 1.x removeu brand icons — Instagram vai como SVG inline.
@@ -66,15 +67,13 @@ export function Footer() {
           >
             <InstagramGlyph className="h-4 w-4" />
           </a>
-          <a
+          <WhatsAppLeadLink
             href={`https://wa.me/${STORE_LOCATION.whatsappNumber}`}
             aria-label="Falar com a Veg.ana no WhatsApp"
-            target="_blank"
-            rel="noopener noreferrer"
             className="text-olive-700 transition-colors hover:text-olive-900"
           >
             <MessageCircle className="h-4 w-4" aria-hidden="true" />
-          </a>
+          </WhatsAppLeadLink>
         </div>
 
         <p className="text-caption text-olive-700">© {year} Veg.ana · Belo Horizonte</p>

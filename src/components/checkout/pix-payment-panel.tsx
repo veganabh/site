@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, Copy, Loader2, RefreshCw, AlertTriangle } from "lucide-react";
 
 import { formatBRL } from "@/lib/format";
+import { captureEvent } from "@/lib/analytics";
 import { Card } from "@/components/ui/card";
 
 type Props = {
@@ -51,6 +52,12 @@ export function PixPaymentPanel({
   const expiresAtMs = useMemo(() => new Date(expiresAt).getTime(), [expiresAt]);
   const remainingMs = Math.max(expiresAtMs - now, 0);
   const expired = remainingMs === 0 && status === "pending";
+
+  // AddPaymentInfo (Meta Pixel): PIX gerado e exibido = info de pagamento
+  // apresentada. Dispara uma vez ao montar o painel.
+  useEffect(() => {
+    captureEvent("payment_info_added", { value: amount, orderId });
+  }, [orderId, amount]);
 
   const refresh = useCallback(async () => {
     abortRef.current?.abort();

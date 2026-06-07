@@ -5,6 +5,7 @@ import { ChevronLeft, ArrowRight, Package, MessageCircle, MapPin } from "lucide-
 import { getGiftKitBySlug } from "@/server/gift-kits";
 import { KitCoverPhoto } from "@/components/gift/kit-cover-photo";
 import { KitIcon } from "@/components/gift/kit-icon";
+import { ViewContentTracker } from "@/components/providers/view-content-tracker";
 import { formatBRL } from "@/lib/format";
 import { Card } from "@/components/ui/card";
 
@@ -32,6 +33,7 @@ export default async function KitDetailPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col gap-5">
+      <ViewContentTracker productId={kit.id} name={kit.name} price={kit.price} />
       <Link
         href="/presentear"
         className="inline-flex w-fit items-center gap-1 text-caption font-semibold text-olive-700 transition-colors hover:text-olive-900"

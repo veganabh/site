@@ -4,10 +4,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createSupabaseServiceClient } from "@/server/supabase/service";
-import {
-  ABACATEPAY_PUBLIC_KEY,
-  mapPixStatusToPaymentStatus,
-} from "@/server/payments/abacatepay";
+import { ABACATEPAY_PUBLIC_KEY, mapPixStatusToPaymentStatus } from "@/server/payments/abacatepay";
+import { sendPurchaseToMeta } from "@/server/payments/meta-capi";
 
 /**
  * Webhook AbacatePay — fonte canônica de status de pagamento (ADR 0009 D4).
@@ -142,10 +140,7 @@ export async function POST(request: Request) {
     // Cobrança existe no AbacatePay mas não no nosso BD — possíveis causas:
     // teste manual no dashboard, BD restaurado de backup, race com place-order.
     // Retorna 200 pra não retry — mãe pode reconciliar manualmente se relevante.
-    console.warn(
-      "[abacatepay-webhook] payment não encontrado para provider_charge_id:",
-      charge.id,
-    );
+    console.warn("[abacatepay-webhook] payment não encontrado para provider_charge_id:", charge.id);
     return NextResponse.json({ status: "not_tracked", chargeId: charge.id });
   }
 
@@ -190,14 +185,41 @@ export async function POST(request: Request) {
   else if (nextStatus === "refunded") nextOrderPaymentStatus = "ESTORNADO";
 
   if (nextOrderPaymentStatus) {
-    const { error: orderError } = await service
+    const { data: orderRow, error: orderError } = await service
       .from("orders")
       .update({ payment_status: nextOrderPaymentStatus })
-      .eq("id", payment.order_id);
+      .eq("id", payment.order_id)
+      .select("total_cents, customer_phone, purchase_event_id, fbp, fbc")
+      .maybeSingle();
 
     if (orderError) {
       console.error("[abacatepay-webhook] update order:", orderError.message);
       // Payment já gravou. Admin reconcilia order manualmente se necessário.
+    }
+
+    // Purchase via Conversions API (Etapa 5) — só no PAGO. Server-side é a
+    // fonte confiável (sobrevive a ad-block/iOS). Dedup por purchase_event_id.
+    // Falha aqui nunca derruba o webhook (pagamento já está gravado).
+    if (nextStatus === "paid" && orderRow) {
+      try {
+        const capi = await sendPurchaseToMeta({
+          eventId: orderRow.purchase_event_id,
+          value: orderRow.total_cents / 100,
+          orderId: payment.order_id,
+          eventTimeSeconds: paidAt ? Math.floor(new Date(paidAt).getTime() / 1000) : undefined,
+          phone: orderRow.customer_phone,
+          fbp: orderRow.fbp,
+          fbc: orderRow.fbc,
+        });
+        if (!capi.ok && capi.error !== "meta_capi_not_configured") {
+          console.error("[abacatepay-webhook] CAPI Purchase:", capi.error);
+        }
+      } catch (err) {
+        console.error(
+          "[abacatepay-webhook] CAPI Purchase exception:",
+          err instanceof Error ? err.message : err,
+        );
+      }
     }
   }
 
@@ -227,10 +249,7 @@ function signaturePreview(rawBody: string, secret: string): string {
       .digest("base64")
       .slice(0, 16) +
     "… hex:" +
-    createHmac("sha256", secret)
-      .update(Buffer.from(rawBody, "utf8"))
-      .digest("hex")
-      .slice(0, 16) +
+    createHmac("sha256", secret).update(Buffer.from(rawBody, "utf8")).digest("hex").slice(0, 16) +
     "…"
   );
 }

@@ -813,6 +813,14 @@ export type Database = {
           subtotal_cents: number;
           total_cents: number;
           updated_at: string;
+          utm_source: string | null;
+          utm_medium: string | null;
+          utm_campaign: string | null;
+          utm_content: string | null;
+          utm_term: string | null;
+          fbp: string | null;
+          fbc: string | null;
+          purchase_event_id: string;
         };
         Insert: {
           cancel_reason?: string | null;
@@ -839,6 +847,14 @@ export type Database = {
           subtotal_cents: number;
           total_cents: number;
           updated_at?: string;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          utm_campaign?: string | null;
+          utm_content?: string | null;
+          utm_term?: string | null;
+          fbp?: string | null;
+          fbc?: string | null;
+          purchase_event_id?: string;
         };
         Update: {
           cancel_reason?: string | null;
@@ -865,6 +881,14 @@ export type Database = {
           subtotal_cents?: number;
           total_cents?: number;
           updated_at?: string;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          utm_campaign?: string | null;
+          utm_content?: string | null;
+          utm_term?: string | null;
+          fbp?: string | null;
+          fbc?: string | null;
+          purchase_event_id?: string;
         };
         Relationships: [
           {
