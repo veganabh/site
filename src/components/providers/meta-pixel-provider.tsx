@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 import { captureUtmFromUrl } from "@/lib/tracking";
@@ -14,74 +14,64 @@ function getFbq(): ((...args: unknown[]) => void) | undefined {
   return window.fbq as ((...args: unknown[]) => void) | undefined;
 }
 
+/** Injeta o base code do Pixel (idempotente — no-op se já injetado). */
+function injectBaseCode(): void {
+  if (typeof window === "undefined" || getFbq()) return;
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  (function (f: any, b: Document, e: string, v: string) {
+    if (f.fbq) return;
+    const n: any = (f.fbq = function (...args: unknown[]) {
+      if (n.callMethod) {
+        n.callMethod(...args);
+      } else {
+        n.queue.push(args);
+      }
+    });
+    if (!f._fbq) f._fbq = n;
+    n.push = n;
+    n.loaded = true;
+    n.version = "2.0";
+    n.queue = [];
+    const t = b.createElement(e) as HTMLScriptElement;
+    t.async = true;
+    t.src = v;
+    const s = b.getElementsByTagName(e)[0];
+    s.parentNode?.insertBefore(t, s);
+  })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}
+
 /**
- * Inicializa o Meta Pixel (fbevents.js) e dispara `PageView` em cada mudança de
- * rota — espelho do `PostHogProvider`.
+ * Inicializa o Meta Pixel e dispara `PageView` em cada rota.
  *
- * Dormente sem `NEXT_PUBLIC_META_PIXEL_ID` — nada roda até a env existir.
+ * LGPD (Etapa 7): só roda com `consent === "granted"`. Sem aceite, nem carrega.
  *
- * LGPD (Etapa 7): só injeta/dispara com `consent === "granted"`. Sem aceite, o
- * Pixel nunca carrega (gate mais estrito que `consent:revoke`). Ao aceitar, o
- * efeito reage e injeta + dispara o PageView atual.
- *
- * Estratégia: o base code do Pixel cria um `fbq` que ENFILEIRA chamadas até o
- * script carregar; por isso `init` + `track` disparados logo já ficam na fila.
- * Não disparamos PageView no init — deixamos o efeito de `pathname` cuidar disso
- * (mesma lógica do PostHog: `capture_pageview:false` + pageview manual), evitando
- * PageView duplicado no primeiro carregamento.
+ * Um ÚNICO efeito faz injeção + init + PageView em sequência — evita a corrida
+ * em que um efeito filho dispararia PageView antes de um efeito pai injetar o
+ * fbq (ordem de efeitos do React é bottom-up). `initedRef` garante injeção/init
+ * uma vez; o PageView dispara a cada mudança de rota.
  */
 export function MetaPixelProvider({ children }: { children: React.ReactNode }) {
   const { consent } = useConsent();
+  const pathname = usePathname();
+  const initedRef = useRef(false);
 
-  // Captura UTM do landing — roda mesmo sem Pixel/consent (atribuição é dado
-  // próprio, não compartilhado com a Meta).
+  // Captura UTM do landing — roda mesmo sem Pixel/consent (dado próprio).
   useEffect(() => {
     captureUtmFromUrl();
   }, []);
 
-  // Injeta o base code uma vez, só após consentimento.
   useEffect(() => {
-    if (consent !== "granted" || !PIXEL_ID || typeof window === "undefined" || getFbq()) return;
+    if (consent !== "granted" || !PIXEL_ID || typeof window === "undefined") return;
 
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    (function (f: any, b: Document, e: string, v: string) {
-      if (f.fbq) return;
-      const n: any = (f.fbq = function (...args: unknown[]) {
-        if (n.callMethod) {
-          n.callMethod(...args);
-        } else {
-          n.queue.push(args);
-        }
-      });
-      if (!f._fbq) f._fbq = n;
-      n.push = n;
-      n.loaded = true;
-      n.version = "2.0";
-      n.queue = [];
-      const t = b.createElement(e) as HTMLScriptElement;
-      t.async = true;
-      t.src = v;
-      const s = b.getElementsByTagName(e)[0];
-      s.parentNode?.insertBefore(t, s);
-    })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
-    /* eslint-enable @typescript-eslint/no-explicit-any */
+    if (!initedRef.current) {
+      injectBaseCode();
+      getFbq()?.("init", PIXEL_ID);
+      initedRef.current = true;
+    }
 
-    getFbq()?.("init", PIXEL_ID);
-  }, [consent]);
-
-  return <MetaPixelTracker>{children}</MetaPixelTracker>;
-}
-
-function MetaPixelTracker({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const { consent } = useConsent();
-
-  // PageView manual a cada navegação (e logo após o aceite).
-  useEffect(() => {
-    if (consent !== "granted") return;
-    const fbq = getFbq();
-    if (!PIXEL_ID || !fbq) return;
-    fbq("track", "PageView");
+    getFbq()?.("track", "PageView");
   }, [pathname, consent]);
 
   return <>{children}</>;
